@@ -1,0 +1,56 @@
+<div id="modal-alterar-producao" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-8 w-full max-w-md m-4">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-gray-800 dark:text-white">Editar Produção</h3>
+            <button id="modal-alterar-close-btn" class="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        
+        <form action="{% url 'producoes' email_usuario=request.user.pk %}" method="POST" id="form-alterar-producao" class="space-y-10">
+            {% csrf_token %}
+            {{ alterar_producao.action }}
+            {{ alterar_producao.producao_pk }} 
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" 
+                    for="{{ form_alterar.id_catador.id_for_label }}">
+                    {{ alterar_producao.id_catador.label }}
+                </label>
+                {{ alterar_producao.id_catador }}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" 
+                    for="{{ form_alterar.id_residuo.id_for_label }}">
+                    {{ alterar_producao.id_residuo.label }}
+                </label>
+                {{ alterar_producao.id_residuo }}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" 
+                    for="{{ form_alterar.data.id_for_label }}">
+                    {{ alterar_producao.data.label }}
+                </label>
+                {{ alterar_producao.data }}
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" 
+                    for="{{ form_alterar.producao.id_for_label }}"> 
+                    {{ alterar_producao.producao.label }}
+                </label>
+                {{ alterar_producao.producao }}
+            </div>
+            
+            <div class="flex justify-end pt-4 space-x-4">
+                <button id="modal-alterar-cancel-btn" type="button"
+                    class="py-2 px-4 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-medium">
+                    Cancelar
+                </button>
+                <button class="py-2 px-6 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600"
+                    type="submit">Salvar Alterações</button>
+            </div>
+        </form>
+    </div>
+</div>

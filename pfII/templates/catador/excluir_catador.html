@@ -1,0 +1,92 @@
+<div id="modal-excluir-catador" class="absolute inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center hidden">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-full max-w-md p-8 m-4">
+        <form action="{% url 'producoes' email_usuario=request.user.pk %}" method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Campos ocultos do formulário -->
+            {{ excluir_catador_form.catador_id }}
+            {{ excluir_catador_form.action }}
+
+            <div class="flex flex-col items-center text-center">
+                <!-- Ícone de aviso -->
+                <div class="w-16 h-16 bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center mb-4">
+                    <span class="material-symbols-outlined text-red-500 text-4xl">delete_forever</span>
+                </div>
+
+                <!-- Título -->
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">Confirmar Exclusão</h3>
+
+                <!-- Informações do catador a ser excluído -->
+                <div class="mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg w-full">
+                    <div class="text-left space-y-2">
+                        <div>
+                            <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Nome:</span>
+                            <span id="excluir-catador-nome" class="text-gray-900 dark:text-white font-medium ml-2">
+                                <!-- Nome será preenchido via JavaScript -->
+                            </span>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Email:</span>
+                            <span id="excluir-catador-email" class="text-gray-700 dark:text-gray-300 ml-2">
+                                <!-- Email será preenchido via JavaScript -->
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mensagem de aviso -->
+                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6 w-full">
+                    <div class="flex">
+                        <span class="material-symbols-outlined text-red-500 mr-2 text-sm">warning</span>
+                        <div class="text-sm text-red-700 dark:text-red-300 text-left">
+                            <p class="font-medium">Atenção: Esta ação é irreversível!</p>
+                            <p class="mt-1">
+                                Ao excluir este catador, todos os dados associados serão permanentemente removidos, 
+                                incluindo histórico de produções e outras informações relacionadas.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Campo de confirmação -->
+                <div class="flex items-start space-x-3 mb-6 w-full">
+                    {{ excluir_catador_form.confirmacao }}
+                    <label for="{{ excluir_catador_form.confirmacao.id_for_label }}" 
+                           class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                        {{ excluir_catador_form.confirmacao.label }}
+                    </label>
+                </div>
+
+                <!-- Exibir erros do formulário -->
+                {% if excluir_catador_form.non_field_errors or excluir_catador_form.confirmacao.errors %}
+                    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4 w-full">
+                        <div class="flex">
+                            <span class="material-symbols-outlined text-red-500 mr-2">error</span>
+                            <div class="text-sm text-red-700 dark:text-red-300">
+                                {% for error in excluir_catador_form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                                {% for error in excluir_catador_form.confirmacao.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Botões de ação -->
+                <div class="flex justify-center gap-4 w-full">
+                    <button id="modal-excluir-catador-cancel-btn" type="button"
+                            class="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-medium py-3 px-4 rounded-lg">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                            class="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center">
+                        <span class="material-symbols-outlined mr-2">delete_forever</span>
+                        Excluir Catador
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

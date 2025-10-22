@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="flex h-screen">
+    <aside class="flex flex-col w-64 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800">
+        <nav class="flex-1 px-4 py-6 space-y-2">
+            {% if request.user.is_staff %}
+            <div>
+                <a class="flex items-center px-4 py-2 text-gray-700 dark:bg-primary/30 rounded-lg"
+                    href="{% url 'gestao_usuarios' email_usuario=request.user.pk %}">
+                    <!-- <svg class="h-6 w-6 mr-3 text-primary" fill="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2.0995l-9 8.2495v9.651h6v-6h6v6h6v-9.651l-9-8.2495z"></path>
+                    </svg> -->
+                    <span class="font-medium">Gestão de Usuários</span>
+                </a>
+            </div>
+            {% endif %}
+            <div>
+                <a class="flex items-center px-4 py-2 text-gray-700 dark:bg-primary/30 rounded-lg"
+                    href="{% url 'dashboard' email_usuario=request.user.pk %}">
+                    <svg class="h-6 w-6 mr-3 text-primary" fill="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2.0995l-9 8.2495v9.651h6v-6h6v6h6v-9.651l-9-8.2495z"></path>
+                    </svg>
+                    <span class="font-medium">Principal</span>
+                </a>
+            </div>
+            {% if not request.user.tipo_usuario == 'E' %}
+            <div>
+                <a class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-primary/10 dark:hover:bg-primary/20 rounded-lg"
+                    href="{% url 'producoes' email_usuario=request.user.pk %}">
+                    <svg class="h-6 w-6 mr-3" fill="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                            stroke-linecap="round" stroke-linejoin="round"></path>
+                        <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round">
+                        </path>
+                    </svg>
+                    <span class="font-medium">Produções</span>
+                </a>
+            </div>
+            {% endif %}
+            {% if request.user.tipo_usuario == 'CA' %}
+            <a class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-primary/10 dark:hover:bg-primary/20 rounded-lg"
+                href="{% url 'rendimentos' email_usuario=request.user.pk %}">
+                <svg class="h-6 w-6 mr-3" fill="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                        stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+                <span class="font-medium">Rendimentos</span>
+            </a>
+            {% else %}
+            <a class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-primary/10 dark:hover:bg-primary/20 rounded-lg"
+                href="{% url 'demandas' email_usuario=request.user.pk %}">
+                <svg class="h-6 w-6 mr-3" fill="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                        stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+                <span class="font-medium">Demandas</span>
+            </a>
+            {% endif %}
+            <a class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-primary/10 dark:hover:bg-primary/20 rounded-lg"
+                href="{% url 'negociacoes' email_usuario=request.user.pk %}">
+                <svg class="h-6 w-6 mr-3" fill="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                        stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+                <span class="font-medium">Negociações</span>
+            </a>
+            <div>
+                <a class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-primary/10 dark:hover:bg-primary/20 rounded-lg"
+                    href="{% url 'historico' email_usuario=request.user.pk %}">
+                    <svg class="h-6 w-6 mr-3" fill="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round"
+                            stroke-linejoin="round"></path>
+                    </svg>
+                    <span class="font-medium">Histórico</span>
+                </a>
+            </div>
+        </nav>
+        <div class="px-4 py-6 border-t border-gray-200 dark:border-gray-800">
+            <a class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-primary/10 dark:hover:bg-primary/20 rounded-lg"
+                href="{% url 'configuracoes' email_usuario=request.user.pk %}">
+                <svg class="h-6 w-6 mr-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                        stroke-linecap="round" stroke-linejoin="round"></path>
+                    <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round">
+                    </path>
+                </svg>
+                <span class="font-medium">Configurações</span>
+            </a>
+        </div>
+    </aside>
+    {% block dashboard_content %}{% endblock %}
+
+    {% block footer_scripts %}{% endblock %}
+</div>
+{% endblock %}

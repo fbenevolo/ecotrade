@@ -1,0 +1,30 @@
+<div id="modal-excluir-demanda" class="absolute inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center hidden">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-full max-w-md p-8 m-4">
+        <form action="{% url 'demandas' email_usuario=request.user.pk %}" method="POST">
+            {% csrf_token %}
+            {{ excluir_demanda_form.action }}
+            {{ excluir_demanda_form.id_demanda }}
+
+            <div class="flex flex-col items-center text-center">
+                <div class="w-16 h-16 bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center mb-4">
+                    <span class="material-symbols-outlined text-red-500 text-4xl">warning</span>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">Confirmar Exclusão de Demanda</h3>
+                <p class="text-gray-600 dark:text-gray-300 mb-6">
+                    Você tem certeza que deseja excluir esta demanda? Esta ação não poderá ser desfeita.
+                </p>
+                <div class="flex justify-center gap-4 w-full">
+                    <button id="modal-cancel-btn"
+                        class="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold py-3 px-4 rounded-lg">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                        class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center">
+                        <span class="material-symbols-outlined mr-2">delete</span>
+                        Excluir
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

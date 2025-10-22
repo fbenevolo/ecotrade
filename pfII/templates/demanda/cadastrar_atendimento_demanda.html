@@ -1,0 +1,89 @@
+<div id="modal-cadastrar-atendimento-demanda"
+    class="absolute inset-0 bg-black/60 dark:bg-black/80 flex items-center justify-center z-20 hidden">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-2xl mx-4">
+        <div class="p-8">
+            <form action="{% url 'demandas' email_usuario=request.user.pk %}" method="POST" class="space-y-6">
+                {% csrf_token %}
+
+                {{ cadastrar_atendimento_demanda_form.id_cooperativa }}
+                {{ cadastrar_atendimento_demanda_form.id_demanda }}
+                {{ cadastrar_atendimento_demanda_form.id_residuo }}
+                {{ cadastrar_atendimento_demanda_form.action }}
+
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Cadastro em Demanda</h2>
+                        <p class="text-gray-600 dark:text-gray-400 mt-1">Demanda <span
+                                class="font-semibold text-gray-800 dark:text-gray-200">
+                                <strong>
+                                    <span id="confirm-residuo">...</span>
+                                </strong> -
+                                <strong>
+                                    <span id="confirm-quantidade">... </span>
+                                </strong>
+
+                        </p>
+                    </div>
+                    <button id="modal-close-btn" type="button"
+                        class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                            for="{{ cadastrar_atendimento_demanda_form.preco_inicial.id_for_label }}">
+                            {{ cadastrar_atendimento_demanda_form.preco_inicial.label }}
+                        </label>
+                        <div class="relative">
+                            {{ cadastrar_atendimento_demanda_form.preco_inicial }}
+                        </div>
+                        <div
+                            class="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800/50 p-2 rounded-lg">
+                            <span class="material-symbols-outlined text-primary mr-2">lightbulb</span>
+                            <span>Sugestão de preço (últimos 3 meses): 
+                                <span id="preco-sugerido-display" class="font-bold text-gray-700 dark:text-gray-300">
+                                    Calculando... </span>
+                            </span>
+                        </div>
+
+                        <div>
+                            <h3 class="mt-4 text-lg font-semibold text-gray-800 dark:text-white">Seleção de Catadores</h3>
+                            <p class="mt-1 mb-3 text-gray-500">Esta foi a seleção de produção dos catadores para esta negociação. Ela não pode ser alterada.</p>
+
+                            <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                                
+                                <div class="grid grid-cols-3 gap-4 p-3 bg-gray-50 dark:bg-gray-800 border-b dark:border-gray-700">
+                                    <div class="font-semibold text-gray-600 dark:text-gray-300 text-sm">Catador</div>
+                                    <div class="font-semibold text-gray-600 dark:text-gray-300 text-sm text-right">Produção</div>
+                                    <div class="font-semibold text-gray-600 dark:text-gray-300 text-sm text-right">Data de Produção</div>
+                                </div>
+
+                                <div id="catadores-grid-container" 
+                                    class="overflow-y-auto max-h-60 divide-y divide-gray-200 dark:divide-gray-700">
+                                    
+                                    <div class="p-4 text-center text-gray-500">Carregando catadores...</div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="mt-6 flex justify-end space-x-4 border-t border-gray-200 dark:border-gray-700 pt-6">
+                            <button id="modal-cancel-btn"
+                                class="px-6 py-2 rounded-lg text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 font-semibold transition-colors">
+                                Cancelar
+                            </button>
+                            <button type="submit"
+                                class="px-6 py-2 rounded-lg text-white bg-primary hover:bg-primary/90 font-semibold transition-colors flex items-center">
+                                <span class="material-symbols-outlined mr-2">task_alt</span>
+                                Confirmar Cadastro
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

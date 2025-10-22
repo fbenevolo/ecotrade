@@ -1,0 +1,149 @@
+{% extends 'base_dashboard.html' %}
+{% block dashboard_content %}
+
+<div class="flex h-screen">
+    <main class="flex-1 p-8 overflow-y-auto">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-800 dark:text-white">Produções de Catadores</h2>
+        </div>
+
+        {% if messages %}
+        <div class="space-y-3">
+            {% for message in messages %}
+            <div class="py-3 px-5 rounded-lg border " role="alert">
+                <p class="font-medium text-sm">{{ message }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="space-y-8">
+            <div>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-2xl font-semibold text-gray-800 dark:text-white">Produções por Catador</h3>
+                    <button id="adicionar-producao-btn"
+                        class="bg-primary hover:bg-primary/90 text-white font-bold py-2 px-4 rounded-lg flex items-center">
+                        <span class="material-symbols-outlined mr-2">add</span>
+                        Adicionar Produção
+                    </button>
+
+                    {% include 'producao/adicionar_producao.html' with adicionar_producao=adicionar_producao_form %}
+                </div>
+                <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="border-b border-gray-200 dark:border-gray-800">
+                                    <th class="py-4 px-4 font-semibold text-gray-500 dark:text-gray-400">Catador
+                                    </th>
+                                    <th class="py-4 px-4 font-semibold text-gray-500 dark:text-gray-400">Data</th>
+                                    <th class="py-4 px-4 font-semibold text-gray-500 dark:text-gray-400">Material</th>
+                                    <th class="py-4 px-4 font-semibold text-gray-500 dark:text-gray-400">Status</th>
+                                    <th class="py-4 px-4 font-semibold text-gray-500 dark:text-gray-400 text-right">
+                                        Volume (kg)</th>
+                                    <th class="py-4 px-4 font-semibold text-gray-500 dark:text-gray-400 text-center">
+                                        Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for producao in producoes %}
+                                <tr class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                                    data-producao-id="{{ producao.pk }}"
+                                    data-residuo="{{ producao.id_residuo.tipo }}"
+                                    data-quantidade="{{ producao.producao }}"
+                                    data-catador-pk="{{ producao.id_catador.pk }}">
+                                    <td class="py-4 px-4 text-gray-800 dark:text-white">{{ producao.id_catador.nome }}</td>
+                                    <td class="py-4 px-4 text-gray-600 dark:text-gray-300"> {{ producao.data|date }}  </td>
+                                    <td class="py-4 px-4 text-gray-600 dark:text-gray-300"> {{ producao.id_residuo.get_tipo_display }}  </td>
+                                    {% if producao.status == 'l' %}
+                                        <td class="py-4 px-4">
+                                            <span class="px-2.5 py-0.5 rounded-lg bg-green-100 text-green-800">{{ producao.get_status_display }}</span>
+                                        </td>                                    
+                                    {% else %}
+                                        <td class="py-4 px-4 rounded-lg bg-yellow-100 text-yellow-800">
+                                            <span class="px-2.5 py-0.5 rounded-lg bg-yellow-100 text-yellow-800">{{ producao.get_status_display }}</span>
+                                        </td>
+                                    {% endif %}
+                                    <td class="py-4 px-4 text-gray-800 dark:text-white text-right"> {{ producao.producao }} </td>
+                                    <td class="py-4 px-4 flex justify-center items-center space-x-2">
+                                        <button class="text-blue-500 hover:text-blue-700 edit-btn" title="Editar Produção">
+                                            <span class="material-symbols-outlined">edit</span>
+                                        </button>
+                                        <button class="text-red-500 hover:text-red-700 delete-btn" title="Excluir Produção">
+                                            <span class="material-symbols-outlined">delete</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+
+                                {% include 'producao/remover_producao.html' with remover_producao=remover_producao_form %}
+                                {% include 'producao/alterar_producao.html' with alterar_producao=alterar_producao_form %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Catadores da Cooperativa</h3>
+                <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="border-b border-gray-200 dark:border-gray-800">
+                                    <th class="py-4 px-4 font-semibold text-gray-500 dark:text-gray-400">Nome</th>
+                                    <th class="py-4 px-4 font-semibold text-gray-500 dark:text-gray-400">Email</th>
+                                    <th class="py-4 px-4 font-semibold text-gray-500 dark:text-gray-400">Status da
+                                        Conta</th>
+                                    <th class="py-4 px-4 font-semibold text-gray-500 dark:text-gray-400 text-center">
+                                        Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for catador in catadores %}
+                                <tr class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                                    data-catador-email="{{ catador.email }}"
+                                    data-catador-nome="{{ catador.nome }}"
+                                    data-catador-status="{{ catador.status }}"
+                                    data-catador-status-display="{{ catador.get_status_display }}"
+                                    data-catador-cooperativa="{{ catador.cooperativa_associada.nome|default:'Não informada' }}">
+                                    <td class="py-4 px-4 text-gray-800 dark:text-white">{{ catador.nome }}</td>
+                                    <td class="py-4 px-4 text-gray-600 dark:text-gray-300"> {{ catador.email }} </td>
+                                    {% if catador.status == 'A' %}
+                                        <td class="py-4 px-4 text-green-500"> {{ catador.get_status_display }} </td>
+                                        <td class="py-4 px-4 flex justify-center items-center space-x-2">
+                                        <button class="text-blue-500 hover:text-blue-700 editar-catador-btn" title="Editar Dados do Catador">
+                                            <span class="material-symbols-outlined">edit</span>
+                                        </button>
+                                        <button class="text-red-500 hover:text-red-700 excluir-catador-btn" title="Excluir Catador">
+                                            <span class="material-symbols-outlined">delete</span>
+                                        </button>
+                                    {% else %}
+                                        <td class="py-4 px-4 text-yellow-500"> {{ catador.get_status_display }} </td>
+                                        <td class="py-4 px-4 flex justify-center items-center space-x-2">
+                                            <button class="text-green-500 hover:text-green-700 aprovar-catador-btn" title="Aprovar/Rejeitar Conta">
+                                                <span class="material-symbols-outlined">how_to_reg</span>
+                                            </button>
+                                    {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                
+                                {% include 'catador/aprovar_catador.html' %}
+                                {% include 'catador/alterar_catador.html' %}
+                                {% include 'catador/excluir_catador.html' %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock dashboard_content %}
+
+{% block footer_scripts %}
+{% load static %}
+    <script src="{% static 'js/producao.js' %}"></script>
+    <script src="{% static 'js/adicionar_producao.js' %}"></script>
+
+{% endblock footer_scripts %}

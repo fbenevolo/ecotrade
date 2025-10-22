@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="relative min-h-screen flex flex-col">
+    <div class="absolute inset-0 backdrop-blur-sm z-10"></div>
+    <main class="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 z-20">
+        <div class="w-full max-w-md space-y-6 bg-white dark:bg-background-dark p-8 rounded-xl shadow-lg text-center">
+            <div class="flex justify-center">
+                <div class="h-16 w-16 bg-primary/20 rounded-full flex items-center justify-center">
+                    <span class="material-symbols-outlined text-4xl text-primary">
+                        hourglass_top
+                    </span>
+                </div>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                Cadastro em análise
+            </h2>
+            <p class="text-gray-600 dark:text-gray-300">
+                Sua conta foi criada com sucesso e está aguardando aprovação do administrador. Você receberá um e-mail
+                quando sua conta for ativada.
+            </p>
+            <div>
+                <a class="inline-block w-full py-3 px-4 bg-primary text-gray-900 font-bold rounded-lg hover:bg-primary/90 transition-colors"
+                    href="{% url 'home' %}">
+                    Entendido
+                </a>
+            </div>
+        </div>
+    </main>
+    </div>
+</div>
+
+{% endblock %}

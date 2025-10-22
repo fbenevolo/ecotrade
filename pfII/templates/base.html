@@ -1,0 +1,99 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>EcoTrade</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#38e07b",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#122017",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings:
+                'FILL' 0,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 24
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200">
+    <header
+        class="flex items-center justify-between whitespace-nowrap border-b border-primary/20 dark:border-primary/30 px-10 py-4">
+        <a href="{% url 'home' %}">
+            <div class="flex items-center gap-3 text-gray-900 dark:text-white">
+                <svg class="h-8 w-8 text-primary" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z"
+                        fill="currentColor"></path>
+                </svg>
+                <h2 class="text-xl font-bold">EcoTrade</h2>
+            </div>
+        </a>
+        {% if not user.is_authenticated %}
+            <div class="flex items-center gap-2">
+                <a href="{% url 'login' %}">
+                    <button
+                        class="flex items-center justify-center rounded-lg h-10 px-4 bg-primary/20 dark:bg-primary/30 text-gray-900 dark:text-white text-sm font-bold hover:bg-primary/30 dark:hover:bg-primary/40 transition-colors">
+                        <span>Entrar</span>
+                    </button>
+                </a>
+                <a href="{% url 'cadastro' %}">
+                    <button
+                        class="flex items-center justify-center rounded-lg h-10 px-4 bg-primary text-gray-900 text-sm font-bold hover:opacity-90 transition-opacity">
+                        <span>Cadastrar</span>
+                    </button>
+                </a>
+            </div>
+        {% else %}
+        <nav class="hidden md:flex items-center gap-8 text-sm font-medium">
+            <a class="hover:text-primary transition-colors" href="{% url 'dashboard' email_usuario=request.user.pk %}">Meu Dashboard</a>
+            <!-- <a class="hover:text-primary transition-colors" href="#">Como funciona</a>
+            <a class="hover:text-primary transition-colors" href="#">Para cooperativas</a>
+            <a class="hover:text-primary transition-colors" href="#">Para empresas</a> -->
+        </nav>
+        <div class="flex items-center gap-3">
+            Olá, {{ user.nome }}
+            <a href="{% url 'logout' %}">
+                <button class="flex items-center justify-center rounded-lg h-10 px-4 bg-primary text-gray-900 text-sm font-bold hover:opacity-90 transition-opacity">
+                    <span>Sair</span>
+                </button>
+            </a>
+        </div>
+        {% endif %}
+    </header>
+
+    {% block content %}{% endblock %}
+    <script src="{% static 'js/aprovacao_usuario.js' %}"></script>
+</body>
+
+</html>

@@ -1,0 +1,78 @@
+<div id="modal-alterar-catador" class="absolute inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center hidden">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-full max-w-md p-8 m-4">
+        <form action="{% url 'producoes' email_usuario=request.user.pk %}" method="POST" class="space-y-6" id="form-alterar-catador">
+            {% csrf_token %}
+            
+            <!-- Campos ocultos do formulário -->
+            {{ alterar_catador_form.catador_id }}
+            {{ alterar_catador_form.action }}
+
+            <!-- Cabeçalho do modal -->
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-white">Alterar Dados do Catador</h3>
+                <button id="modal-alterar-catador-close-btn" type="button" 
+                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <span class="material-symbols-outlined text-3xl">close</span>
+                </button>
+            </div>
+
+            <!-- Formulário de alteração -->
+            <div class="space-y-4">
+                <!-- Campo Email (readonly) -->
+                <div>
+                    <label for="{{ alterar_catador_form.email.id_for_label }}" 
+                           class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {{ alterar_catador_form.email.label }}
+                    </label>
+                    {{ alterar_catador_form.email }}
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        O email não pode ser alterado
+                    </p>
+                </div>
+
+                <!-- Campo Nome -->
+                <div>
+                    <label for="{{ alterar_catador_form.nome.id_for_label }}" 
+                           class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {{ alterar_catador_form.nome.label }}
+                    </label>
+                    {{ alterar_catador_form.nome }}
+                    {% if alterar_catador_form.nome.errors %}
+                        <div class="mt-1 text-sm text-red-600 dark:text-red-400">
+                            {% for error in alterar_catador_form.nome.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Exibir erros gerais do formulário -->
+            {% if alterar_catador_form.non_field_errors %}
+                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                    <div class="flex">
+                        <span class="material-symbols-outlined text-red-500 mr-2">error</span>
+                        <div class="text-sm text-red-700 dark:text-red-300">
+                            {% for error in alterar_catador_form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Botões de ação -->
+            <div class="flex justify-end gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <button id="modal-alterar-catador-cancel-btn" type="button"
+                        class="px-6 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-medium rounded-lg">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg flex items-center">
+                    <span class="material-symbols-outlined mr-2 text-sm">save</span>
+                    Salvar Alterações
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

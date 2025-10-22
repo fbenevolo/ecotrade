@@ -1,0 +1,90 @@
+{% extends 'base_dashboard.html' %}
+{% block dashboard_content %}
+
+<div class="flex flex-1 flex-col">
+    <main class="flex-1 bg-background-light dark:bg-background-dark py-10 px-4 sm:px-6 lg:px-8">
+        <div class="w-full max-w-7xl mx-auto">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Histórico de
+                    Negociações</h1>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Veja o histórico de todas as suas
+                    negociações, concluídas e canceladas.</p>
+            </div>
+            <div
+                class="rounded-lg border border-primary/20 bg-white dark:bg-background-dark/50 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-primary/20">
+                        <thead class="bg-background-light dark:bg-background-dark/30">
+                            <tr>
+                                {% if request.user.tipo_usuario == 'CO' %}
+                                    <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6" scope="col">Empresa</th>
+                                {% else %}
+                                    <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6" scope="col">Cooperativa</th>
+                                {% endif %}
+                                <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
+                                    scope="col">Data de Conclusão</th>
+                                <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
+                                    scope="col">Valor Total (R$)</th>
+                                <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
+                                    scope="col">Status</th>
+                                <th class="relative py-3.5 pl-3 pr-4 sm:pr-6" scope="col">
+                                    <span class="sr-only">Ações</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-primary/10 bg-white dark:bg-background-dark/50">
+                            {% for negociacao in negociacoes_concluidas %}
+                             <tr>
+                                {% if request.user.tipo_usuario == 'CO' %}
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6"> {{ negociacao.id_empresa.nome }} </td>                                    
+                                {% else %}
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6"> {{ negociacao.id_cooperativa.nome }} </td>
+                                {% endif %}
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400"> {{ negociacao.data_conclusao }} </td>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm font-semibold text-primary"> {{ negociacao.preco }} </td>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                    {% if negociacao.status == 'C' %}
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                                            Concluída
+                                        </span>
+                                    {% else %} 
+                                          <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                                            Cancelada
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                {% if negociacao.status == 'C' %}
+                                    <td
+                                        class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 space-x-2">
+                                        <a href="{% url 'detalhes_negociacao' email_usuario=request.user.pk id_negociacao=negociacao.pk %}">
+                                            <button
+                                                class="inline-flex items-center gap-1.5 rounded-md bg-transparent px-3 py-1.5 text-sm font-semibold text-primary shadow-sm ring-1 ring-inset ring-primary/50 hover:bg-primary/10">
+                                                <span class="material-symbols-outlined text-base">visibility</span>
+                                                Detalhes
+                                            </button>
+                                        </a>
+                                        {% url 'visualizar_comprovante' email_usuario=request.user.pk id_negociacao=negociacao.pk as comprovante_url %}
+                                        <a href="{{ comprovante_url }}">
+                                            <button
+                                                class="inline-flex items-center gap-1.5 rounded-md bg-transparent px-3 py-1.5 text-sm font-semibold text-primary shadow-sm ring-1 ring-inset ring-primary/50 hover:bg-primary/10">
+                                                <span class="material-symbols-outlined text-base">receipt_long</span>
+                                                Comprovante
+                                            </button>
+                                        </a>
+                                    </td>
+                                {% else %}
+                                {% endif %}
+                            </tr>                            
+                            {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+{% endblock %}

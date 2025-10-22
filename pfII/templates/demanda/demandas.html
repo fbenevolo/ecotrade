@@ -1,0 +1,148 @@
+{% extends 'base_dashboard.html' %}
+{% block dashboard_content %}
+
+{% if request.user.tipo_usuario == 'E' %}
+<main class="flex-1 p-8 overflow-y-auto">
+    <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-bold text-gray-800 dark:text-white">Demandas</h2>
+        <button 
+            data-id-empresa="{{ request.user.pk }}"
+            id="cadastrar-demanda-btn"
+            class="bg-primary hover:bg-primary/90 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
+            <span class="material-symbols-outlined">add</span>
+            Cadastrar Demanda
+        </button>
+    </div>
+    {% include 'demanda/cadastrar_demanda.html' with cadastrar_demanda_form=cadastrar_demanda_form %}
+        <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-4">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Demandas em Aberto</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b border-gray-200 dark:border-gray-800">
+                            <th class="py-3 px-4 font-semibold text-gray-500 dark:text-gray-400">Material</th>
+                            <th class="py-3 px-4 font-semibold text-gray-500 dark:text-gray-400 text-right">Quantidade
+                                (kg)</th>
+                            <th class="py-3 px-4 font-semibold text-gray-500 dark:text-gray-400 text-center">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for demanda in demandas %}
+                        <tr data-demanda-id="{{ demanda.pk }}"
+                            data-tipo-residuo="{{ demanda.id_residuo.get_tipo_display }}"
+                            data-residuo-id="{{ demanda.id_residuo.pk }}"
+                            data-quantidade="{{ demanda.quantidade }}"
+                            class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                            <td class="py-4 px-4 text-gray-800 dark:text-white"> {{ demanda.id_residuo.get_tipo_display }}  </td>
+                            <td class="py-4 px-4 text-gray-800 dark:text-white text-right"> {{ demanda.quantidade }} </td>
+                            <td class="py-4 px-4 text-center">
+                                <div class="flex justify-center items-center gap-2">
+                                    <!-- <button
+                                        class="edit-demanda-btn bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg flex items-center justify-center">
+                                        <span class="material-symbols-outlined">edit</span>
+                                    </button> -->
+                                    <button
+                                        class="delete-demanda-btn bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg flex items-center justify-center">
+                                        <span class="material-symbols-outlined">delete</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                        <!-- {% include 'demanda/alterar_demanda.html' with alterar_demanda_form=alterar_demanda_form %} -->
+                        {% include 'demanda/excluir_demanda.html' with excluir_demanda_form=excluir_demanda_form %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+</div>
+{% elif request.user.tipo_usuario == 'CO' %}
+<main class="flex-1 p-8 overflow-y-auto">
+    <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-bold text-gray-800 dark:text-white">Demandas</h2>
+    </div>
+    <div class="space-y-8">
+        <!-- <div class="border-b border-gray-200 dark:border-gray-700">
+            <nav aria-label="Tabs" class="-mb-px flex space-x-8">
+                <a aria-current="page"
+                    class="border-primary text-primary whitespace-nowrap py-4 px-1 border-b-2 font-semibold text-lg"
+                    href="#">Demandas Abertas</a>
+            </nav>
+        </div> -->
+        <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-4">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Demandas Abertas</h3>
+                <!-- <div class="flex items-center gap-4">
+                    <div class="relative w-full sm:w-auto">
+                        <select
+                            class="pl-4 pr-10 py-2 w-full sm:w-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-primary focus:border-primary appearance-none">
+                            <option selected="">Filtrar por material</option>
+                            <option>Plástico (PET)</option>
+                            <option>Papel (Papelão)</option>
+                            <option>Metal (Alumínio)</option>
+                        </select>
+                        <span
+                            class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">filter_list</span>
+                    </div>
+                    <button
+                        class="bg-primary hover:bg-primary/90 text-white font-bold py-2 px-4 rounded-lg flex items-center text-sm whitespace-nowrap">
+                        <span class="material-symbols-outlined mr-2">add</span>
+                        Nova Demanda
+                    </button>
+                </div> -->
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b border-gray-200 dark:border-gray-800">
+                            <th class="py-3 px-4 font-semibold text-gray-500 dark:text-gray-400">Empresa</th>
+                            <th class="py-3 px-4 font-semibold text-gray-500 dark:text-gray-400">Material</th>
+                            <th class="py-3 px-4 font-semibold text-gray-500 dark:text-gray-400 text-right">Quantidade
+                                (kg)</th>
+                            <th class="py-3 px-4 font-semibold text-gray-500 dark:text-gray-400 text-center">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for demanda in demandas_atendiveis %}
+                            <tr 
+                                data-demanda-id="{{ demanda.pk }}"
+                                data-residuo-id="{{ demanda.id_residuo.pk }}"
+                                data-residuo-texto="{{ demanda.id_residuo.get_tipo_display }}" 
+                                data-quantidade = "{{ demanda.quantidade }}"
+                                data-cooperativa-id = {{ request.user.pk }}
+                                class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                <td class="py-4 px-4 text-gray-800 dark:text-white"> {{ demanda.id_empresa.nome }} </td>
+                                <td class="py-4 px-4 text-gray-600 dark:text-gray-300"> {{ demanda.id_residuo.get_tipo_display }} </td>
+                                <td class="py-4 px-4 text-gray-800 dark:text-white text-right"> {{ demanda.quantidade }} </td>
+                                <td class="py-4 px-4 text-center">
+                                    <button
+                                        class="negociar-btn bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center mx-auto text-sm">
+                                        Negociar
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+
+                        {% include 'demanda/cadastrar_atendimento_demanda.html' with cadastrar_atendimento_demanda_form=cadastrar_atendimento_demanda_form %}                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+{% endif %}
+
+{% endblock dashboard_content %}
+
+{% block footer_scripts %}
+{% load static %}
+    <script src="{% static 'js/demanda/cadastrar_demanda.js' %}"></script>
+    <script src="{% static 'js/demanda/cadastrar_atendimento_demanda.js' %}"></script>
+    <script src="{% static 'js/demanda/excluir_demanda.js' %}"></script>
+    <script src="{% static 'js/demanda/alterar_demanda.js' %}"></script>
+{% endblock footer_scripts %}

@@ -1,0 +1,122 @@
+{% extends 'base_dashboard.html' %}
+{% block dashboard_content %}
+
+<div class="flex h-screen">
+    <main class="flex-1 p-8 overflow-y-auto">
+        <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-8">Dashboard do Administrador</h2>
+        <div class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm">
+            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-6">Gerenciamento de Usuários</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                        <tr>
+                            <th class="px-6 py-3" scope="col">Email</th>
+                            <th class="px-6 py-3" scope="col">Nome</th>
+                            <th class="px-6 py-3" scope="col">Tipo de Usuário</th>
+                            <th class="px-6 py-3" scope="col">CNPJ</th>
+                            <th class="px-6 py-3" scope="col">Status</th>
+                            <th class="px-6 py-3" scope="col">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios %}
+                        <tr class="bg-white border-b dark:bg-surface-dark dark:border-gray-700">
+                            <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                {{ usuario.email }} </td>
+                            <td class="px-6 py-4"> {{ usuario.nome }} </td>
+                            <td class="px-6 py-4"> {{ usuario.tipo_ususarios }} </td>
+                            <td class="px-6 py-4">-</td>
+                            <td class="px-6 py-4">
+                                {% if usuario.status == 'EA' %}
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+                                    <span class="w-2 h-2 mr-1.5 bg-yellow-500 rounded-full"></span>
+                                    {{ usuario.get_status_display  }}
+                                </span>
+                                {% elif usuario.status == 'EAD' %}
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+                                    <span class="w-2 h-2 mr-1.5 bg-yellow-500 rounded-full"></span>
+                                    {{ usuario.get_status_display  }}
+                                </span>
+                                {% elif usuario.status == 'D' %}
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+                                    <span class="w-2 h-2 mr-1.5 bg-yellow-500 rounded-full"></span>
+                                    {{ usuario.get_status_display  }}
+                                </span>
+                                {% elif usuario.status == 'EAX' %}
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
+                                    <span class="w-2 h-2 mr-1.5 bg-red-500 rounded-full"></span>
+                                    {{ usuario.get_status_display  }}
+                                </span>
+                                {% else %}
+                                 <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                                    <span class="w-2 h-2 mr-1.5 bg-green-500 rounded-full"></span>
+                                    {{ usuario.get_status_display  }}
+                                </span>
+                                {% endif %}
+                            </td>
+                           <td class="px-6 py-4 flex items-center space-x-2">
+                                {% if usuario.status == 'EA' %}
+                                <button class="text-green-500 hover:text-green-700 aprovar-usuario-btn" 
+                                        title="Aprovar/Rejeitar Conta"
+                                        data-usuario-email="{{ usuario.email }}"
+                                        data-usuario-nome="{{ usuario.nome }}"
+                                        data-usuario-status="{{ usuario.get_status_display }}">
+                                    <span class="material-symbols-outlined">how_to_reg</span>
+                                </button>
+                                {% elif usuario.status == 'EAD' %}
+                                <form action="{% url 'aceitar_desativacao' email_usuario=usuario.pk %}" method="POST">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-green-500 hover:text-green-700" title="Aceitar Desativação">
+                                        <span class="material-symbols-outlined">check</span>
+                                    </button>
+                                </form>
+                                <form action="{% url 'recusar_desativacao' email_usuario=usuario.pk %}" method="POST">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-red-500 hover:text-red-700" title="Recusar Desativação">
+                                        <span class="material-symbols-outlined">close</span>
+                                    </button>
+                                </form>
+                                {% elif usuario.status == 'EAX' %}
+                                <form action="{% url 'aceitar_exclusao' email_usuario=usuario.pk %}" method="POST">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-green-500 hover:text-green-700" title="Aceitar Exclusão">
+                                        <span class="material-symbols-outlined">check</span>
+                                    </button>
+                                </form>
+                                <form action="{% url 'recusar_exclusao' email_usuario=usuario.pk %}" method="POST">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-red-500 hover:text-red-700" title="Recusar Exclusão">
+                                        <span class="material-symbols-outlined">close</span>
+                                    </button>
+                                </form>
+                                {% elif usuario.status == 'D' %}
+                                <form action="{% url 'reativar_conta' email_usuario=usuario.pk %}" method="POST">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-green-500 hover:text-green-700" title="Reativar Conta">
+                                        <span class="material-symbols-outlined">published_with_changes</span>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                        {% include 'gestao_usuarios/aprovar_usuario.html' with aprovar_usuario_form=aprovar_usuario_form %}
+                    </tbody> 
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock dashboard_content %}
+
+{% block footer_scripts %}
+{% load static %}
+
+    <script src="{% static 'js/aprovacao_usuario.js' %}"></script>
+{% endblock footer_scripts %}

@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="flex flex-col min-h-screen">
+    <main class="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="w-full max-w-md space-y-8 bg-white/50 dark:bg-background-dark/50 p-8 rounded-xl shadow-lg">
+            <div>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+                    Crie sua conta
+                </h2>
+            </div>
+            <form action="#" class="mt-8 space-y-6" method="POST">
+                {% csrf_token %}
+
+                <!-- mostra erros globais do form -->
+                {% if cadastro_form.non_field_errors %}
+                <div class="text-red-600 text-sm">
+                    {{ cadastro_form.non_field_errors }}
+                </div>
+                {% endif %}
+                <div class="relative w-full">
+                    <label for="tipo_usuario" class="left-4 top-3 text-gray-500 dark:text-gray-300">Tipo de
+                        Usuário</label>
+                    <div id="tipo_usuario">
+                        {{ cadastro_form.tipo_usuario }}
+                    </div>
+                </div>
+
+                <!-- campos do formulário, cada um com wrapper identificável -->
+                <div id="dynamic-fields" class="space-y-4 mt-6">
+                    <div id="wrap-nome" data-field="nome" class="flex hidden">
+                        <div class="relative w-full">
+                            {{ cadastro_form.nome }}
+                            <label id="label-nome" for="{{ cadastro_form.nome.id_for_label }}" class="absolute left-4 top-3 text-gray-500 dark:text-gray-300 transition-all duration-150 transform origin-left pointer-events-none
+                                            peer-placeholder-shown:opacity-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:text-base
+                                            peer-focus:-top-3 peer-focus:opacity-100 peer-focus:translate-y-0 peer-focus:text-sm peer-focus:text-primary
+                                            opacity-0 -translate-y-2">
+                                Nome
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="wrap-email" data-field="email" class="flex hidden">
+                        <div class="relative w-full">
+                            {{ cadastro_form.email }}
+                            <label for="{{ cadastro_form.email.id_for_label }}" class="absolute left-4 top-3 text-gray-500 dark:text-gray-300 transition-all duration-150 transform origin-left pointer-events-none
+                                            peer-placeholder-shown:opacity-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:text-base
+                                            peer-focus:-top-3 peer-focus:opacity-100 peer-focus:translate-y-0 peer-focus:text-sm peer-focus:text-primary
+                                            opacity-0 -translate-y-2">
+                                Email
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="wrap-cooperativa_associada" data-field="cooperativa_associada"
+                        class="flex items-center hidden">
+                        <label for="{{ cadastro_form.cooperativa_associada.id_for_label }}"
+                            class="block text-sm font-medium text-gray-500 dark:text-gray-300">Cooperativa
+                            associada</label>
+                        {{ cadastro_form.cooperativa_associada }}
+                    </div>
+
+                    <div id="wrap-cnpj" data-field="cnpj" class="flex hidden">
+                        <div class="relative w-full">
+                            {{ cadastro_form.cnpj }}
+                            <label for="{{ cadastro_form.cnpj.id_for_label }}" class="absolute left-4 top-3 text-gray-500 dark:text-gray-300 transition-all duration-150 transform origin-left pointer-events-none
+                                            peer-placeholder-shown:opacity-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:text-base
+                                            peer-focus:-top-3 peer-focus:opacity-100 peer-focus:translate-y-0 peer-focus:text-sm peer-focus:text-primary
+                                            opacity-0 -translate-y-2">
+                                CNPJ
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="wrap-password1" data-field="password1" class="flex hidden">
+                        <div class="relative w-full">
+                            {{ cadastro_form.password1 }}
+                            <label for="{{ cadastro_form.password1.id_for_label }}" class="absolute left-4 top-3 text-gray-500 dark:text-gray-300 transition-all duration-150 transform origin-left pointer-events-none
+                                            peer-placeholder-shown:opacity-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:text-base
+                                            peer-focus:-top-3 peer-focus:opacity-100 peer-focus:translate-y-0 peer-focus:text-sm peer-focus:text-primary
+                                            opacity-0 -translate-y-2">
+                                Senha
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="wrap-password2" data-field="password2" class="flex hidden">
+                        <div class="relative w-full">
+                            {{ cadastro_form.password2 }}
+                            <label for="{{ cadastro_form.password2.id_for_label }}" class="absolute left-4 top-3 text-gray-500 dark:text-gray-300 transition-all duration-150 transform origin-left pointer-events-none
+                                            peer-placeholder-shown:opacity-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:text-base
+                                            peer-focus:-top-3 peer-focus:opacity-100 peer-focus:translate-y-0 peer-focus:text-sm peer-focus:text-primary
+                                            opacity-0 -translate-y-2">
+                                Confirmar Senha
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <button
+                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-gray-900 bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
+                        type="submit">
+                        Cadastrar
+                    </button>
+                </div>
+                <div class="text-sm text-center">
+                    <a class="font-medium text-primary hover:text-primary/80" href="{% url 'login' %}">
+                        Já tem uma conta? Faça login
+                    </a>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectContainer = document.getElementById('tipo_usuario');
+        const selectTiposUsuario = selectContainer.querySelector('select[name="tipo_usuario"]');
+        const mapCampos = {
+            'CO': ['nome', 'email', 'password1', 'password2'],
+            'CA': ['nome', 'email', 'cooperativa_associada', 'password1', 'password2'],
+            'E': ['nome', 'email', 'password1', 'password2', 'cnpj']
+        };
+
+
+        function showHideFields(tipo) {
+            // --- Lógica de Mostrar/Esconder Campos ---
+
+            // 1. Esconde todos os campos dinâmicos inicialmente (removendo a classe 'flex' e adicionando 'hidden')
+            document.querySelectorAll('#dynamic-fields > div[data-field]').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+            });
+
+            // 2. Itera sobre a lista de campos que devem ser exibidos para o 'tipo' atual
+            const toShow = mapCampos[tipo] || [];
+            toShow.forEach(name => {
+                const wrap = document.getElementById('wrap-' + name);
+                if (wrap) {
+                    // Remove 'hidden' e adiciona 'flex' para o display correto
+                    wrap.classList.remove('hidden');
+                    // Se o layout original usava 'flex', é bom restaurá-lo.
+                    wrap.classList.add('flex');
+                }
+            });
+
+            const labelNome = document.getElementById('label-nome');
+            // --- Lógica de Alteração da Label ---
+            if (labelNome) {
+                if (tipo === 'CO') {
+                    labelNome.textContent = 'Nome da Cooperativa';
+                } else if (tipo === 'E') {
+                    labelNome.textContent = 'Nome da Empresa';
+                } else {
+                    // CA (Catador) ou qualquer outro
+                    labelNome.textContent = 'Nome Completo';
+                }
+            }
+        }
+
+
+        // --- Inicialização e Listener ---
+
+        if (selectTiposUsuario) {
+            // 1. Configura o Listener 'change'
+            selectTiposUsuario.addEventListener('change', (e) => {
+                const selecionado = e.target.value;
+                // A chamada principal para a função de controle
+                showHideFields(selecionado);
+            });
+
+            // 2. Inicialização: Exibe os campos baseados no valor SELECIONADO ATUAL
+            const valorInicial = selectTiposUsuario.value;
+            showHideFields(valorInicial);
+        }
+    });
+</script>
+
+{% endblock %}

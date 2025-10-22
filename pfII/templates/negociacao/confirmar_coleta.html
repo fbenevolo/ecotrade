@@ -1,0 +1,37 @@
+<div id="confirmar-coleta-modal" class="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-20 hidden">
+    <div class="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-2xl w-full max-w-md m-4">
+        <div class="flex flex-col items-center text-center">
+            <div class="p-3 bg-primary/10 rounded-full mb-4">
+                <span class="material-symbols-outlined text-primary text-4xl">local_shipping</span>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">Confirmar Coleta Realizada</h2>
+        </div>
+        <form action="{% url 'negociacoes' email_usuario=request.user.pk %}" method="POST">
+            {% csrf_token %}
+
+            {{ confirmar_coleta_form.action }}
+            {{ confirmar_coleta_form.id_negociacao }}
+
+            <div class="flex flex-col items-center justify-center space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                        for="collection-datetime">Data da Coleta</label>
+                    <div class="relative">
+                        {{ confirmar_coleta_form.data }}
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 flex justify-end space-x-4">
+                <button id="cancel-btn"
+                    class="px-6 py-2 rounded-lg text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-gray-800">
+                    Cancelar
+                </button>
+                <button
+                    class="bg-primary hover:bg-primary/90 text-white font-bold py-2 px-6 rounded-lg flex items-center justify-center space-x-2">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    <span>Confirmar Coleta</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
