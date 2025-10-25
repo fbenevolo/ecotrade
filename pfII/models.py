@@ -211,8 +211,8 @@ class Negociacao(models.Model):
 
 class ContestacaoPreco(models.Model):
     OPCOES_STATUS = (
-        ('AAE', 'Aguardando Confirmação da Empresa'), 
-	    ('AAC', 'Aguardando Confirmação da Cooperativa'),
+        ('ACE', 'Aguardando Confirmação da Empresa'), 
+	    ('ACC', 'Aguardando Confirmação da Cooperativa'),
 	    ('DE', 'Declinada pela Empresa'),
 	    ('DC', 'Declinada pela Cooperativa'),
         ('A', 'Aceita'),
@@ -220,7 +220,7 @@ class ContestacaoPreco(models.Model):
 
     OPCOES_CONTESTADOR = (
         ('E', 'Empresa'),
-        ('C', 'Cooperativa'),
+        ('CO', 'Cooperativa'),
     )
 
     id_negociacao = models.ForeignKey('Negociacao', 
@@ -238,7 +238,7 @@ class ContestacaoPagamento(models.Model):
         ('A', 'Aceita'),
     )
 
-    OPCOES_CONTESTADOR = (
+    OPCOES_USUARIO = (
         ('E', 'Empresa'),
         ('C', 'Cooperativa'),
     )
@@ -248,8 +248,8 @@ class ContestacaoPagamento(models.Model):
                                       related_name='contestacoes_pgto')
     justificativa = models.TextField()
     status = models.CharField(choices=OPCOES_STATUS)
-    contestador = models.CharField(choices=OPCOES_CONTESTADOR)
-    arquivo_contestacao = models.BinaryField()
+    usuario = models.CharField(choices=OPCOES_USUARIO)
+    arquivo_contestacao = models.ImageField(null=True)
 
 
 class NegociacaoPagaTrabalho(models.Model):

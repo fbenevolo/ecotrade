@@ -3,12 +3,16 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 
-from ..models import Usuario, Negociacao
+from ..models import Usuario, Negociacao, ContestacaoPreco, ContestacaoPagamento
 from ..forms.forms_negociacao import (ConfirmarNegociacaoForm, 
                                       ContestarPrecoForm,
+                                      AceitarContestacaoPrecoForm,
+                                      RecusarContestacaoPrecoForm,
                                       ConfirmarColetaForm, 
                                       ConfirmarEntregaForm,
-                                      ConfirmarPagamentoForm
+                                      ConfirmarPagamentoForm,
+                                      ContestarPagamentoForm, 
+                                      ResponderContestacaoPgtoForm
                                       )
 from ..utils import seleciona_producoes, calcula_valor_a_receber
 
@@ -24,7 +28,7 @@ def negociacoes(request, email_usuario):
     confirmar_coleta_form = ConfirmarColetaForm()
     confirmar_entrega_form = ConfirmarEntregaForm()
     confirmar_pagamento_form = ConfirmarPagamentoForm(tipo_usuario=request.user.tipo_usuario)
-
+    contestar_pagamento_form = ContestarPagamentoForm()
     
     if usuario.tipo_usuario == 'E':
         negociacoes = Negociacao.objects.filter(id_empresa=usuario.pk).exclude(status='C')
@@ -61,7 +65,11 @@ def negociacoes(request, email_usuario):
             else:
                 print('Nao valido')
                 print(confirmar_pagamento_form.errors.as_data())
-
+        elif 'contestar_pagamento' in action:
+            contestar_pagamento_form = ContestarPagamentoForm(request.POST)
+            if contestar_pagamento_form.is_valid():
+                contestar_pagamento_form.save()
+                return redirect(reverse('negociacoes', kwargs={'email_usuario': request.user.pk}))
 
     context = {
         'negociacoes': negociacoes,
@@ -69,7 +77,8 @@ def negociacoes(request, email_usuario):
         'contestar_preco_form': contestar_preco_form,
         'confirmar_coleta_form': confirmar_coleta_form,
         'confirmar_entrega_form': confirmar_entrega_form,
-        'confirmar_pagamento_form': confirmar_pagamento_form
+        'confirmar_pagamento_form': confirmar_pagamento_form,
+        'contestar_pagamento_form': contestar_pagamento_form,
     }
 
     return render(request, 'negociacao/negociacoes.html', context)
@@ -79,8 +88,36 @@ def negociacoes(request, email_usuario):
 def detalhes_negociacao(request, email_usuario, id_negociacao):
     
     negociacao = get_object_or_404(Negociacao, pk=id_negociacao)
+    contestacoes_preco = ContestacaoPreco.objects.filter(id_negociacao=id_negociacao).order_by('-pk')
+    contestacoes_pgto = ContestacaoPagamento.objects.filter(id_negociacao=id_negociacao).order_by('-pk')
     catadores_elegiveis = seleciona_producoes(negociacao.demanda_associada.pk)
     valores_a_receber = calcula_valor_a_receber(id_negociacao, catadores_elegiveis)
+
+    contestar_preco_form = ContestarPrecoForm()
+    aceitar_contestacao_form = AceitarContestacaoPrecoForm()
+    recusar_contestacao_form = RecusarContestacaoPrecoForm()
+    responder_contestacao_pgto = ResponderContestacaoPgtoForm() 
+
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if 'contestar_preco' in action:
+            contestar_preco_form = ContestarPrecoForm(request.POST)
+            if contestar_preco_form.is_valid():
+                contestar_preco_form.save()
+                return redirect('detalhes_negociacao', email_usuario=request.user.pk, id_negociacao=negociacao.pk)
+        if 'aceitar_contestacao_preco' in action:
+            aceitar_contestacao_form = AceitarContestacaoPrecoForm(request.POST)
+            if aceitar_contestacao_form.is_valid():
+                aceitar_contestacao_form.save()
+                return redirect('detalhes_negociacao', email_usuario=request.user.pk, id_negociacao=negociacao.pk)
+            else:
+                print(aceitar_contestacao_form.errors.as_data())
+        if 'recusar_contestacao_preco' in action:
+            recusar_contestacao_form = RecusarContestacaoPrecoForm(request.POST)    
+            if recusar_contestacao_form.is_valid():
+                recusar_contestacao_form.save()
+                return redirect('detalhes_negociacao', email_usuario=request.user.pk, id_negociacao=negociacao.pk)
 
     # sobrescreve para ser elegivel para template
     producoes_para_template = {}
@@ -97,6 +134,12 @@ def detalhes_negociacao(request, email_usuario, id_negociacao):
 
     context = {
         'negociacao': negociacao,
+        'contestacoes_preco': contestacoes_preco,
+        'contestacoes_pgto': contestacoes_pgto,
+        'contestar_preco_form': contestar_preco_form,
+        'aceitar_contestacao_form': aceitar_contestacao_form,
+        'recusar_contestacao_form': recusar_contestacao_form,
+        'responder_contestacao_pgto': responder_contestacao_pgto,
         'catadores_envolvidos': seleciona_producoes(negociacao.demanda_associada.pk),
         'producoes_individuais': producoes_para_template,        
     }

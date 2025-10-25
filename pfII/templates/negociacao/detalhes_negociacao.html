@@ -22,10 +22,21 @@
             </div>
             <div class="flex items-center justify-between mb-8">
                 <div class="flex items-center gap-4">
+                    {% if negociacao.status == 'ACE' or negociacao.status == 'ACC' or negociacao.status == 'ACPE' or negociacao.status == 'ACPC' %}
                     <span
-                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                        class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">
                         {{ negociacao.get_status_display }}
                     </span>
+                    {% elif negociacao.status == 'AC' or negociacao.status == 'ET' %}
+                    <span
+                        class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300">
+                        {{ negociacao.get_status_display }}
+                    </span>
+                    {% endif %}
+                    <!-- <span
+                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                        {{ negociacao.get_status_display }}
+                    </span> -->
                 </div>
             </div>
             <div class="space-y-8">
@@ -84,7 +95,7 @@
                         <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 italic">A primeira linha da
                             tabela representa o último preço negociado.</p>
                     </div>
-                    <!-- <div class="overflow-x-auto">
+                    <div class="overflow-x-auto">
                         <div class="inline-block min-w-full align-middle">
                             <table class="min-w-full divide-y divide-primary/20">
                                 <thead class="bg-transparent dark:bg-background-dark/30">
@@ -92,6 +103,10 @@
                                         <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6"
                                             scope="col">
                                             Contestador
+                                        </th>
+                                         <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6"
+                                            scope="col">
+                                            Status
                                         </th>
                                         <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
                                             scope="col">
@@ -101,36 +116,55 @@
                                             scope="col">
                                             Preço Proposto (R$)
                                         </th>
+                                         <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
+                                            scope="col">
+                                            Ações
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-primary/10 bg-transparent dark:bg-transparent">
-                                    <tr>
-                                        <td
-                                            class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
-                                            Empresa Recicla Tudo
-                                        </td>
-                                        <td
-                                            class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                            Qualidade do material abaixo do esperado.</td>
-                                        <td class="whitespace-nowrap px-3 py-4 text-sm font-semibold text-red-500">
-                                            0,45/kg</td>
+                                    {% for contestacao in contestacoes_preco %}
+                                        <tr>
+                                            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
+                                                {{ contestacao.get_contestador_display }}
+                                            </td>
+                                             <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
+                                                {{ contestacao.get_status_display }}
+                                            </td>
+                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                                {{ contestacao.justificativa }}
+                                            </td>
+                                            <td class="whitespace-nowrap px-3 py-4 text-sm font-semibold text-green-500">
+                                                {{ contestacao.preco_proposto }}  
+                                            </td>
+                                            {% if request.user.tipo_usuario == 'E' and contestacao.status == 'ACE' or request.user.tipo_usuario == 'CO' and contestacao.status == 'ACC' %}
+                                             <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
+                                                 <button 
+                                                    data-negociacao-id="{{ contestacao.id_negociacao.pk }}"
+                                                    data-contestacao-id="{{ contestacao.pk }}"
+                                                    data-preco-sugerido="{{ contestacao.preco_proposto }}"
+                                                    class="aceitar-contestacao-btn text-green-500 hover:text-green-700" title="Aceitar Novo Preço">
+                                                    <span class="material-symbols-outlined">check</span>
+                                                </button>         
+                                                 <button 
+                                                    data-contestacao-id="{{ contestacao.pk }}"
+                                                    data-negociacao-id="{{ contestacao.id_negociacao.pk }}"
+                                                    data-tipo-usuario="{{ request.user.tipo_usuario }}"
+                                                    data-preco-sugerido="{{ contestacao.preco_proposto }}"
+                                                    class="contestar-preco-btn text-red-500 hover:text-red-700" title="Abrir Nova Contestação">
+                                                    <span class="material-symbols-outlined">close</span>
+                                            </td>
+                                            {% endif %}
                                     </tr>
-                                    <tr>
-                                        <td
-                                            class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
-                                            Cooperativa CoopVerde
-                                        </td>
-                                        <td
-                                            class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                            Aumento no custo de transporte.
-                                        </td>
-                                        <td class="whitespace-nowrap px-3 py-4 text-sm font-semibold text-green-500">
-                                            0,55/kg</td>
-                                    </tr>
+                                    {% endfor %}
+                                    
+                                    {% include 'negociacao/modal_aceitar_contestacao_preco.html' with aceitar_contestacao_form=aceitar_contestacao_form negociacao=negociacao %}
+                                    {% include 'negociacao/modal_recusar_contestacao_preco.html' with recusar_contestacao_form=recusar_contestacao_form negociacao=negociacao %}
+                                    {% include 'negociacao/contestar_preco.html' with contestar_preco_form=contestar_preco_form %}
                                 </tbody>
                             </table>
                         </div>
-                    </div> -->
+                    </div>
                 </div>
                 <div class="rounded-lg border border-primary/20 bg-transparent shadow-sm mt-8">
                     <div class="p-6">
@@ -139,7 +173,7 @@
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Registro de contestações
                             relacionadas ao pagamento.</p>
                     </div>
-                    <!-- <div class="overflow-x-auto">
+                    <div class="overflow-x-auto">
                         <div class="inline-block min-w-full align-middle">
                             <table class="min-w-full divide-y divide-primary/20">
                                 <thead class="bg-transparent dark:bg-background-dark/30">
@@ -152,42 +186,65 @@
                                             scope="col">
                                             Status
                                         </th>
+                                        <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
+                                            scope="col">
+                                            Ações
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-primary/10 bg-transparent dark:bg-transparent">
+                                    {% for contestacao in contestacoes_pgto %}
                                     <tr>
                                         <td
                                             class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6">
-                                            Valor recebido inferior ao acordado.</td>
+                                            {{ contestacao.justificativa }} </td>
                                         <td
                                             class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                                             <span
                                                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                                                Concluído
+                                                {{ contestacao.get_status_display }}
                                             </span>
                                         </td>
-                                    </tr>
-                                    <tr>
-                                        <td
-                                            class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6">
-                                            Atraso no pagamento.
+                                        {% if contestacao.status == 'EE' and request.user.tipo_usuario == 'E' %}
+                                        <td class="px-6 py-4" title="Responder contestação">
+                                            <button class="responder-contestacao-empresa-btn">
+                                                <span class="material-symbols-outlined text-base">gavel</span>
+                                            </button>
                                         </td>
-                                        <td
-                                            class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                            <span
-                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                                                Concluído
-                                            </span>
+                                        {% elif contestacao.status == 'EE' and request.user.tipo_usuario == 'CO' and contestacao.comprovante %}
+                                         <td class="px-6 py-4" title="Ver Comprovante">
+                                            <button class="ver-comprovante-btn">
+                                                <span class="material-symbols-outlined text-base"></span>
+                                            </button>
+
+                                            <button class="aceitar-pgto-btn" title="Aceitar Pagamento">
+                                                <span class="material-symbols-outlined text-base">check</span>
+                                            </button>
+
+                                            <button class="contestar-pgto-btn" title="Contestar Pagamento">
+                                                <span class="material-symbols-outlined text-base">close</span>
+                                            </button>
                                         </td>
+
+                                        {% endif %}
                                     </tr>
+                                    {% endfor %}
+
+                                    {% include 'negociacao/modal_contestar_pagamento.html' with contestar_pagamento_form=contestar_pagamento_form %}
+                                    {% include 'negociacao/responder_contestacao.html' with responder_contestacao_form=responder_contestacao_form %}
                                 </tbody>
                             </table>
                         </div>
-                    </div> -->
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 </div>
 
-{% endblock %}
+{% endblock dashboard_content %}
+
+{% block footer_scripts %}
+    {% load static %}
+    <script src="{% static 'js/negociacao/responder_contestacao_preco.js' %}"></script>
+{% endblock footer_scripts %}

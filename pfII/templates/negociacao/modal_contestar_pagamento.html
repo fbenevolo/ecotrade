@@ -1,0 +1,39 @@
+<div id="modal-contestar-pgto" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-background-dark/95 rounded-xl shadow-2xl w-full max-w-lg transform transition-all">
+        <form action="{% url 'negociacoes' email_usuario=request.user.pk %}" method="POST">
+            {% csrf_token %}
+
+            {{ contestar_pagamento_form.action }}
+            {{ contestar_pagamento_form.id_negociacao }}
+
+            <div class="p-8 space-y-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">Contestar Pagamento</h3>
+                    </div>
+                    <button id="close-btn" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                            for="justificativa">Justificativa</label>
+
+                        {{ contestar_pagamento_form.justificativa }}
+
+                    </div>
+                    <div class="flex justify-end items-center gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <button id="cancel-btn"
+                            class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-6 py-3 rounded-lg">Voltar</button>
+                        <button type="submit"
+                            class="flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg hover:bg-primary/90 transition-colors">
+                            <span class="material-symbols-outlined text-base">check_circle</span>
+                            Confirmar Contestação
+                        </button>
+                    </div>
+                </div>
+            </div>
+    </div>
+    </form>
+</div>

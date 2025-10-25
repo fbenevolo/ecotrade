@@ -96,16 +96,11 @@ class CadastrarAtendimentoDemandaForm(forms.Form):
             demanda.status='A'
             demanda.save()
 
-            # seleciona producoes e aloca elas para negociação
-            producoes = seleciona_producoes(id_demanda)
-            for producao in producoes:
-                producao.status = 'a'
-                producao.save()
 
             cooperativa = Usuario.objects.get(pk=id_cooperativa)
             residuo = Residuo.objects.get(pk=id_residuo)
             # Cria objeto negociação com as informações da demanda
-            Negociacao.objects.create(id_empresa=demanda.id_empresa,
+            negociacao = Negociacao.objects.create(id_empresa=demanda.id_empresa,
                                     id_cooperativa=cooperativa,
                                     id_residuo=residuo,
                                     quantidade=demanda.quantidade,
@@ -113,6 +108,13 @@ class CadastrarAtendimentoDemandaForm(forms.Form):
                                     confirmacao_preco_cooperativa=True,
                                     demanda_associada=demanda,
                                     status='ACE')
+            
+            # seleciona producoes e aloca elas para negociação
+            producoes = seleciona_producoes(id_demanda)
+            for producao in producoes:
+                producao.status = 'a'
+                producao,id_negociacao = negociacao 
+                producao.save()
         except Exception as e:
             print(f'Erro ao criar negociação: {e}')
             

@@ -1,6 +1,6 @@
 from django import forms
 from django.utils import timezone
-from ..models import Usuario, Demanda, Residuo, Negociacao, ContestacaoPreco
+from ..models import Negociacao, ContestacaoPreco, ContestacaoPagamento
 
 class ConfirmarNegociacaoForm(forms.Form):
     '''
@@ -90,14 +90,100 @@ class ContestarPrecoForm(forms.Form):
         except Exception as e:
             print(f'Erro ao criar contestação de preço: {e}')
 
+class AceitarContestacaoPrecoForm(forms.Form):
+    action = forms.CharField(widget=forms.HiddenInput(), initial='aceitar_contestacao_preco')
+    id_contestacao = forms.CharField(widget=forms.HiddenInput())
+    id_negociacao = forms.CharField(widget=forms.HiddenInput())
+    novo_preco = forms.CharField(widget=forms.HiddenInput())
+
+    def save(self):
+        id_contestacao = self.cleaned_data['id_contestacao']
+        id_negociacao = self.cleaned_data['id_negociacao']
+        novo_preco = float(self.cleaned_data['novo_preco'].replace(',', '.'))
+
+        contestacao = ContestacaoPreco.objects.get(pk=id_contestacao)
+        negociacao = Negociacao.objects.get(pk=id_negociacao)
+        try: 
+            # a contestacao foi concluida
+            contestacao.status = 'A'
+            contestacao.save()
+            # mudando preco e status da negociação e confirmando preço em ambas partes
+            negociacao.status = 'AC'
+            negociacao.preco = novo_preco 
+            negociacao.confirmacao_preco_cooperativa = True 
+            negociacao.confirmacao_preco_empresa = True
+            negociacao.save()
+        except Exception as e:
+            print(f'Erro ao alterar contestação ou negociação: {e}')
+
+
+class RecusarContestacaoPrecoForm(forms.Form):
+    action = forms.CharField(widget=forms.HiddenInput(), initial='recusar_contestacao_preco')    
+    id_contestacao = forms.CharField(widget=forms.HiddenInput())
+
+    id_negociacao = forms.CharField(widget=forms.HiddenInput())
+    tipo_usuario = forms.CharField(widget=forms.HiddenInput()) 
+    justificativa = forms.CharField(widget=forms.Textarea())
+    novo_preco = forms.FloatField(label='Novo Preço Sugerido', required=True)
+
+    opcoes = forms.ChoiceField(
+        choices=(
+            ('contestar', 'contestar'),    
+        ),
+        widget=forms.HiddenInput()
+    )
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for field in self.fields: # <--- O ERRO PODE ESTAR AQUI
+            style = 'mt-1 block w-full bg-background-light dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm'
+            self.fields[field].widget.attrs.update({'class': style})
+    
+    def save(self):
+        negociacao = Negociacao.objects.get(pk=self.cleaned_data['id_negociacao'])
+        contestador = self.cleaned_data['tipo_usuario']
+        justificativa = self.cleaned_data['justificativa']
+        preco_proposto = self.cleaned_data['novo_preco']
+        tipo_usuario = self.cleaned_data['tipo_usuario']
+
+        # fecha a contestação declinada e confirma preço de negociação da parte que abriu a contestação
+        id_antiga_contestacao = self.cleaned_data['id_contestacao']
+        contestacao_antiga = ContestacaoPreco.objects.get(pk=id_antiga_contestacao)
+        if tipo_usuario == 'CO':
+            contestacao_antiga.status = 'DC'
+            novo_status = 'ACE'
+
+        else:
+            contestacao_antiga.status = 'DE'
+            novo_status = 'ACC'
+        contestacao_antiga.save()
+
+        try:
+            # altera o status da negociação para ser a confirmação da parte que receberá a contestação
+            negociacao.status = novo_status
+
+            print(novo_status)
+            negociacao.save()
+            # abre uma nova contestação
+            ContestacaoPreco.objects.create(
+                id_negociacao=negociacao,
+                status=novo_status,
+                contestador=contestador,
+                justificativa=justificativa,
+                preco_proposto=preco_proposto
+            )
+        except Exception as e:
+            print(f'Erro ao criar uma nova contestação: {e}')
+
 
 class ConfirmarColetaForm(forms.Form):
     action = forms.CharField(widget=forms.HiddenInput(), initial='confirmar_coleta')
     id_negociacao = forms.CharField(widget=forms.HiddenInput())
     data = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         style = 'mt-1 block w-full bg-background-light dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm'
         self.fields['data'].widget.attrs.update({'class': style})
 
@@ -166,11 +252,9 @@ class ConfirmarPagamentoForm(forms.Form):
                     negociacao.confirmacao_pgto_coop = True
                     negociacao.status = 'C'
                     negociacao.data_conclusao = timezone.now()
-                    negociacao.save()
+            
         except Exception as e:
             print(f'Erro ao atualizar status de pagamento de negociação: {e}')
-
-        print(negociacao, opcao)
 
         # if opcao == 'confirmar':
         #     if tipo_usuario == 'E':
@@ -183,3 +267,42 @@ class ConfirmarPagamentoForm(forms.Form):
         # negociacao.save()
 
 
+class ContestarPagamentoForm(forms.Form):
+    action = forms.CharField(widget=forms.HiddenInput(), initial='contestar_pagamento')
+    id_negociacao = forms.CharField(widget=forms.HiddenInput())
+    justificativa = forms.CharField(widget=forms.Textarea())
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        style = "w-full bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-primary focus:border-primary"
+        self.fields['justificativa'].widget.attrs.update({'class': style})
+
+    def save(self):
+        justificativa = self.cleaned_data['justificativa']
+        id_negociacao = self.cleaned_data['id_negociacao']
+
+        try:
+            # muda status da negociação para 'Pagamento Contestado' (PC)
+            negociacao = Negociacao.objects.get(pk=id_negociacao)
+            negociacao.status = 'PC'
+            # negociacao.save()
+
+            # cria uma contestação de pagamento
+            ContestacaoPagamento.objects.create(
+                status='EE',
+                justificativa=justificativa,
+                id_negociacao=negociacao,
+                contestador='C',
+            )
+
+        except Exception as e:
+            print(f'Erro ao criar contestação de pagamento: {e}')
+
+
+class ResponderContestacaoPgtoForm():
+    action = forms.CharField(widget=forms.HiddenInput(), initial='responder_contestar_pagamento')
+    id_negociacao = forms.CharField(widget=forms.HiddenInput())
+    comprovante = forms.ImageField()
+
+    def save(self):
+        ...

@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const modalContestarPreco = document.getElementById('modal-contestar-preco');
-    const contestarPrecoBtn = document.querySelector('button.contestar-preco-btn');
+    const contestarPrecoBtn = document.querySelectorAll('button.contestar-preco-btn');
     // Funções genéricas de modal
     const closeModal = (modal) => {
         if (modal) modal.classList.add('hidden');
@@ -41,14 +41,14 @@ document.addEventListener('DOMContentLoaded', function() {
         openModal(modal);
     }
 
-    contestarPrecoBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        let btn = e.currentTarget;
-        let negociacaoId = btn.getAttribute('data-negociacao-id');
-        let tipoUsuario = btn.getAttribute('data-tipo-usuario');
-        let precoAtual = btn.getAttribute('data-preco-atual');
-        prepareAndOpenModal(modalContestarPreco, negociacaoId, precoAtual, 'contestar', tipoUsuario);
+    contestarPrecoBtn.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            let btn = e.currentTarget;
+            let negociacaoId = btn.getAttribute('data-negociacao-id');
+            let tipoUsuario = btn.getAttribute('data-tipo-usuario');
+            let precoAtual = btn.getAttribute('data-preco-atual');
+            prepareAndOpenModal(modalContestarPreco, negociacaoId, precoAtual, 'contestar', tipoUsuario);
+        });
     });
-
-
 });

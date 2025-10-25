@@ -1,0 +1,31 @@
+<div id="modal-confirmar-preco" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden">
+    <form action="{% url 'detalhes_negociacao' email_usuario=request.user.pk id_negociacao=negociacao.pk %}" method="POST">
+        {% csrf_token %}
+
+        {{ aceitar_contestacao_form.action }}
+        {{ aceitar_contestacao_form.id_contestacao }}
+        {{ aceitar_contestacao_form.id_negociacao }}
+        {{ aceitar_contestacao_form.novo_preco }}
+        
+
+        <div class="w-full max-w-md rounded-xl bg-white dark:bg-gray-800 shadow-2xl p-8 text-center">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                <span class="material-symbols-outlined text-3xl text-primary">handshake</span>
+            </div>
+            <h3 class="mt-5 text-xl font-semibold text-gray-900 dark:text-white">Confirmar Preço</h3>
+            <p class="mt-2 text-base text-gray-500 dark:text-gray-400">
+                Você tem certeza que deseja confirmar o preço de <strong><span id="span-preco-sugerido">...</span></strong>?
+            </p>
+            <div class="mt-8 flex justify-center gap-4">
+                <button id="cancel-btn"
+                    class="flex-1 rounded-full bg-white dark:bg-gray-700 px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="flex-1 rounded-full bg-primary px-6 py-3 text-sm font-medium text-white shadow-sm hover:bg-primary/80">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

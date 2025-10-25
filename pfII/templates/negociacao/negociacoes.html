@@ -90,7 +90,7 @@
                         negociação</a>
                 </div>
             </div>
-            {% if negociacao.status == 'ACC' and request.user.tipo_usuario == 'CO' or negociacao.status == 'ACE' and request.user.tipo_usuario == 'E' %}
+            {% if not negociacao.contestacoes_preco and negociacao.status == 'ACC' and request.user.tipo_usuario == 'CO' or not negociacao.contestacoes_preco and negociacao.status == 'ACE' and request.user.tipo_usuario == 'E' %}
                 <div class="mt-6 space-y-2">
                     <button data-negociacao-id="{{ negociacao.pk }}"
                             data-tipo-usuario="{{ request.user.tipo_usuario }}"
@@ -112,6 +112,10 @@
                         <span>Contestar preço</span>
                     </button>
                 </div>
+            {% elif negociacao.contestacoes_preco and negociacao.status == 'ACC' or negociacao.contestacoes_preco and negociacao.status == 'ACE' %}
+            <div class="mt-6 space-y-2">
+                Existe uma contestação de preço ativa. Confira-a na seção 'Ver Detalhes de Negociação'.
+            </div>
             {% elif negociacao.status == 'ACE' and request.user.tipo_usuario == 'CO' or negociacao.status == 'ACC' and request.user.tipo_usuario == 'E' %}
             <div class="mt-6 space-y-2">
                 Aguarde a outra parte realizar a confirmação ou contestação de preço. 
@@ -144,7 +148,7 @@
                 {% else %}
                     <p class="mt-3 text-base text-gray-600 dark:text-gray-400 font-medium text-center">Aguarde a empresa confirmar a entrega dos resíduos.</p>
                 {% endif %}
-            {% elif negociacao.status == 'ACPE' and request.user.tipo_usuario == 'E' or negociacao.status == 'ACPC' and request.user.tipo_usuario == 'CO'%}
+            {% elif negociacao.contestacoes_pgto.count == 0 and negociacao.status == 'ACPE' and request.user.tipo_usuario == 'E' or negociacao.contestacoes_pgto.count == 0 and negociacao.status == 'ACPC' and request.user.tipo_usuario == 'CO'%}
                 <div class="mt-6 space-y-2">
                         <button 
                             data-id-negociacao="{{ negociacao.pk }}"
@@ -152,7 +156,22 @@
                             <span class="material-symbols-outlined">local_shipping</span>
                             <span>Confirmar Pagamento</span>
                         </button>
-                    </div>
+                        {% if request.user.tipo_usuario == 'CO' and negociacao.contestacoes_pgto.count == 0 %}
+                            <button data-negociacao-id="{{ negociacao.pk }}"
+                                    data-tipo-usuario="{{ request.user.tipo_usuario }}"
+                                    class="contestar-pgto-btn w-full bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-bold py-2 px-4 rounded-lg flex items-center justify-center space-x-2 dark:bg-yellow-900/50 dark:hover:bg-yellow-900/70 dark:text-yellow-400">
+                                <span class="material-symbols-outlined">gavel</span>
+                                <span>Contestar Pagamento</span>
+                            </button>
+
+                            {% include 'negociacao/modal_contestar_pagamento.html' with contestar_pagamento_form=contestar_pagamento_form %}
+
+                        {% endif %}
+                </div>
+            {% elif negociacao.contestacoes_pgto.count > 0 and negociacao.status == 'ACPE' or negociacao.contestacoes_pgto.count > 0 and negociacao.status == 'ACPC' %}
+            <div class="mt-6 space-y-2">
+                Existe uma contestação de pagamento ativa. Confira-a na seção 'Ver Detalhes de Negociação'.
+            </div>
             {% elif negociacao.status == 'ACPC' and request.user.tipo_usuario == 'E' %}
                 <p class="mt-3 text-base text-gray-600 dark:text-gray-400 font-medium text-center">Aguarde a cooperativa confirmar o pagamento.</p>
             {% elif negociacao.status == 'ACPE' and request.user.tipo_usuario == 'CO' %}
@@ -178,4 +197,5 @@
     <script src="{% static 'js/negociacao/confirmar_coleta.js' %}"></script>
     <script src="{% static 'js/negociacao/confirmar_entrega.js' %}"></script>
     <script src="{% static 'js/negociacao/confirmar_pagamento.js' %}"></script>
-{% endblock footer_scripts %}
+    <script src="{% static 'js/negociacao/contestar_pagamento.js' %}"></script>
+    {% endblock footer_scripts %}
