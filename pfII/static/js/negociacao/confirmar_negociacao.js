@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const confirmarPrecoBtn = document.querySelector('button.confirmar-negociacao-btn');
     const sairNegociacaoBtn = document.querySelector('button.sair-negociacao-btn');
 
-    // Funções genéricas de modal
     const closeModal = (modal) => {
         if (modal) modal.classList.add('hidden');
     };

@@ -249,7 +249,7 @@ class ContestacaoPagamento(models.Model):
     justificativa = models.TextField()
     status = models.CharField(choices=OPCOES_STATUS)
     usuario = models.CharField(choices=OPCOES_USUARIO)
-    arquivo_contestacao = models.ImageField(null=True)
+    comprovante = models.ImageField(null=True)
 
 
 class NegociacaoPagaTrabalho(models.Model):

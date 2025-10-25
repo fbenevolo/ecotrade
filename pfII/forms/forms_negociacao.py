@@ -223,7 +223,7 @@ class ConfirmarPagamentoForm(forms.Form):
         widget=forms.HiddenInput()
     )
     
-    comprovante = forms.ImageField()
+    comprovante = forms.FileField()
 
     def __init__(self, *args, **kwargs):
         self.tipo_usuario = kwargs.pop('tipo_usuario', None)
@@ -252,24 +252,16 @@ class ConfirmarPagamentoForm(forms.Form):
                     negociacao.confirmacao_pgto_coop = True
                     negociacao.status = 'C'
                     negociacao.data_conclusao = timezone.now()
+                    negociacao.save()
             
         except Exception as e:
             print(f'Erro ao atualizar status de pagamento de negociação: {e}')
-
-        # if opcao == 'confirmar':
-        #     if tipo_usuario == 'E':
-        #         negociacao.confirmacao_pgto_empresa = True
-        #         negociacao.status = 'ACPC'
-        #     else:
-        #         negociacao.confirmacao_pgto_coop = True
-        #         negociacao.status = 'C'
-
-        # negociacao.save()
 
 
 class ContestarPagamentoForm(forms.Form):
     action = forms.CharField(widget=forms.HiddenInput(), initial='contestar_pagamento')
     id_negociacao = forms.CharField(widget=forms.HiddenInput())
+    id_antiga_contestacao = forms.CharField(widget=forms.HiddenInput(), required=False)
     justificativa = forms.CharField(widget=forms.Textarea())
 
     def __init__(self, *args, **kwargs):
@@ -280,29 +272,74 @@ class ContestarPagamentoForm(forms.Form):
     def save(self):
         justificativa = self.cleaned_data['justificativa']
         id_negociacao = self.cleaned_data['id_negociacao']
+        id_antiga_contestacao = self.cleaned_data['id_antiga_contestacao']
 
         try:
             # muda status da negociação para 'Pagamento Contestado' (PC)
             negociacao = Negociacao.objects.get(pk=id_negociacao)
-            negociacao.status = 'PC'
-            # negociacao.save()
+            negociacao.status = 'ACPE'
+            negociacao.save()
 
-            # cria uma contestação de pagamento
-            ContestacaoPagamento.objects.create(
-                status='EE',
-                justificativa=justificativa,
-                id_negociacao=negociacao,
-                contestador='C',
-            )
+            # se for uma resposta à uma contestação já existente, fecha essa contestação antiga
+            if id_antiga_contestacao:
+                antiga_contestacao = ContestacaoPagamento.objects.get(pk=id_antiga_contestacao)
+                antiga_contestacao.status = 'A'
+                antiga_contestacao.save()
+
+            # # cria uma contestação de pagamento
+            # ContestacaoPagamento.objects.create(
+            #     status='EE',
+            #     justificativa=justificativa,
+            #     id_negociacao=negociacao,
+            #     usuario='C',
+            # )
 
         except Exception as e:
             print(f'Erro ao criar contestação de pagamento: {e}')
 
 
-class ResponderContestacaoPgtoForm():
+class ResponderContestacaoPgtoForm(forms.Form):
     action = forms.CharField(widget=forms.HiddenInput(), initial='responder_contestar_pagamento')
     id_negociacao = forms.CharField(widget=forms.HiddenInput())
-    comprovante = forms.ImageField()
+    id_contestacao = forms.CharField(widget=forms.HiddenInput())
+    justificativa = forms.CharField(widget=forms.Textarea())
+
+    comprovante = forms.FileField(  
+        widget=forms.ClearableFileInput(
+            attrs={
+                'class': 'absolute inset-0 w-full h-full opacity-0 cursor-pointer',
+                'id': 'id_comprovante',
+            }
+        ),
+        label='Carregar um arquivo' 
+    )
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        style = "w-full bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-primary focus:border-primary"
+        self.fields['justificativa'].widget.attrs.update({'class': style})
 
     def save(self):
-        ...
+        id_negociacao = self.cleaned_data['id_negociacao']
+        id_antiga_contestacao = self.cleaned_data['id_contestacao']
+        justificativa = self.cleaned_data['justificativa']
+        comprovante = self.cleaned_data['comprovante']
+
+        negociacao = Negociacao.objects.get(pk=id_negociacao)
+
+        try:
+            # fechando a antiga contestacao
+            antiga_contestacao = ContestacaoPagamento.objects.get(pk=id_antiga_contestacao)
+            antiga_contestacao.status = 'A'
+            antiga_contestacao.save()
+
+            ContestacaoPagamento.objects.create(
+                id_negociacao=negociacao,
+                justificativa=justificativa,
+                comprovante=comprovante,
+                status='EE',
+                usuario='E'
+            )
+        except Exception as e:
+            print(f'Erro ao criar resposta à contestação de pagamento: {e}')

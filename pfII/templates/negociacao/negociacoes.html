@@ -164,7 +164,8 @@
                                 <span>Contestar Pagamento</span>
                             </button>
 
-                            {% include 'negociacao/modal_contestar_pagamento.html' with contestar_pagamento_form=contestar_pagamento_form %}
+                          {% url 'negociacoes' email_usuario=request.user.pk as negociacoes_url %}
+                          {% include 'negociacao/modal_contestar_pagamento.html' with contestar_pagamento_form=contestar_pagamento_form modal_post_url=negociacoes_url %}
 
                         {% endif %}
                 </div>
@@ -178,6 +179,7 @@
                 <p class="mt-3 text-base text-gray-600 dark:text-gray-400 font-medium text-center">Aguarde a empresa confirmar o pagamento.</p>
             {% endif %}
         </div>
+
         
          {% include 'negociacao/confirmar_negociacao.html' with confirmar_negociacao_form=confirmar_negociacao_form %}
          {% include 'negociacao/contestar_preco.html' with contestar_preco_form=contestar_preco_form negociacao=negociacao %}

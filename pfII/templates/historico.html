@@ -65,7 +65,7 @@
                                                 Detalhes
                                             </button>
                                         </a>
-                                        {% url 'visualizar_comprovante' email_usuario=request.user.pk id_negociacao=negociacao.pk as comprovante_url %}
+                                        {% url 'visualizar_comprovante_negociacao' email_usuario=request.user.pk id_negociacao=negociacao.pk as comprovante_url %}
                                         <a href="{{ comprovante_url }}">
                                             <button
                                                 class="inline-flex items-center gap-1.5 rounded-md bg-transparent px-3 py-1.5 text-sm font-semibold text-primary shadow-sm ring-1 ring-inset ring-primary/50 hover:bg-primary/10">

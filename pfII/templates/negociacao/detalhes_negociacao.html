@@ -180,7 +180,15 @@
                                     <tr>
                                         <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6"
                                             scope="col">
+                                            Usuário
+                                        </th>
+                                        <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6"
+                                            scope="col">
                                             Justificativa
+                                        </th>
+                                        <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6"
+                                            scope="col">
+                                            Comprovante
                                         </th>
                                         <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
                                             scope="col">
@@ -197,7 +205,28 @@
                                     <tr>
                                         <td
                                             class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6">
-                                            {{ contestacao.justificativa }} </td>
+                                            {{ contestacao.get_usuario_display }} 
+                                        </td>
+                                        <td
+                                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6">
+                                            {{ contestacao.justificativa }} 
+                                        </td>
+                                        {% if contestacao.comprovante %}
+                                            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6">
+                                                {% url 'visualizar_comprovante_contestacao' email_usuario=request.user.pk id_contestacao=contestacao.pk as comprovante_url %}
+                                                <a href="{{ comprovante_url }}">
+                                                    <button
+                                                        class="inline-flex items-center gap-1.5 rounded-md bg-transparent px-3 py-1.5 text-sm font-semibold text-primary shadow-sm ring-1 ring-inset ring-primary/50 hover:bg-primary/10">
+                                                        <span class="material-symbols-outlined text-base">receipt_long</span>
+                                                        Comprovante
+                                                    </button>
+                                                </a>
+                                            </td>
+                                        {% else %}
+                                             <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6">
+                                                -
+                                            </td>
+                                        {% endif %}
                                         <td
                                             class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                                             <span
@@ -205,9 +234,12 @@
                                                 {{ contestacao.get_status_display }}
                                             </span>
                                         </td>
-                                        {% if contestacao.status == 'EE' and request.user.tipo_usuario == 'E' %}
+                                        {% if contestacao.status == 'EE' and contestacao.usuario == 'CO' and request.user.tipo_usuario == 'E' %}
                                         <td class="px-6 py-4" title="Responder contestação">
-                                            <button class="responder-contestacao-empresa-btn">
+                                            <button 
+                                                data-id-negociacao="{{ contestacao.id_negociacao.pk }}" 
+                                                data-id-contestacao="{{ contestacao.pk }}"
+                                                class="responder-contestacao-btn">
                                                 <span class="material-symbols-outlined text-base">gavel</span>
                                             </button>
                                         </td>
@@ -221,17 +253,22 @@
                                                 <span class="material-symbols-outlined text-base">check</span>
                                             </button>
 
-                                            <button class="contestar-pgto-btn" title="Contestar Pagamento">
+                                            <button 
+                                                data-negociacao-id="{{ contestacao.id_negociacao.pk }}"
+                                                data-contestacao-id="{{ contestacao.pk }}"
+                                                class="contestar-pgto-btn" title="Contestar Pagamento">
                                                 <span class="material-symbols-outlined text-base">close</span>
                                             </button>
                                         </td>
-
                                         {% endif %}
                                     </tr>
                                     {% endfor %}
+                                    
+                                    {% include 'negociacao/modal_responder_contestacao_pgto.html' with responder_contestacao_pgto_form=responder_contestacao_pgto_form %}
 
-                                    {% include 'negociacao/modal_contestar_pagamento.html' with contestar_pagamento_form=contestar_pagamento_form %}
-                                    {% include 'negociacao/responder_contestacao.html' with responder_contestacao_form=responder_contestacao_form %}
+                                    {% url 'detalhes_negociacao' email_usuario=request.user.pk id_negociacao=negociacao.pk as detalhes_url %}
+                                    {% include 'negociacao/modal_contestar_pagamento.html' with contestar_pagamento_form=contestar_pagamento_form modal_post_url=detalhes_url %}
+
                                 </tbody>
                             </table>
                         </div>
@@ -246,5 +283,7 @@
 
 {% block footer_scripts %}
     {% load static %}
-    <script src="{% static 'js/negociacao/responder_contestacao_preco.js' %}"></script>
+    <script src="{% static 'js/negociacao/responder_contestacao_preco.js' %}"></script>        
+    <script src="{% static 'js/negociacao/contestar_pagamento.js' %}"></script>
+    <script src="{% static 'js/negociacao/responder_contestacao_pgto.js' %}"></script>
 {% endblock footer_scripts %}

@@ -66,7 +66,9 @@ urlpatterns = [
     path('dashboard/<str:email_usuario>/demandas', views_demanda.demandas, name='demandas'),
     path('dashboard/<str:email_usuario>/negociacoes', views_negociacao.negociacoes, name='negociacoes'),
     path('dashboard/<str:email_usuario>/negociacoes/detalhes_negociacao/<int:id_negociacao>', views_negociacao.detalhes_negociacao, name='detalhes_negociacao'),
-    path('dashboard/<str:email_usuario>/negociacoes/comprovante/<int:id_negociacao>', views_negociacao.comprovante, name='visualizar_comprovante'),
+    path('dashboard/<str:email_usuario>/negociacoes/comprovante/<int:id_negociacao>', views_negociacao.comprovante_negociacao, name='visualizar_comprovante_negociacao'),        
+    path('dashboard/<str:email_usuario>/negociacoes/detalhes_negociacao/comprovante/<int:id_contestacao>', views_negociacao.comprovante_contestacao, name='visualizar_comprovante_contestacao'),        
+
     path('dashboard/<str:email_usuario>/historico', views_common.historico, name='historico'),
     path('dashboard/<str:email_usuario>/rendimentos', views_common.rendimentos, name='rendimentos'),
     path('dashboard/<str:email_usuario>/configuracoes', views_common.configuracoes, name='configuracoes'),

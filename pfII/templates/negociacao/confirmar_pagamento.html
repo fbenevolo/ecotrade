@@ -26,7 +26,7 @@
                     <div class="space-y-4">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Comprovante de Pagamento</h3>
                         {% if tipo_usuario == 'CO' %}
-                            {% url 'visualizar_comprovante' email_usuario=request.user.pk id_negociacao=negociacao.pk as comprovante_url %}
+                            {% url 'visualizar_comprovante_negociacao' email_usuario=request.user.pk id_negociacao=negociacao.pk as comprovante_url %}
                                 <a href="{{ comprovante_url }}" 
                                 class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg hover:bg-blue-700 transition-colors"
                                 download>
