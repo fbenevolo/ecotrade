@@ -286,13 +286,13 @@ class ContestarPagamentoForm(forms.Form):
                 antiga_contestacao.status = 'A'
                 antiga_contestacao.save()
 
-            # # cria uma contestação de pagamento
-            # ContestacaoPagamento.objects.create(
-            #     status='EE',
-            #     justificativa=justificativa,
-            #     id_negociacao=negociacao,
-            #     usuario='C',
-            # )
+            # cria uma contestação de pagamento
+            ContestacaoPagamento.objects.create(
+                status='EE',
+                justificativa=justificativa,
+                id_negociacao=negociacao,
+                usuario='C',
+            )
 
         except Exception as e:
             print(f'Erro ao criar contestação de pagamento: {e}')
@@ -333,7 +333,8 @@ class ResponderContestacaoPgtoForm(forms.Form):
             antiga_contestacao = ContestacaoPagamento.objects.get(pk=id_antiga_contestacao)
             antiga_contestacao.status = 'A'
             antiga_contestacao.save()
-
+            
+            # criando nova "contestação", isto é, uma resposta da empresa à antiga contestação com um novo comprovante
             ContestacaoPagamento.objects.create(
                 id_negociacao=negociacao,
                 justificativa=justificativa,
@@ -343,3 +344,24 @@ class ResponderContestacaoPgtoForm(forms.Form):
             )
         except Exception as e:
             print(f'Erro ao criar resposta à contestação de pagamento: {e}')
+
+
+class ResponderContestacaoPgtoCoopForm(forms.Form):
+    action = forms.CharField(widget=forms.HiddenInput(), initial='responder_contestar_pagamento_coop')
+    id_negociacao = forms.CharField(widget=forms.HiddenInput())
+    id_contestacao = forms.CharField(widget=forms.HiddenInput())
+
+    def save(self):
+        id_contestacao = self.cleaned_data['id_contestacao']
+        id_negociacao = self.cleaned_data['id_negociacao']
+        
+        # fechando a contestação
+        contestacao = ContestacaoPagamento.objects.get(id_contestacao=id_contestacao)
+        contestacao.status = 'A'
+        contestacao.save()
+
+        # anexando novo comprovante à negociação e concluindo ela
+        negociacao = Negociacao.objects.get(id_negociacao=id_negociacao)
+        negociacao.comprovante = contestacao.comprovante
+        negociacao.status = 'C'
+        negociacao.save()

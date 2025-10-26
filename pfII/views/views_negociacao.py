@@ -12,7 +12,8 @@ from ..forms.forms_negociacao import (ConfirmarNegociacaoForm,
                                       ConfirmarEntregaForm,
                                       ConfirmarPagamentoForm,
                                       ContestarPagamentoForm, 
-                                      ResponderContestacaoPgtoForm
+                                      ResponderContestacaoPgtoForm,
+                                      ResponderContestacaoPgtoCoopForm
                                       )
 from ..utils import seleciona_producoes, calcula_valor_a_receber
 
@@ -95,7 +96,7 @@ def detalhes_negociacao(request, email_usuario, id_negociacao):
     recusar_contestacao_form = RecusarContestacaoPrecoForm()
     contestar_pagamento_form = ContestarPagamentoForm()
     responder_contestacao_pgto_form = ResponderContestacaoPgtoForm() 
-
+    responder_contestacao_pgto_coop_form = ResponderContestacaoPgtoCoopForm()
 
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -114,6 +115,12 @@ def detalhes_negociacao(request, email_usuario, id_negociacao):
             if recusar_contestacao_form.is_valid():
                 recusar_contestacao_form.save()
                 return redirect('detalhes_negociacao', email_usuario=request.user.pk, id_negociacao=negociacao.pk)
+        
+        elif 'responder_contestar_pagamento_coop' in action:
+            responder_contestacao_pgto_coop_form = ResponderContestacaoPgtoCoopForm(request.POST)
+            if responder_contestacao_pgto_coop_form.is_valid():
+                responder_contestacao_pgto_coop_form.save()
+        
         elif 'responder_contestar_pagamento' in action:
             responder_contestacao_pgto_form = ResponderContestacaoPgtoForm(request.POST, request.FILES)
             if responder_contestacao_pgto_form.is_valid():
@@ -146,6 +153,7 @@ def detalhes_negociacao(request, email_usuario, id_negociacao):
         'recusar_contestacao_form': recusar_contestacao_form,
         'contestar_pagamento_form': contestar_pagamento_form, 
         'responder_contestacao_pgto_form': responder_contestacao_pgto_form,
+        'responder_contestacao_pgto_coop_form': responder_contestacao_pgto_coop_form, 
         'catadores_envolvidos': seleciona_producoes(negociacao.demanda_associada.pk),
         'producoes_individuais': producoes_para_template,        
     }
