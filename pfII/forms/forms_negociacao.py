@@ -215,14 +215,6 @@ class ConfirmarEntregaForm(forms.Form):
 class ConfirmarPagamentoForm(forms.Form):
     action = forms.CharField(widget=forms.HiddenInput(), initial='confirmar_pagamento')
     id_negociacao = forms.CharField(widget=forms.HiddenInput())
-    opcoes = forms.ChoiceField(
-        choices=(
-            ('confirmar', 'Confirmar Pagamento'),
-            ('contestar', 'Contestar Pagamento'),
-        ),
-        widget=forms.HiddenInput()
-    )
-    
     comprovante = forms.FileField()
 
     def __init__(self, *args, **kwargs):
@@ -237,22 +229,20 @@ class ConfirmarPagamentoForm(forms.Form):
     
     def save(self):
         id_negociacao = int(self.cleaned_data['id_negociacao'])
-        opcao = self.cleaned_data['opcoes']
         negociacao = Negociacao.objects.get(pk=id_negociacao)
 
         try:
             if self.tipo_usuario == 'E':
-                    comprovante = self.cleaned_data['comprovante']
-                    negociacao.comprovante = comprovante
-                    negociacao.confirmacao_pgto_empresa = True
-                    negociacao.status = 'ACPC'
-                    negociacao.save()
+                comprovante = self.cleaned_data['comprovante']
+                negociacao.comprovante = comprovante
+                negociacao.confirmacao_pgto_empresa = True
+                negociacao.status = 'ACPC'
+                negociacao.save()
             else:
-                if opcao == 'confirmar':
-                    negociacao.confirmacao_pgto_coop = True
-                    negociacao.status = 'C'
-                    negociacao.data_conclusao = timezone.now()
-                    negociacao.save()
+                negociacao.confirmacao_pgto_coop = True
+                negociacao.status = 'C'
+                negociacao.data_conclusao = timezone.now()
+                negociacao.save()
             
         except Exception as e:
             print(f'Erro ao atualizar status de pagamento de negociação: {e}')
@@ -346,22 +336,23 @@ class ResponderContestacaoPgtoForm(forms.Form):
             print(f'Erro ao criar resposta à contestação de pagamento: {e}')
 
 
-class ResponderContestacaoPgtoCoopForm(forms.Form):
-    action = forms.CharField(widget=forms.HiddenInput(), initial='responder_contestar_pagamento_coop')
+class ConfirmarPagamentoPosContestForm(forms.Form):
+    action = forms.CharField(widget=forms.HiddenInput(), initial='confirmar_pgto_pos_contest')
     id_negociacao = forms.CharField(widget=forms.HiddenInput())
     id_contestacao = forms.CharField(widget=forms.HiddenInput())
 
     def save(self):
         id_contestacao = self.cleaned_data['id_contestacao']
         id_negociacao = self.cleaned_data['id_negociacao']
-        
+
         # fechando a contestação
-        contestacao = ContestacaoPagamento.objects.get(id_contestacao=id_contestacao)
+        contestacao = ContestacaoPagamento.objects.get(pk=id_contestacao)
         contestacao.status = 'A'
         contestacao.save()
 
         # anexando novo comprovante à negociação e concluindo ela
-        negociacao = Negociacao.objects.get(id_negociacao=id_negociacao)
+        negociacao = Negociacao.objects.get(pk=id_negociacao)
         negociacao.comprovante = contestacao.comprovante
+        negociacao.data_conclusao = timezone.now()
         negociacao.status = 'C'
         negociacao.save()

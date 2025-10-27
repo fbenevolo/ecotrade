@@ -179,13 +179,14 @@
                 <p class="mt-3 text-base text-gray-600 dark:text-gray-400 font-medium text-center">Aguarde a empresa confirmar o pagamento.</p>
             {% endif %}
         </div>
-
         
          {% include 'negociacao/confirmar_negociacao.html' with confirmar_negociacao_form=confirmar_negociacao_form %}
          {% include 'negociacao/contestar_preco.html' with contestar_preco_form=contestar_preco_form negociacao=negociacao %}
-         {% include 'negociacao/confirmar_pagamento.html' with confirmar_pagamento_form=confirmar_pagamento_form tipo_usuario=request.user.tipo_usuario negociacao=negociacao%}
-
          
+         {% url 'negociacoes' email_usuario=request.user.pk as negociacoes_url %}
+         {% url 'visualizar_comprovante_negociacao' email_usuario=request.user.pk id_negociacao=negociacao.pk as comprovante_url_negociacao %}
+         {% include 'negociacao/confirmar_pagamento.html' with confirmar_pagamento_form=confirmar_pagamento_form tipo_usuario=request.user.tipo_usuario negociacao=negociacao modal_post_url=negociacoes_url comprovante_url_download=comprovante_url_negociacao %}
+
          {% endfor %}
 
 </main>

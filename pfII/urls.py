@@ -38,7 +38,6 @@ password_reset_patterns = [
 
 gestao_usuarios = [
     path('dashboard/<str:email_usuario>/desativar_conta', views_common.desativar_conta, name='desativar_conta'),
-    path('dashboard/<str:email_usuario>/excluir_conta', views_common.excluir_conta, name='excluir_conta'),
     path('dashboard/<str:email_usuario>/aceitar_desativacao', views_admin.aceitar_desativacao, name='aceitar_desativacao'),
     path('dashboard/<str:email_usuario>/recusar_desativacao', views_admin.recusar_desativacao, name='recusar_desativacao'),
     path('dashboard/<str:email_usuario>/aceitar_exclusao', views_admin.aceitar_exclusao, name='aceitar_exclusao'),

@@ -149,7 +149,7 @@ def historico(request, email_usuario):
     
     usuario = request.user
     if usuario.tipo_usuario == 'E':
-        negociacoes_concluidas = Negociacao.objects.filter(id_empresa=usuario.pk, status='C')
+        negociacoes_concluidas = Negociacao.objects.filter(id_empresa=usuario.pk, status='C').order_by()
     else:
         negociacoes_concluidas = Negociacao.objects.filter(id_cooperativa=usuario.pk, status='C')
 
@@ -168,18 +168,6 @@ def desativar_conta(request, email_usuario):
         usuario.save()
         logout(request)
         messages.success(request, 'Sua conta foi desativada com sucesso.')
-        return redirect(reverse('home'))
-    return redirect(reverse('configuracoes', kwargs={'email_usuario': request.user.pk}))
-
-
-@login_required
-def excluir_conta(request, email_usuario):
-    if request.method == 'POST':
-        usuario = get_object_or_404(Usuario, pk=email_usuario)
-        usuario.status = 'EAX'
-        usuario.save()
-        logout(request)
-        messages.success(request, 'Sua solicitação de exclusão de conta foi enviada.')
         return redirect(reverse('home'))
     return redirect(reverse('configuracoes', kwargs={'email_usuario': request.user.pk}))
 

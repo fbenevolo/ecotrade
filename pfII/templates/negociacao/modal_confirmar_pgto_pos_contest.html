@@ -1,12 +1,12 @@
 {% load mathfilters %}
-<div id="modal-confirmar-pagamento" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden">
+<div id="modal-confirmar-pgto-pos-contest" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden">
     <div class="bg-white dark:bg-background-dark/95 rounded-xl shadow-2xl w-full max-w-3xl transform transition-all">
-        <form action="{% url 'negociacoes' email_usuario=request.user.pk id_negociacao=negociacao.pk %}" method="POST" enctype="multipart/form-data">
+        <form action="{% url 'detalhes_negociacao' email_usuario=request.user.pk id_negociacao=negociacao.pk %}" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
 
-            {{ confirmar_pagamento_form.action }}
-            {{ confirmar_pagamento_form.id_negociacao }}
-            {{ confirmar_pagamento_form.id_contestacao }}
+            {{ confirmar_pagamento_pos_contest_form.action }}
+            {{ confirmar_pagamento_pos_contest_form.id_negociacao }}
+            {{ confirmar_pagamento_pos_contest_form.id_contestacao }}
 
             <div class="p-8 space-y-6">
                 <div class="flex justify-between items-start">
@@ -24,40 +24,21 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="space-y-4">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Comprovante de Pagamento</h3>
-                        {% if request.user.tipo_usuario == 'CO' %}
-                            {% url 'visualizar_comprovante_negociacao' email_usuario=request.user.pk id_negociacao=negociacao.pk as comprovante_url %}
+                            {% url 'visualizar_comprovante_contestacao' email_usuario=request.user.pk id_contestacao=contestacao.pk as comprovante_url %}
                             <a href="{{ comprovante_url }}" 
                                 class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg hover:bg-blue-700 transition-colors"
                                 download> <span class="material-symbols-outlined text-base">download</span> Baixar Comprovante
                             </a>
-                        {% else %}
-                            <div class="w-full h-80 bg-background-light dark:bg-background-dark rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 relative">
-                                <div class="text-center text-gray-500 dark:text-gray-400 z-0">
-                                    <span class="material-symbols-outlined text-6xl">visibility</span>
-                                    <p class="mt-2">Anexar Documento</p>
-                                </div>
-                            {{ confirmar_pagamento_form.comprovante }} 
-                        </div>
-                        {% endif %}
                     </div>
                     <div class="space-y-6">
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Resumo Financeiro</h3>
-                            <div
-                                class="mt-4 p-6 bg-primary/10 dark:bg-primary/20 rounded-lg space-y-4 flex flex-col justify-center h-full">
-                                {% if request.user.tipo_usuario == 'CO' %}
-                                    <div
-                                        class="flex justify-between items-center text-xl font-bold text-primary dark:text-primary">
-                                        <span>Valor a Receber:</span>
-                                        <span>R${{ negociacao.preco|mul:negociacao.quantidade|floatformat:2 }}</span>
-                                    </div>
-                                {% else %}
-                                    <div
-                                        class="flex justify-between items-center text-xl font-bold text-primary dark:text-primary">
-                                        <span>Valor a Pagar:</span>
-                                        <span>R${{ negociacao.preco|mul:negociacao.quantidade|floatformat:2 }}</span>
-                                    </div>
-                                {% endif %}
+                            <div class="mt-4 p-6 bg-primary/10 dark:bg-primary/20 rounded-lg space-y-4 flex flex-col justify-center h-full">
+                                <div
+                                    class="flex justify-between items-center text-xl font-bold text-primary dark:text-primary">
+                                    <span>Valor a Receber:</span>
+                                    <span>R${{ negociacao.preco|mul:negociacao.quantidade|floatformat:2 }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>

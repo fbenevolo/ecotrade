@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const modalConfirmarPagamento = document.getElementById('modal-confirmar-pagamento');
+    const modalConfirmarPagamento = document.getElementById('modal-confirmar-pgto-pos-contest');
     const btnConfirmarPgto = document.querySelectorAll('button.confirmar-pgto-btn');
 
     const openModal = (modal) => {
@@ -26,9 +26,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function openModalConfirmarPgto(idNegociacao, opcao) {
+    function openModalConfirmarPgto(idNegociacao, idContestacao) {
         const hiddenIdNegociacaoInput = modalConfirmarPagamento.querySelector('input[name="id_negociacao"]');
+        const hiddenIdContestacaoInput = modalConfirmarPagamento.querySelector('input[name="id_contestacao"]');
+
         if (hiddenIdNegociacaoInput) hiddenIdNegociacaoInput.value = idNegociacao; 
+        if (hiddenIdContestacaoInput) hiddenIdContestacaoInput.value = idContestacao; 
 
         openModal(modalConfirmarPagamento);
     }
@@ -38,7 +41,9 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             const btn = e.currentTarget.closest('button');
             const idNegociacao = btn.getAttribute('data-id-negociacao');
-            openModalConfirmarPgto(idNegociacao);
+            const idContestacao = btn.getAttribute('data-id-contestacao');
+
+            openModalConfirmarPgto(idNegociacao, idContestacao);
 
         });
     }); 
