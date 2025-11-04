@@ -1,6 +1,5 @@
 from django import forms
 from django.db.models import F
-from ..models import Producao, CoopDetemResiduo
 from django.contrib.auth import get_user_model
 
 Usuario = get_user_model()
@@ -133,50 +132,3 @@ class AlterarCatadorForm(forms.ModelForm):
             print('atualizado')
         except Exception as e:
             raise forms.ValidationError(f'Erro ao alterar dados do catador: {str(e)}')
-
-class ExcluirCatadorForm(forms.Form):
-    """
-    Formulário para confirmar exclusão de catadores.
-    """
-    # Campos ocultos para identificação
-    catador_id = forms.CharField(widget=forms.HiddenInput())
-    action = forms.CharField(widget=forms.HiddenInput(), initial='excluir_catador')
-    
-    # Campo de confirmação
-    confirmacao = forms.BooleanField(
-        label='Confirmo que desejo excluir permanentemente esta conta',
-        required=True,
-        widget=forms.CheckboxInput(attrs={'class': 'rounded border-gray-300 text-red-600 focus:ring-red-500'})
-    )
-    
-    def __init__(self, *args, catador=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        
-        # Se um catador foi fornecido, preencher o ID
-        if catador:
-            self.fields['catador_id'].initial = catador.email
-    
-    def save(self):
-        """
-        Exclui o catador do banco de dados.
-        """
-        catador_email = self.cleaned_data['catador_id']
-        try:
-            catador = Usuario.objects.get(email=catador_email)
-
-            # excluir todas as producoes associadas ao catador e atualiza a quantidade que a cooperativa tem
-            producoes = Producao.objects.filter(id_catador=catador)
-            for producao in producoes:
-                CoopDetemResiduo.objects.filter(id_residuo=producao.id_residuo).update(
-                    quantidade=F('quantidade')-producao.producao
-                )
-                producao.delete()
-
-            catador.delete()
-        except Usuario.DoesNotExist:
-            raise forms.ValidationError('Catador não encontrado.')
-        except Exception as e:
-            raise forms.ValidationError(f'Erro ao excluir catador: {str(e)}')
-
-
-

@@ -1,6 +1,8 @@
 from django import forms
 from django.utils import timezone
-from ..models import Negociacao, ContestacaoPreco, ContestacaoPagamento
+from ..models import Producao, Negociacao, NegociacaoPagaTrabalho, ContestacaoPreco, ContestacaoPagamento
+
+from ..utils import atualiza_producoes, atualiza_preco_medio_residuo
 
 class ConfirmarNegociacaoForm(forms.Form):
     '''
@@ -29,24 +31,40 @@ class ConfirmarNegociacaoForm(forms.Form):
         id_negociacao = int(self.cleaned_data['id_negociacao'])
         tipo_usuario = self.cleaned_data['tipo_usuario']
         opcao = self.cleaned_data['opcoes']
-        negociacao = Negociacao.objects.filter(pk=id_negociacao)
+        negociacao = Negociacao.objects.get(pk=id_negociacao)
 
-        neg_obj = negociacao.first()
         if opcao == 'cancelar':
-            negociacao.update(status='C')
+            negociacao.status = 'CA'
+            # deleta os objetos NegociacaoPagaTrabalho, pois a negociação foi cancelada
+            neg_paga_trabalho = NegociacaoPagaTrabalho.objects.filter(id_negociacao=negociacao)
+            for obj in neg_paga_trabalho:
+                obj.delete()
+
+            # deixar livres as produções alocadas à negociações
+            producoes = Producao.objects.filter(id_negociacao=id_negociacao)
+            for producao in producoes:
+                producao.id_negociacao = None
+                producao.status = 'l'
+                producao.save()
         elif opcao == 'confirmar':
             if tipo_usuario == 'E':
-                if neg_obj.status == 'ACE':
-                    if neg_obj.confirmacao_preco_cooperativa == True:
-                        negociacao.update(confirmacao_empresa=True, status='AC')
+                if negociacao.status == 'ACE':
+                    if negociacao.confirmacao_preco_cooperativa == True:
+                        negociacao.confirmacao_preco_empresa = True 
+                        negociacao.status = 'AC'
                     else:
-                        negociacao.update(confirmacao_empresa=True, status='ACC')                    
+                        negociacao.confirmacao_preco_empresa = True 
+                        negociacao.status = 'ACC'                    
             else:
-                if neg_obj.status == 'ACC':
-                    if neg_obj.confirmacao_preco_empresa == True:
-                        negociacao.update(confirmacao_cooperativa=True, status='AC')
+                if negociacao.status == 'ACC':
+                    if negociacao.confirmacao_preco_empresa == True:
+                        negociacao.confirmacao_preco_cooperativa = True
+                        negociacao.status = 'AC'
                     else:
-                        negociacao.update(confirmacao_cooperativa=True, status='ACE')
+                        negociacao.confirmacao_preco_cooperativa = True
+                        negociacao.status = 'ACE'
+        
+        negociacao.save()
 
 
 class ContestarPrecoForm(forms.Form):
@@ -77,9 +95,9 @@ class ContestarPrecoForm(forms.Form):
 
         try:
             if contestador == 'E':
-                status = 'AAC'
+                status = 'ACC'
             else:
-                status = 'AAE'
+                status = 'ACE'
             ContestacaoPreco.objects.create(
                 id_negociacao=negociacao,
                 status=status,
@@ -87,6 +105,8 @@ class ContestarPrecoForm(forms.Form):
                 justificativa=justificativa,
                 preco_proposto=preco_proposto
             )
+            negociacao.status = status
+            negociacao.save()
         except Exception as e:
             print(f'Erro ao criar contestação de preço: {e}')
 
@@ -240,10 +260,13 @@ class ConfirmarPagamentoForm(forms.Form):
                 negociacao.save()
             else:
                 negociacao.confirmacao_pgto_coop = True
-                negociacao.status = 'C'
                 negociacao.data_conclusao = timezone.now()
+                negociacao.status = 'C'
                 negociacao.save()
-            
+                
+                atualiza_producoes(negociacao.pk)
+                atualiza_preco_medio_residuo(negociacao.id_residuo.pk)
+
         except Exception as e:
             print(f'Erro ao atualizar status de pagamento de negociação: {e}')
 
@@ -281,7 +304,7 @@ class ContestarPagamentoForm(forms.Form):
                 status='EE',
                 justificativa=justificativa,
                 id_negociacao=negociacao,
-                usuario='C',
+                usuario='CO',
             )
 
         except Exception as e:
@@ -356,3 +379,6 @@ class ConfirmarPagamentoPosContestForm(forms.Form):
         negociacao.data_conclusao = timezone.now()
         negociacao.status = 'C'
         negociacao.save()
+
+        atualiza_producoes(negociacao.pk)
+        atualiza_preco_medio_residuo(negociacao.id_residuo.pk)

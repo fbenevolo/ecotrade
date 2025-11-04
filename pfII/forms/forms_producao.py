@@ -1,5 +1,5 @@
 from django import forms
-from ..models import Producao, Usuario, Residuo, CoopDetemResiduo
+from ..models import Producao, Usuario, Residuo
 from django.forms.models import ModelChoiceField
 from django.db.models import F
 
@@ -40,19 +40,6 @@ class AdicionarProducaoForm(forms.ModelForm):
         
         if cooperativa:
             producao.id_cooperativa = cooperativa 
-        try:
-            # atualiza quantidade total de resíduo
-            if CoopDetemResiduo.objects.filter(id_cooperativa=cooperativa, id_residuo=producao.id_residuo).exists():
-                CoopDetemResiduo.objects.filter(id_cooperativa=cooperativa, 
-                                                id_residuo=producao.id_residuo).update(quantidade=
-                                                                                       F('quantidade')+producao.producao)
-            else:
-                CoopDetemResiduo.objects.create(id_cooperativa=cooperativa, 
-                                                id_residuo=producao.id_residuo,
-                                                quantidade=producao.producao)
-        except Exception as e:
-            print(f'Erro ao atualizar residuos totais da cooperativa: {e}')
-
         if commit:
             producao.save()
             

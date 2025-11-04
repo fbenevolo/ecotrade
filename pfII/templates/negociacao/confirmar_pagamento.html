@@ -1,7 +1,7 @@
 {% load mathfilters %}
 <div id="modal-confirmar-pagamento" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden">
     <div class="bg-white dark:bg-background-dark/95 rounded-xl shadow-2xl w-full max-w-3xl transform transition-all">
-        <form action="{% url 'negociacoes' email_usuario=request.user.pk id_negociacao=negociacao.pk %}" method="POST" enctype="multipart/form-data">
+        <form action="{% url 'negociacoes' email_usuario=request.user.pk %}" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
 
             {{ confirmar_pagamento_form.action }}
@@ -31,12 +31,24 @@
                                 download> <span class="material-symbols-outlined text-base">download</span> Baixar Comprovante
                             </a>
                         {% else %}
-                            <div class="w-full h-80 bg-background-light dark:bg-background-dark rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 relative">
-                                <div class="text-center text-gray-500 dark:text-gray-400 z-0">
-                                    <span class="material-symbols-outlined text-6xl">visibility</span>
-                                    <p class="mt-2">Anexar Documento</p>
+                         <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md relative overflow-hidden transition-all duration-300 hover:border-primary/50">
+                            <div class="space-y-1 text-center">
+                                <span id="upload-icon" class="material-symbols-outlined text-4xl text-gray-400 dark:text-gray-500">
+                                    cloud_upload
+                                </span>
+                                <div id="file-area" class="flex text-sm text-gray-600 dark:text-gray-400 justify-center">
+                                    <label class="relative cursor-pointer bg-white dark:bg-gray-800 rounded-md font-medium text-primary hover:text-primary/80 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary" 
+                                           for="id_comprovante">
+                                        <span id="file-name-display">Carregar um arquivo</span>
+                                        {{ confirmar_pagamento_form.comprovante }} 
+                                    </label>
                                 </div>
-                            {{ confirmar_pagamento_form.comprovante }} 
+                                <p id="file-status-info" class="text-xs text-gray-500 dark:text-gray-500">PNG, JPG, PDF até 10MB</p>
+                            </div>
+                            <div id="file-preview-pill"
+                                class="absolute top-2 right-2 text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200 py-1 px-3 rounded-full hidden">
+                                Arquivo Selecionado
+                            </div>
                         </div>
                         {% endif %}
                     </div>
@@ -74,4 +86,34 @@
             </div>
         </form>
     </div>
+
+<script>
+    // script para preview de nome de arquivo ao realizar upload
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('id_comprovante');
+        const fileNameDisplay = document.getElementById('file-name-display');
+        const fileStatusInfo = document.getElementById('file-status-info');
+        const filePreviewPill = document.getElementById('file-preview-pill');
+        const defaultText = 'Carregar um arquivo';
+        const defaultInfo = 'PNG, JPG, PDF até 10MB';
+
+        // Escuta o evento de seleção de arquivo
+        if (fileInput) {
+            fileInput.addEventListener('change', function() {
+                if (fileInput.files.length > 0) {
+                    const fileName = fileInput.files[0].name;
+                    fileNameDisplay.textContent = fileName;
+                    fileStatusInfo.textContent = 'Clique para trocar ou remover o arquivo.';
+                    filePreviewPill.classList.remove('hidden');
+                } else {
+                    // Se o usuário cancelar a seleção, volta ao estado padrão
+                    fileNameDisplay.textContent = defaultText;
+                    fileStatusInfo.textContent = defaultInfo;
+                    filePreviewPill.classList.add('hidden');
+                }
+            });
+        }
+    });
+</script>
+
 </div>

@@ -90,7 +90,7 @@
                         negociação</a>
                 </div>
             </div>
-            {% if not negociacao.contestacoes_preco and negociacao.status == 'ACC' and request.user.tipo_usuario == 'CO' or not negociacao.contestacoes_preco and negociacao.status == 'ACE' and request.user.tipo_usuario == 'E' %}
+            {% if negociacao.contestacoes_preco.count == 0 and negociacao.status == 'ACC' and request.user.tipo_usuario == 'CO' or negociacao.contestacoes_preco.count == 0 and negociacao.status == 'ACE' and request.user.tipo_usuario == 'E' %}
                 <div class="mt-6 space-y-2">
                     <button data-negociacao-id="{{ negociacao.pk }}"
                             data-tipo-usuario="{{ request.user.tipo_usuario }}"
@@ -112,7 +112,7 @@
                         <span>Contestar preço</span>
                     </button>
                 </div>
-            {% elif negociacao.contestacoes_preco and negociacao.status == 'ACC' or negociacao.contestacoes_preco and negociacao.status == 'ACE' %}
+            {% elif negociacao.contestacoes_preco.count > 0 and negociacao.status == 'ACC' or negociacao.contestacoes_preco.count > 0 and negociacao.status == 'ACE' %}
             <div class="mt-6 space-y-2">
                 Existe uma contestação de preço ativa. Confira-a na seção 'Ver Detalhes de Negociação'.
             </div>

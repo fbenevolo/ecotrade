@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const openModal = (modal) => {
         if (modal) modal.classList.remove('hidden');
     };
-    
+
     // =========================================================
     // I. FUNÇÃO PRINCIPAL DE ABERTURA (Agora recebe os dados do AJAX)
     // =========================================================

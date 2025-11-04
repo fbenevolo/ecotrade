@@ -16,7 +16,7 @@
                     <table class="min-w-full divide-y divide-primary/20">
                         <thead class="bg-background-light dark:bg-background-dark/30">
                             <tr>
-                                {% if request.user.tipo_usuario == 'CO' %}
+                                {% if request.user.tipo_usuario == 'CO' or request.user.tipo_usuario == 'CA' %}
                                     <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6" scope="col">Empresa</th>
                                 {% else %}
                                     <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6" scope="col">Cooperativa</th>
@@ -24,24 +24,30 @@
                                 <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
                                     scope="col">Data de Conclusão</th>
                                 <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
-                                    scope="col">Valor Total (R$)</th>
+                                    scope="col">Valor por Quilo (R$)</th>
                                 <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
+                                    scope="col">Quantidade Negociada (kg)</th>
+                                <th class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 dark:text-white"
                                     scope="col">Status</th>
-                                <th class="relative py-3.5 pl-3 pr-4 sm:pr-6" scope="col">
-                                    <span class="sr-only">Ações</span>
-                                </th>
+                                <th class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 dark:text-white" 
+                                    scope="col">Ações</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-primary/10 bg-white dark:bg-background-dark/50">
                             {% for negociacao in negociacoes_concluidas %}
                              <tr>
-                                {% if request.user.tipo_usuario == 'CO' %}
+                                {% if request.user.tipo_usuario == 'CO' or request.user.tipo_usuario == 'CA' %}
                                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6"> {{ negociacao.id_empresa.nome }} </td>                                    
                                 {% else %}
                                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6"> {{ negociacao.id_cooperativa.nome }} </td>
                                 {% endif %}
-                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400"> {{ negociacao.data_conclusao }} </td>
+                                {% if negociacao.data_conclusao is none %}
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400"> - </td>
+                                {% else %}
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400"> {{ negociacao.data_conclusao }} </td>
+                                {% endif %}
                                 <td class="whitespace-nowrap px-3 py-4 text-sm font-semibold text-primary"> {{ negociacao.preco }} </td>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm font-semibold"> {{ negociacao.quantidade }} </td>
                                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                                     {% if negociacao.status == 'C' %}
                                         <span
@@ -50,7 +56,7 @@
                                         </span>
                                     {% else %} 
                                           <span
-                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
                                             Cancelada
                                         </span>
                                     {% endif %}

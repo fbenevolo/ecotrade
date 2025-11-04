@@ -13,30 +13,36 @@
                     <span class="material-symbols-outlined">arrow_back</span>
                     Voltar para Negociações Correntes
                 </a>
-                <div>
+                <div class="flex items-center gap-3 mb-8">
                     <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
                         <span class="text-gray-500 dark:text-gray-400">Negociações Correntes &gt;</span>
                         Detalhes da Negociação
                     </h1>
-                </div>
-            </div>
-            <div class="flex items-center justify-between mb-8">
-                <div class="flex items-center gap-4">
-                    {% if negociacao.status == 'ACE' or negociacao.status == 'ACC' or negociacao.status == 'ACPE' or negociacao.status == 'ACPC' %}
-                    <span
-                        class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">
-                        {{ negociacao.get_status_display }}
-                    </span>
-                    {% elif negociacao.status == 'AC' or negociacao.status == 'ET' %}
-                    <span
-                        class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300">
-                        {{ negociacao.get_status_display }}
-                    </span>
-                    {% endif %}
-                    <!-- <span
-                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                        {{ negociacao.get_status_display }}
-                    </span> -->
+
+                    <div>
+                        <div class="flex items-center gap-4">
+                            {% if negociacao.status == 'ACE' or negociacao.status == 'ACC' or negociacao.status == 'ACPE' or negociacao.status == 'ACPC' %}
+                            <span
+                                class="bg-blue-100 text-blue-800 text-xs font-medium px-5 py-2 rounded-full dark:bg-blue-900 dark:text-blue-300">
+                                {{ negociacao.get_status_display }}
+                            </span>
+                            {% elif negociacao.status == 'AC' or negociacao.status == 'ET' %}
+                            <span
+                                class="bg-yellow-100 text-yellow-800 text-xs font-medium px-5 py-2 rounded-full dark:bg-yellow-900 dark:text-yellow-300">
+                                {{ negociacao.get_status_display }}
+                            </span>
+                            {% else %}
+                             <span
+                                class="bg-green-100 text-green-800 text-xs font-medium px-5 py-2 rounded-full dark:bg-yellow-900 dark:text-yellow-300">
+                                {{ negociacao.get_status_display }}
+                            </span>
+                            {% endif %}
+                            <!-- <span
+                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                                {{ negociacao.get_status_display }}
+                            </span> -->
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="space-y-8">
@@ -67,18 +73,18 @@
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-primary/10 bg-transparent dark:bg-transparent">
-                                    {% for producao in producoes_individuais.values %}
+                                    {% for nome_catador, dados_producao in producoes_individuais.items %}
                                     <tr>
                                         <td
                                             class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
-                                            {{ producao.producao.id_catador.nome }}
+                                            {{ nome_catador }}
                                         </td>
                                         <td
                                             class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                            {{  producao.quantidade }}
+                                            {{  dados_producao.quantidade }}
                                         </td>
                                         <td class="whitespace-nowrap px-3 py-4 text-sm font-semibold text-primary">
-                                            {{ producao.receber }}  </td>
+                                            {{ dados_producao.receber }}  </td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -234,7 +240,7 @@
                                                 {{ contestacao.get_status_display }}
                                             </span>
                                         </td>
-                                        {% if contestacao.status == 'EE' and contestacao.usuario == 'CO' and request.user.tipo_usuario == 'E' %}
+                                        {% if request.user.tipo_usuario == 'E' and contestacao.status == 'EE' and contestacao.usuario == 'CO' %}
                                         <td class="px-6 py-4" title="Responder contestação">
                                             <button 
                                                 data-id-negociacao="{{ contestacao.id_negociacao.pk }}" 

@@ -1,10 +1,16 @@
 {% extends 'base_dashboard.html' %}
 {% block dashboard_content %}
 <main class="flex-1 p-8 overflow-y-auto">
-    <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-8">{{ titulo_dashboard }}</h2>
+    {% if request.user.tipo_usuario == 'CO' %}
+    <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-8"> Dashboard da Cooperativa </h2>
+    {% elif request.user.tipo_usuario == 'CA' %}
+    <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-8"> Dashboard do Catador </h2>
+    {% else %}
+    <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-8"> Dashboard da Empresa </h2>
+    {% endif %}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <div class="bg-white dark:bg-background-dark p-6 rounded-xl shadow-sm">
-            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Volume Total de Resíduos Negociados(kg)
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Volume Total de Resíduos Negociados (kg)
             </h3>
             <p class="text-3xl font-bold text-gray-800 dark:text-white mt-2"> {{ volume_total_residuos }}</p>
         </div>
@@ -13,66 +19,87 @@
             <p class="text-3xl font-bold text-gray-800 dark:text-white mt-2"> {{ negociacoes_ativas }} </p>
         </div>
         {% if usuario.tipo_usuario == 'CO' %}
-            <div class="bg-white dark:bg-background-dark p-6 rounded-xl shadow-sm">
-                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Catadores Ativos</h3>
-                <p class="text-3xl font-bold text-gray-800 dark:text-white mt-2">...</p>
-            </div>
+        <div class="bg-white dark:bg-background-dark p-6 rounded-xl shadow-sm">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Catadores Ativos</h3>
+            <p class="text-3xl font-bold text-gray-800 dark:text-white mt-2"> {{ outras_infos.count_catadores }} </p>
+        </div>
         {% elif usuario.tipo_usuario == 'CA' %}
-            <div class="bg-white dark:bg-background-dark p-6 rounded-xl shadow-sm">
-                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Rendimento Total</h3>
-                <p class="text-3xl font-bold text-gray-800 dark:text-white mt-2"> {{ outras_infos.rendimento_total }} </p>
-            </div>
+        <div class="bg-white dark:bg-background-dark p-6 rounded-xl shadow-sm">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Rendimento Total</h3>
+            <p class="text-3xl font-bold text-gray-800 dark:text-white mt-2"> {{ outras_infos.rendimento_total }} </p>
+        </div>
         {% else %}
-           <div class="bg-white dark:bg-background-dark p-6 rounded-xl shadow-sm">
-                <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Cooperativas Parceiras</h3>
-                <p class="text-3xl font-bold text-gray-800 dark:text-white mt-2"> {{ outras_infos.cooperativas_unicas }}  </p>
-            </div>
+        <div class="bg-white dark:bg-background-dark p-6 rounded-xl shadow-sm">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Cooperativas Parceiras</h3>
+            <p class="text-3xl font-bold text-gray-800 dark:text-white mt-2"> {{ outras_infos.cooperativas_unicas }}
+            </p>
+        </div>
         {% endif %}
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        {% load static %}
         <div class="bg-white dark:bg-background-dark p-6 rounded-xl shadow-sm">
             <h3 class="font-semibold text-gray-800 dark:text-white mb-4">Volume de Resíduos por Tipo</h3>
-            <!-- <div class="grid grid-cols-4 gap-4 items-end h-48">
-                        <div class="flex flex-col items-center">
-                            <div class="w-full bg-primary/20 dark:bg-primary/30 rounded-t" style="height: 40%"></div>
-                            <span class="text-xs text-gray-500 dark:text-gray-400 mt-2">Papel</span>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <div class="w-full bg-primary/20 dark:bg-primary/30 rounded-t" style="height: 60%"></div>
-                            <span class="text-xs text-gray-500 dark:text-gray-400 mt-2">Plástico</span>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <div class="w-full bg-primary rounded-t" style="height: 80%"></div>
-                            <span class="text-xs text-gray-500 dark:text-gray-400 mt-2">Vidro</span>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <div class="w-full bg-primary/20 dark:bg-primary/30 rounded-t" style="height: 50%"></div>
-                            <span class="text-xs text-gray-500 dark:text-gray-400 mt-2">Metal</span>
-                        </div>
-                    </div> -->
-        </div>
-        <div class="bg-white dark:bg-background-dark p-6 rounded-xl shadow-sm">
-            <h3 class="font-semibold text-gray-800 dark:text-white mb-4">Negociações Concluídas por Mês</h3>
-            <!-- <div class="h-48 relative">
-                        <svg class="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 400 160">
-                            <path
-                                d="M0 120 C 40 10, 80 80, 120 70 S 200 150, 240 100 S 320 -10, 360 40 S 400 140, 400 140"
-                                fill="none" stroke="#38e07b" stroke-width="2"></path>
-                            <path
-                                d="M0 120 C 40 10, 80 80, 120 70 S 200 150, 240 100 S 320 -10, 360 40 S 400 140, 400 140 V 160 H 0 Z"
-                                fill="url(#gradient)"></path>
-                            <defs>
-                                <linearGradient id="gradient" x1="0" x2="0" y1="0" y2="160">
-                                    <stop offset="0%" stop-color="#38e07b" stop-opacity="0.4"></stop>
-                                    <stop offset="100%" stop-color="#38e07b" stop-opacity="0"></stop>
-                                </linearGradient>
-                            </defs>
-                        </svg>
+            {% if max_volume %}
+            <div class="grid grid-cols-4 gap-4 items-end h-48">
+                {% for tipo_residuo_key, volume in volume_por_residuo.items %}
+
+                {% if volume > 0 and max_volume > 0 %}
+                {% widthratio volume max_volume 100 as height_percentage %}
+                {% else %}
+                {% with 0 as height_percentage %}
+                {% endwith %}
+                {% endif %}
+
+                <div class="flex flex-col items-center h-full justify-end">
+                    <div class="w-full rounded-t
+                        {% if forloop.counter|divisibleby:3 %}bg-primary{% else %}bg-primary/20{% endif %}"                        style="height: {{ height_percentage }}%"
+                        title="{{ volume|floatformat:1 }} kg">
                     </div>
-                    <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-2">
-                        <span>Jan</span><span>Fev</span><span>Mar</span><span>Abr</span><span>Mai</span><span>Jun</span>
-                    </div> -->
+                    <span class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        {{ tipo_residuo_key|capfirst }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            {% endif %}
         </div>
+       <div class="bg-white dark:bg-background-dark p-6 rounded-xl shadow-sm">
+        <h3 class="font-semibold text-gray-800 dark:text-white mb-4">Negociações Concluídas por Mês</h3>
+        {% with max_neg=max_negociacoes_mes|default:1 %}
+        <div class="grid grid-cols-6 gap-2 items-end h-48 relative"> 
+            {% if negociacoes_por_mes %}
+                {% for mes_datetime, count in negociacoes_por_mes.items %}                    
+                    {% widthratio count max_neg 100 as height_percentage %}
+                    
+                    <div class="flex flex-col items-center h-full justify-end">
+                        
+                        {# Barra do gráfico #}
+                        <div class="w-full rounded-t bg-green-500 hover:bg-green-600 transition-colors"
+                            style="height: {{ height_percentage }}%"
+                            title="{{ mes_datetime|date:'F/Y' }} - {{ count }} negociações">
+                        </div>
+                        
+                        {# Rótulo do mês (ex: Jan) #}
+                        <span class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                            {{ mes_datetime|date:'M' }}
+                        </span>
+                    </div>
+                {% endfor %}
+            {% else %}
+                {# Se a lista estiver vazia, exibe 6 barras vazias (exemplo para manter o layout) #}
+                <div class="col-span-6 flex justify-around h-full">
+                    <p class="text-gray-500 dark:text-gray-400 self-center">Nenhuma negociação concluída neste período.</p>
+                </div>
+            {% endif %}
+            
+            {# Linha de base do gráfico (Opcional, apenas visual) #}
+            <div class="absolute bottom-0 left-0 right-0 h-px bg-gray-300 dark:bg-gray-700"></div>
+
+        </div>
+        {% endwith %}
+    </div>
     </div>
     <div class="bg-white dark:bg-background-dark p-6 rounded-xl shadow-sm">
         <div class="flex justify-between items-center mb-4">

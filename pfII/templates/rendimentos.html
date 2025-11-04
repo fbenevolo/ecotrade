@@ -1,5 +1,92 @@
 {% extends 'base_dashboard.html' %}
 
+{% load mathfilters %}
+
 {% block dashboard_content %}
+
+<main class="flex-1 p-8 overflow-y-auto">
+    <div class="flex items-center justify-between mb-8">
+        <h2 class="text-3xl font-bold text-gray-800 dark:text-white">Meus Recebimentos</h2>
+        <div class="flex items-center space-x-4">
+            <div class="text-right">
+                <p class="text-sm font-medium text-gray-800 dark:text-white"> {{ request.user.nome }} </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Catador</p>
+            </div>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Recebido (R$)</h3>
+            <p class="text-3xl font-bold text-primary mt-2"> {{ total_recebido }} </p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Recebido Este Mês (R$)</h3>
+            <p class="text-3xl font-bold text-gray-800 dark:text-white mt-2"> {{ rendimento_total_mes_atual }} </p>
+        </div>
+    </div>
+    <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gray-800 dark:text-white">Histórico de Recebimentos</h3>
+            <!-- <div class="flex items-center space-x-4">
+                <button
+                    class="flex items-center text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary">
+                    <span class="material-symbols-outlined mr-2">filter_list</span>
+                    Filtrar
+                </button>
+                <button
+                    class="flex items-center text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary">
+                    <span class="material-symbols-outlined mr-2">download</span>
+                    Exportar
+                </button>
+            </div> -->
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr
+                        class="text-xs text-gray-500 dark:text-gray-400 uppercase border-b border-gray-200 dark:border-gray-800">
+                        <th class="py-3 px-4 font-medium">Data de Conclusão da Negociação</th>
+                        <th class="py-3 px-4 font-medium">Comprador</th>
+                        <th class="py-3 px-4 font-medium text-right">Resíduo</th>
+                        <th class="py-3 px-4 font-medium text-right">Quantidade Utilizada</th>
+                        <th class="py-3 px-4 font-medium text-right">Valor Recebido(R$)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                    {% for rendimento in rendimentos %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                        <td class="py-4 px-4 text-sm text-gray-800 dark:text-white"> {{ rendimento.id_negociacao.data_conclusao }} </td>
+                        <td class="py-4 px-4"> {{ rendimento.id_negociacao.id_empresa.nome }}</td>
+                        <td class="py-4 px-4 text-sm text-gray-800 dark:text-white text-right"> {{ rendimento.id_negociacao.id_residuo.get_tipo_display }} </td>
+                        <td class="py-4 px-4 text-sm text-gray-800 dark:text-white text-right"> {{ rendimento.quantidade }} </td>
+                        <td class="py-4 px-4 text-sm font-semibold text-primary text-right"> {{ rendimento.id_negociacao.preco|mul:rendimento.quantidade|floatformat:2 }} </td>
+                    </tr>
+                    {% endfor %}
+                    <!-- <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                        <td class="py-4 px-4 text-sm text-gray-800 dark:text-white">25/06/2024</td>
+                        <td class="py-4 px-4">
+                            <a class="text-sm font-medium text-primary hover:underline" href="#">#PROD-00115</a>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">200kg de Alumínio</p>
+                        </td>
+                        <td class="py-4 px-4 text-sm text-gray-800 dark:text-white">CoopRecicla</td>
+                        <td class="py-4 px-4 text-sm font-semibold text-primary text-right">R$ 575,50</td>
+                    </tr> -->
+                </tbody>
+            </table>
+        </div>
+        <!-- <div class="flex justify-between items-center mt-4 text-sm text-gray-600 dark:text-gray-400">
+            <span>Mostrando 1 a 4 de 22 recebimentos</span>
+            <div class="flex items-center space-x-1">
+                <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50" disabled="">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+            </div>
+        </div> -->
+    </div>
+</main>
+
 
 {% endblock %}

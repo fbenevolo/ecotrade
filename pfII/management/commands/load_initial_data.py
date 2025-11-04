@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 from django.contrib.auth import get_user_model
-from pfII.models import Residuo, CoopDetemResiduo, Demanda, Producao
+from pfII.models import Residuo, Demanda, Producao
 from datetime import datetime
 
 Usuario = get_user_model()
@@ -62,37 +62,6 @@ class Command(BaseCommand):
         except IntegrityError:
             self.stdout.write(self.style.ERROR('Erro de integridade: Usuários já existem ou dados inválidos.'))
             return # Sai do script em caso de erro
-        
-    
-        # criando produções para uma cooperativa
-        try:
-            cooperativa = Usuario.objects.get(email=coop_email)
-            plastico = Residuo.objects.get(tipo='plastico')
-            papel = Residuo.objects.get(tipo='papel')
-
-            if not CoopDetemResiduo.objects.filter(id_cooperativa=cooperativa, id_residuo=plastico).exists():
-                residuo1 = CoopDetemResiduo.objects.create(
-                    id_cooperativa=cooperativa,
-                    id_residuo=plastico,
-                    quantidade=15
-                )
-                self.stdout.write(f'CoopDetemResiduo {residuo1} criado para cooperativa {coop_email}')
-            else:
-                residuo1 = CoopDetemResiduo.objects.filter(id_cooperativa=cooperativa, id_residuo=plastico).first()
-
-            if not CoopDetemResiduo.objects.filter(id_cooperativa=cooperativa, id_residuo=papel).exists():
-                residuo2 = CoopDetemResiduo.objects.create(
-                    id_cooperativa=cooperativa,
-                    id_residuo=papel,
-                    quantidade=20
-                )
-                self.stdout.write(f'CoopDetemResiduo {residuo2} criado para cooperativa {coop_email}')
-            else:
-                residuo2 = CoopDetemResiduo.objects.filter(id_cooperativa=cooperativa, id_residuo=papel).first()
-        except Exception as e:
-                self.stdout.write(self.style.ERROR(f'Erro na criação de CoopDetemResiduo: {e}'))
-                return
-        
         
         # criando duas produções de catador
         try:

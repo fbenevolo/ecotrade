@@ -1,5 +1,8 @@
-from .models import Usuario, Negociacao, Demanda, Producao, NegociacaoPagaTrabalho
+from .models import Usuario, Negociacao, Demanda, Residuo, Producao, NegociacaoPagaTrabalho
 from typing import List
+from django.utils import timezone
+from datetime import timedelta
+
 
 def get_rendimento_total_catador(usuario: Usuario, negociacoes: List[Negociacao]):
     """
@@ -18,34 +21,31 @@ def get_rendimento_total_catador(usuario: Usuario, negociacoes: List[Negociacao]
     return total_pago 
 
 
-def calcular_preco_sugerido(id_residuo):
-    return
-
-
 def seleciona_producoes(id_demanda):
     '''
     Seleciona catadores e suas produções para uma negociação.
-    Retorna um dicionário no formato <objeto-producao>: quantidade_selecionada
+    
     '''
     demanda = Demanda.objects.get(pk=id_demanda)
     residuo = demanda.id_residuo.tipo
-    producoes_residuo = Producao.objects.filter(id_residuo=residuo).order_by('-data')
+    producoes_residuo = Producao.objects.filter(id_residuo=residuo, status='l').order_by('data')
 
     selecao_producoes = {}
 
     qtd_demanda_restante = demanda.quantidade
     for producao in producoes_residuo:
         if qtd_demanda_restante <= 0:
-            break 
+            break     
         
         qtd_produzida = producao.producao
         if qtd_produzida <= qtd_demanda_restante:
-            selecao = qtd_produzida
+            qtd_selecionada = qtd_produzida
         else:
-            selecao = qtd_produzida - qtd_demanda_restante
+            qtd_selecionada = qtd_produzida - (qtd_produzida - qtd_demanda_restante)
 
-        selecao_producoes[producao] = selecao
-        qtd_demanda_restante -= selecao
+        selecao_producoes[producao] = qtd_selecionada
+        qtd_demanda_restante -= qtd_selecionada
+
 
     return selecao_producoes
 
@@ -57,8 +57,51 @@ def calcula_valor_a_receber(id_negociacao, lista_producoes_catadores):
     '''
     negociacao = Negociacao.objects.get(pk=id_negociacao)
     valores_a_receber = []
-    for (_, qtd) in lista_producoes_catadores.items():
-        a_receber = qtd * negociacao.preco
+    for obj in lista_producoes_catadores:
+        a_receber = obj.quantidade * negociacao.preco
         valores_a_receber.append(a_receber)
 
     return valores_a_receber
+
+
+def atualiza_producoes(id_negociacao):
+    '''
+    Atualiza a tabela Producao, diminuindo as quantidades que foram selecionadas em NegociacaoPagaTrabalho
+    para uma determinada negociação
+    '''
+    negociacao = Negociacao.objects.get(pk=id_negociacao)
+    n_paga_t = NegociacaoPagaTrabalho.objects.filter(id_negociacao=negociacao)
+
+    # para cada produção,cria um objeto NegociacaoPagaTrabalho e desconta a quantidade selecionada das produçõess
+    for n in n_paga_t:
+        producao = Producao.objects.get(pk=n.id_producao.pk)
+        producao.producao -= n.quantidade
+
+        # se toda a produção foi utilizada, deleta o objeto do banco
+        if producao.producao == 0:
+            producao.status = 'z'
+        else:
+            producao.status = 'l'
+        
+        producao.id_negociacao = None
+        producao.save()
+
+def atualiza_preco_medio_residuo(id_residuo):
+    '''
+    Atualiza preço médio de um resíduo
+    '''
+    residuo = Residuo.objects.get(pk=id_residuo)
+    # todas as negociacoes em que aquele residuo foi negociado nos ultimos três meses
+    three_months_ago_approx = timezone.now() - timedelta(days=90) # aproximação, pode errar em alguns dias
+    negociacoes_residuo = Negociacao.objects.filter(id_residuo=residuo, 
+                                                    status='C',
+                                                    data_conclusao__gte=three_months_ago_approx)
+    if len(negociacoes_residuo):
+        total = 0
+        for negociacao in negociacoes_residuo:
+            total += negociacao.preco
+        media = total / len(negociacoes_residuo)
+        residuo.preco_medio = media
+    
+    
+    residuo.save()

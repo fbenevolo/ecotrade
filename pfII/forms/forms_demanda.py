@@ -1,5 +1,5 @@
 from django import forms
-from ..models import Usuario, Demanda, Residuo, Negociacao
+from ..models import Usuario, Demanda, Residuo, Negociacao, NegociacaoPagaTrabalho
 from django.forms.models import ModelChoiceField
 
 from ..utils import seleciona_producoes
@@ -96,7 +96,6 @@ class CadastrarAtendimentoDemandaForm(forms.Form):
             demanda.status='A'
             demanda.save()
 
-
             cooperativa = Usuario.objects.get(pk=id_cooperativa)
             residuo = Residuo.objects.get(pk=id_residuo)
             # Cria objeto negociação com as informações da demanda
@@ -111,10 +110,17 @@ class CadastrarAtendimentoDemandaForm(forms.Form):
             
             # seleciona producoes e aloca elas para negociação
             producoes = seleciona_producoes(id_demanda)
-            for producao in producoes:
+            for (producao, quantidade) in producoes.items():
                 producao.status = 'a'
-                producao,id_negociacao = negociacao 
+                producao.id_negociacao = negociacao 
                 producao.save()
+
+                # cria objetos NegociacaoPagaTrabalho
+                NegociacaoPagaTrabalho.objects.create(id_negociacao=negociacao,
+                               id_producao=producao,
+                               quantidade=quantidade,
+                               id_catador=producao.id_catador)
+
         except Exception as e:
             print(f'Erro ao criar negociação: {e}')
             

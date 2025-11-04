@@ -114,7 +114,8 @@ class Residuo(models.Model):
 class Producao(models.Model):
     OPCOES_PRODUCAO = (
         ('l', 'Livre'),
-        ('a', 'Alocada em Negociação')
+        ('a', 'Alocada em Negociação'),
+        ('t', 'Zerada')
     )
 
 
@@ -135,14 +136,6 @@ class Producao(models.Model):
     producao = models.FloatField()
 
 
-class CoopDetemResiduo(models.Model):
-    id_cooperativa = models.ForeignKey('Usuario', 
-                                       on_delete=models.SET_NULL,
-                                       null=True)
-    id_residuo = models.ForeignKey('Residuo', on_delete=models.CASCADE)
-    quantidade = models.FloatField()
-
-
 class Demanda(models.Model):
     OPCOES_STATUS = (
         ('A', 'Atentida'),
@@ -156,13 +149,6 @@ class Demanda(models.Model):
     id_residuo = models.ForeignKey('Residuo', on_delete=models.CASCADE)
     quantidade = models.FloatField()
     status = models.CharField(choices=OPCOES_STATUS)
-
-    id_cooperativa = models.ForeignKey('Usuario',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='cooperativa_atendedora'
-    )
 
 
 class Negociacao(models.Model):
@@ -203,7 +189,7 @@ class Negociacao(models.Model):
     status = models.CharField(choices=OPCOES_STATUS, max_length=4)
     data_coleta = models.DateField(blank=True, null=True)
     data_entrega = models.DateField(blank=True, null=True)
-    data_conclusao = models.DateField(blank=True, null=True, default=timezone.now)
+    data_conclusao = models.DateField(blank=True, null=True)
     confirmacao_pgto_empresa = models.BooleanField(default=False)
     confirmacao_pgto_coop = models.BooleanField(default=False)
     comprovante = models.ImageField(null=True, blank=True)
@@ -254,9 +240,15 @@ class ContestacaoPagamento(models.Model):
 
 class NegociacaoPagaTrabalho(models.Model):
     id_producao = models.ForeignKey('Producao', 
-                                    on_delete=models.CASCADE)
+                                    on_delete=models.SET_NULL,
+                                    null=True)
     id_negociacao = models.ForeignKey('Negociacao', 
-                                      on_delete=models.CASCADE)
+                                      on_delete=models.SET_NULL,
+                                      null=True)
+    id_catador = models.ForeignKey('Usuario',
+                                    on_delete=models.CASCADE,
+                                    null=True)
+    
     quantidade = models.FloatField()
 
 

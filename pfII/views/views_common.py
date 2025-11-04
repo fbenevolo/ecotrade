@@ -5,10 +5,15 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 
-from ..models import Usuario, Negociacao, Producao, Demanda
+from django.db.models import Sum, Count
+from django.db.models.functions import TruncMonth
+from django.utils import timezone
+
+from ..models import Usuario, Negociacao, NegociacaoPagaTrabalho, Producao, Demanda
 from ..forms.forms_common import SignUpForm, LoginForm
 from ..forms.forms_usuario import AlterarUsuarioForm
 from ..utils import get_rendimento_total_catador
+
 
 def home_view(request):
     return render(request, 'home.html')
@@ -49,8 +54,6 @@ def login_view(request):
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
             usuario = Usuario.objects.get(email=form.get_user())
-
-            print(usuario)
             if usuario.status == 'A':
                 login(request, usuario)
                 return redirect(next_url)
@@ -103,39 +106,57 @@ def configuracoes(request, email_usuario):
 @login_required
 def dashboard(request, email_usuario):
     if request.user.email != email_usuario:
+        # Usando request.user.pk aqui, assumindo que é o mesmo que email_usuario
         return redirect(reverse('dashboard', kwargs={'email_usuario': request.user.pk}))
     
     usuario = get_object_or_404(Usuario, pk=email_usuario)    
-    titulo = 'Dashboard '
-
     outras_infos = {} 
 
     if usuario.tipo_usuario == 'CO':
-        negociacoes = Negociacao.objects.filter(id_cooperativa=usuario.pk, status='C')
-        titulo += 'da Cooperativa'
-    elif usuario.tipo_usuario == 'CA':
-        negociacoes = Negociacao.objects.filter(id_cooperativa=usuario.pk, status='C')
-        titulo += 'do Catador'
-    
-        outras_infos['rendimento_total'] = get_rendimento_total_catador(usuario, negociacoes)
-    
-    else:
-        negociacoes = Negociacao.objects.filter(id_empresa=usuario.pk, status='C')
-        titulo += 'da Empresa'
+        negociacoes_concluidas = Negociacao.objects.filter(id_cooperativa=usuario.pk, status='C')
+        negociacoes_ativas_qs = Negociacao.objects.filter(id_cooperativa=usuario.pk).exclude(status__in=['C', 'CA'])
 
-        contagem_cooperativas_unicas = negociacoes.values('id_cooperativa').distinct().count()
+        outras_infos['count_catadores'] = request.user.catadores.count()
+    
+    elif usuario.tipo_usuario == 'CA':
+        cooperativa_pk = usuario.cooperativa_associada.pk if usuario.cooperativa_associada else None
+        negociacoes_concluidas = Negociacao.objects.filter(id_cooperativa=cooperativa_pk, status='C')
+        negociacoes_ativas_qs = Negociacao.objects.filter(id_cooperativa=cooperativa_pk).exclude(status__in=['C', 'CA'])
+
+        outras_infos['rendimento_total'] = 0
+        n_paga_t = NegociacaoPagaTrabalho.objects.filter(id_negociacao__status='C', id_catador=request.user.tipo_usuario)
+        for n in n_paga_t:
+             outras_infos['rendimento_total'] += n.quantidade * n.id_negociacao.preco
+    else: 
+        negociacoes_concluidas = Negociacao.objects.filter(id_empresa=usuario.pk, status='C')
+        negociacoes_ativas_qs = Negociacao.objects.filter(id_empresa=usuario.pk).exclude(status__in=['C', 'CA'])
+        
+        contagem_cooperativas_unicas = negociacoes_concluidas.values('id_cooperativa').distinct().count()
         outras_infos['cooperativas_unicas'] = contagem_cooperativas_unicas
     
+    volume_por_residuo_qs = negociacoes_concluidas.values('id_residuo__tipo').annotate(total_volume=Sum('quantidade')).order_by()
+    volume_por_residuo_dict = { item['id_residuo__tipo']: item['total_volume'] for item in volume_por_residuo_qs }
+    volumes_list = list(volume_por_residuo_dict.values())
+    max_volume = max(volumes_list) if volumes_list else 1 # Define 1 para evitar divisão por zero se vazio
 
-    volume_total_residuos = sum(negociacao.quantidade for negociacao in negociacoes)
-    negociacoes_ativas = len([negociacao for negociacao in negociacoes if negociacao.status == 'A'])
+
+    negociacoes_por_mes_qs = negociacoes_concluidas.annotate(mes=TruncMonth('data_conclusao')).values('mes').annotate(total_negociacoes=Count('pk')).order_by('mes')
+    negociacoes_por_mes_dict = { item['mes']: item['total_negociacoes']  for item in negociacoes_por_mes_qs if item['mes'] is not None }
+    contagens_list = list(negociacoes_por_mes_dict.values())
+    max_negociacoes_mes = max(contagens_list) if contagens_list else 1
+
+    volume_total_residuos = negociacoes_concluidas.aggregate(Sum('quantidade'))['quantidade__sum'] or 0
+    negociacoes_ativas = negociacoes_ativas_qs.count()
 
     context = {
         'usuario': usuario,
         'email_usuario': request.user.email,
-        'titulo_dashboard': titulo,
         'volume_total_residuos': volume_total_residuos,
         'negociacoes_ativas': negociacoes_ativas,
+        'volume_por_residuo': volume_por_residuo_dict, 
+        'max_volume': max_volume,
+        'negociacoes_por_mes': negociacoes_por_mes_dict,
+        'max_negociacoes_mes': max_negociacoes_mes,
         'outras_infos': outras_infos
     }
 
@@ -148,10 +169,12 @@ def historico(request, email_usuario):
         return redirect(reverse('historico', kwargs={'email_usuario': request.user.pk}))
     
     usuario = request.user
-    if usuario.tipo_usuario == 'E':
-        negociacoes_concluidas = Negociacao.objects.filter(id_empresa=usuario.pk, status='C').order_by()
+    if request.user.tipo_usuario == 'E':
+        negociacoes_concluidas = Negociacao.objects.filter(id_empresa=request.user.pk, status__in=('C', 'CA')).order_by()
+    elif request.user.tipo_usuario == 'CO':
+        negociacoes_concluidas = Negociacao.objects.filter(id_cooperativa=request.user.pk, status__in=('C', 'CA'))
     else:
-        negociacoes_concluidas = Negociacao.objects.filter(id_cooperativa=usuario.pk, status='C')
+        negociacoes_concluidas = Negociacao.objects.filter(id_cooperativa=request.user.cooperativa_associada, status__in=('C', 'CA'))
 
     context = {
         'negociacoes_concluidas': negociacoes_concluidas
@@ -174,14 +197,28 @@ def desativar_conta(request, email_usuario):
 
 @login_required
 def rendimentos(request, email_usuario):
-    if request.user.email != email_usuario:
-        return redirect(reverse('rendimentos', kwargs={'email_usuario': request.user.pk}))
-    
-    usuario = get_object_or_404(Usuario, pk=email_usuario)
+
+    # rendimentos de negociação concluídas
+    rendimentos = NegociacaoPagaTrabalho.objects.filter(id_catador=request.user.pk, id_negociacao__status='C').order_by('-id_negociacao__data_conclusao')
+    total_recebido = sum([rendimento.quantidade * rendimento.id_negociacao.preco for rendimento in rendimentos]) if rendimentos else 0
+
+    hoje = timezone.now()
+    primeiro_dia_do_mes = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    rendimentos_mes_atual = rendimentos.filter(
+    id_negociacao__data_conclusao__gte=primeiro_dia_do_mes)
+
+    resultado_total_mes = rendimentos_mes_atual.aggregate(
+    soma_total_mes=Sum('quantidade'))
+
+    soma_mes_atual = resultado_total_mes['soma_total_mes'] if resultado_total_mes['soma_total_mes'] is not None else 0
+
+    # total de rendimento mensal
+    rendimentos_por_mes = rendimentos.annotate(mes=TruncMonth('id_negociacao__data_conclusao')).values('mes').annotate(soma_quantidades=Sum('quantidade'))
 
     context = {
-        'usuario': usuario,
-        'email_usuario': request.user.email
+        'rendimentos': rendimentos,
+        'total_recebido': total_recebido,
+        'rendimento_total_mes_atual': soma_mes_atual
     }
 
     return render(request, 'rendimentos.html', context)

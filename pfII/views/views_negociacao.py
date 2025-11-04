@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 
-from ..models import Usuario, Negociacao, ContestacaoPreco, ContestacaoPagamento
+from ..models import Usuario, Negociacao, NegociacaoPagaTrabalho, ContestacaoPreco, ContestacaoPagamento
 from ..forms.forms_negociacao import (ConfirmarNegociacaoForm, 
                                       ContestarPrecoForm,
                                       AceitarContestacaoPrecoForm,
@@ -15,7 +15,8 @@ from ..forms.forms_negociacao import (ConfirmarNegociacaoForm,
                                       ResponderContestacaoPgtoForm,
                                       ConfirmarPagamentoPosContestForm
                                       )
-from ..utils import seleciona_producoes, calcula_valor_a_receber
+
+from ..utils import calcula_valor_a_receber
 
 @login_required
 def negociacoes(request, email_usuario):
@@ -32,9 +33,11 @@ def negociacoes(request, email_usuario):
     contestar_pagamento_form = ContestarPagamentoForm()
     
     if usuario.tipo_usuario == 'E':
-        negociacoes = Negociacao.objects.filter(id_empresa=usuario.pk).exclude(status='C')
+        negociacoes = Negociacao.objects.filter(id_empresa=usuario.pk).exclude(status__in=('CA', 'C'))
+    elif usuario.tipo_usuario == 'CO':
+        negociacoes = Negociacao.objects.filter(id_cooperativa=usuario.pk).exclude(status__in=('CA', 'C'))
     else:
-        negociacoes = Negociacao.objects.filter(id_cooperativa=usuario.pk).exclude(status='C')
+        negociacoes = Negociacao.objects.filter(id_cooperativa=usuario.cooperativa_associada).exclude(status__in=('CA', 'C'))
 
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -88,7 +91,7 @@ def detalhes_negociacao(request, email_usuario, id_negociacao):
     negociacao = get_object_or_404(Negociacao, pk=id_negociacao)
     contestacoes_preco = ContestacaoPreco.objects.filter(id_negociacao=id_negociacao).order_by('-pk')
     contestacoes_pgto = ContestacaoPagamento.objects.filter(id_negociacao=id_negociacao).order_by('-pk')
-    catadores_elegiveis = seleciona_producoes(negociacao.demanda_associada.pk)
+    catadores_elegiveis = NegociacaoPagaTrabalho.objects.filter(id_negociacao=negociacao)
     valores_a_receber = calcula_valor_a_receber(id_negociacao, catadores_elegiveis)
 
     contestar_preco_form = ContestarPrecoForm()
@@ -136,17 +139,18 @@ def detalhes_negociacao(request, email_usuario, id_negociacao):
                 contestar_pagamento_form.save()
                 return redirect('detalhes_negociacao', email_usuario=request.user.pk, id_negociacao=negociacao.pk)
 
-    # sobrescreve para ser elegivel para template
+    # sobrescreve para o template
     producoes_para_template = {}
     i = 0
-    for producao_obj, quantidade in catadores_elegiveis.items():
-        key_name = producao_obj.id_catador.nome
+    for obj in catadores_elegiveis:
+        key_name = obj.id_catador.nome
         producoes_para_template[key_name] = {
-        'producao': producao_obj,
-        'quantidade': quantidade,
+        'quantidade': obj.quantidade,
         'receber': valores_a_receber[i]
     }
         i += 1
+
+    print(producoes_para_template)
 
     context = {
         'negociacao': negociacao,
@@ -158,7 +162,6 @@ def detalhes_negociacao(request, email_usuario, id_negociacao):
         'confirmar_pagamento_pos_contest_form': confirmar_pagamento_pos_contest_form,
         'contestar_pagamento_form': contestar_pagamento_form, 
         'responder_contestacao_pgto_form': responder_contestacao_pgto_form,
-        'catadores_envolvidos': seleciona_producoes(negociacao.demanda_associada.pk),
         'producoes_individuais': producoes_para_template,        
     }
 

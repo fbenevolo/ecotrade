@@ -19,6 +19,7 @@
 
         <div class="space-y-8">
             <div>
+                {% if request.user.tipo_usuario == 'CO' %}
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-2xl font-semibold text-gray-800 dark:text-white">Produções por Catador</h3>
                     <button id="adicionar-producao-btn"
@@ -29,6 +30,7 @@
 
                     {% include 'producao/adicionar_producao.html' with adicionar_producao=adicionar_producao_form %}
                 </div>
+                {% endif %}
                 <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
@@ -47,35 +49,37 @@
                             </thead>
                             <tbody>
                                 {% for producao in producoes %}
-                                <tr class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                                    data-producao-id="{{ producao.pk }}"
-                                    data-residuo="{{ producao.id_residuo.tipo }}"
-                                    data-quantidade="{{ producao.producao }}"
-                                    data-catador-pk="{{ producao.id_catador.pk }}">
-                                    <td class="py-4 px-4 text-gray-800 dark:text-white">{{ producao.id_catador.nome }}</td>
-                                    <td class="py-4 px-4 text-gray-600 dark:text-gray-300"> {{ producao.data|date }}  </td>
-                                    <td class="py-4 px-4 text-gray-600 dark:text-gray-300"> {{ producao.id_residuo.get_tipo_display }}  </td>
-                                    {% if producao.status == 'l' %}
-                                        <td class="py-4 px-4">
-                                            <span class="px-2.5 py-0.5 rounded-lg bg-green-100 text-green-800">{{ producao.get_status_display }}</span>
-                                        </td>                                    
-                                    {% else %}
-                                        <td class="py-4 px-4">
-                                            <span class="inline-block max-w-[120px] px-2.5 py-0.5 rounded-lg bg-yellow-100 text-yellow-800">{{ producao.get_status_display }}</span>
-                                        </td>
-                                    {% endif %}
-                                    <td class="py-4 px-4 text-gray-800 dark:text-white text-right"> {{ producao.producao }} </td>
-                                    {% if producao.status == 'l' %}
-                                        <td class="py-4 px-4 flex justify-center items-center space-x-2">
-                                            <button class="text-blue-500 hover:text-blue-700 edit-btn" title="Editar Produção">
-                                                <span class="material-symbols-outlined">edit</span>
-                                            </button>
-                                            <button class="text-red-500 hover:text-red-700 delete-btn" title="Excluir Produção">
-                                                <span class="material-symbols-outlined">delete</span>
-                                            </button>
-                                        </td>
-                                    {% endif %}
-                                </tr>
+                                {% if producao.status != 'z' %}
+                                    <tr class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                                        data-producao-id="{{ producao.pk }}"
+                                        data-residuo="{{ producao.id_residuo.tipo }}"
+                                        data-quantidade="{{ producao.producao }}"
+                                        data-catador-pk="{{ producao.id_catador.pk }}">
+                                        <td class="py-4 px-4 text-gray-800 dark:text-white">{{ producao.id_catador.nome }}</td>
+                                        <td class="py-4 px-4 text-gray-600 dark:text-gray-300"> {{ producao.data|date }}  </td>
+                                        <td class="py-4 px-4 text-gray-600 dark:text-gray-300"> {{ producao.id_residuo.get_tipo_display }}  </td>
+                                        {% if producao.status == 'l' %}
+                                            <td class="py-4 px-4">
+                                                <span class="px-2.5 py-0.5 rounded-lg bg-green-100 text-green-800">{{ producao.get_status_display }}</span>
+                                            </td>                                    
+                                        {% else %}
+                                            <td class="py-4 px-4">
+                                                <span class="inline-block max-w-[120px] px-2.5 py-0.5 rounded-lg bg-yellow-100 text-yellow-800">{{ producao.get_status_display }}</span>
+                                            </td>
+                                        {% endif %}
+                                        <td class="py-4 px-4 text-gray-800 dark:text-white text-right"> {{ producao.producao }} </td>
+                                        {% if producao.status == 'l' %}
+                                            <td class="py-4 px-4 flex justify-center items-center space-x-2">
+                                                <button class="text-blue-500 hover:text-blue-700 edit-btn" title="Editar Produção">
+                                                    <span class="material-symbols-outlined">edit</span>
+                                                </button>
+                                                <button class="text-red-500 hover:text-red-700 delete-btn" title="Excluir Produção">
+                                                    <span class="material-symbols-outlined">delete</span>
+                                                </button>
+                                            </td>
+                                        {% endif %}
+                                    </tr>
+                                {% endif %}
                                 {% endfor %}
 
                                 {% include 'producao/remover_producao.html' with remover_producao=remover_producao_form %}
@@ -85,6 +89,7 @@
                     </div>
                 </div>
             </div>
+            {% if request.user.tipo_usuario == 'CO' %}
             <div>
                 <h3 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Catadores da Cooperativa</h3>
                 <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm">
@@ -132,12 +137,12 @@
                                 
                                 {% include 'catador/aprovar_catador.html' %}
                                 {% include 'catador/alterar_catador.html' %}
-                                {% include 'catador/excluir_catador.html' %}
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
+            {% endif %}
         </div>
     </main>
 </div>
