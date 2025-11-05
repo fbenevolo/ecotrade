@@ -115,7 +115,7 @@ class Producao(models.Model):
     OPCOES_PRODUCAO = (
         ('l', 'Livre'),
         ('a', 'Alocada em Negociação'),
-        ('t', 'Zerada')
+        ('z', 'Zerada')
     )
 
 
@@ -192,7 +192,7 @@ class Negociacao(models.Model):
     data_conclusao = models.DateField(blank=True, null=True)
     confirmacao_pgto_empresa = models.BooleanField(default=False)
     confirmacao_pgto_coop = models.BooleanField(default=False)
-    comprovante = models.ImageField(null=True, blank=True)
+    comprovante = models.FileField(upload_to='comprovantes/', null=True, blank=True)
 
 
 class ContestacaoPreco(models.Model):

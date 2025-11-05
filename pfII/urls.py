@@ -22,6 +22,9 @@ from .views import (views_common, views_producao,
 from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 
+from django.conf import settings
+from django.conf.urls.static import static
+
 password_reset_patterns = [
     path('password_reset/', auth_views.PasswordResetView.as_view(
         template_name='register/password_reset.html',
@@ -76,3 +79,7 @@ urlpatterns = [
 urlpatterns += password_reset_patterns
 urlpatterns += gestao_usuarios
 urlpatterns += ajax_api
+
+# ESTA CONFIGURAÇÃO SÓ É NECESSÁRIA E DEVE SER USADA EM AMBIENTE DE DESENVOLVIMENTO (DEBUG=True)
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

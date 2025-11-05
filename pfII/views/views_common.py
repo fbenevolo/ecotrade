@@ -12,10 +12,10 @@ from django.utils import timezone
 from ..models import Usuario, Negociacao, NegociacaoPagaTrabalho, Producao, Demanda
 from ..forms.forms_common import SignUpForm, LoginForm
 from ..forms.forms_usuario import AlterarUsuarioForm
-from ..utils import get_rendimento_total_catador
+from ..utils import enviar_email_template
 
 
-def home_view(request):
+def home_view(request):    
     return render(request, 'home.html')
 
 

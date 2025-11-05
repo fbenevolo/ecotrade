@@ -3,6 +3,11 @@ from typing import List
 from django.utils import timezone
 from datetime import timedelta
 
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.conf import settings
+
 
 def get_rendimento_total_catador(usuario: Usuario, negociacoes: List[Negociacao]):
     """
@@ -12,7 +17,6 @@ def get_rendimento_total_catador(usuario: Usuario, negociacoes: List[Negociacao]
         raise Exception('Usuário diferente de catador')
     
     total_pago = 0
-    negociacoes_participantes = list()
     for negociacao in negociacoes:
         n_paga_t = NegociacaoPagaTrabalho.objects.filter(id_negociacao=negociacao)
         recebido = negociacao.preco * n_paga_t.quantidade
@@ -102,6 +106,34 @@ def atualiza_preco_medio_residuo(id_residuo):
             total += negociacao.preco
         media = total / len(negociacoes_residuo)
         residuo.preco_medio = media
-    
-    
+
     residuo.save()
+
+
+def enviar_email_template(destinatario_email: str, template_name: str, subject: str, 
+                          context: dict = None, from_email: str = None) -> int:
+    """
+    Envia um e-mail HTML dinâmico usando um template do Django.
+    """
+    if context is None:
+        context = {}
+
+    try:
+        template_path = 'email/' + template_name
+        html_content = render_to_string(template_path, context)
+        plain_content = strip_tags(html_content)
+        remetente = from_email if from_email else settings.DEFAULT_FROM_EMAIL
+        
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=plain_content, 
+            from_email=remetente,
+            to=[destinatario_email]
+        )
+        
+        msg.attach_alternative(html_content, "text/html")
+        return msg.send(fail_silently=False)
+        
+    except Exception as e:
+        print(f"Erro ao enviar e-mail para {destinatario_email}: {e}")
+        return 0

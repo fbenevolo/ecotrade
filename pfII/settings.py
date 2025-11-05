@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -143,3 +144,10 @@ DEFAULT_FROM_EMAIL = 'no-reply@example.com'
 # EMAIL_USE_TLS = True
 # EMAIL_HOST_USER = 'user@example.com'
 # EMAIL_HOST_PASSWORD = 'password'
+
+# Diretório base para todos os arquivos carregados pelo usuário.
+# Isso geralmente aponta para uma pasta 'media' na raiz do seu projeto.
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# A URL pública a partir da qual esses arquivos de mídia serão servidos.
+MEDIA_URL = '/media/'
