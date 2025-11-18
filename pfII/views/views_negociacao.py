@@ -120,15 +120,11 @@ def detalhes_negociacao(request, email_usuario, id_negociacao):
             if recusar_contestacao_form.is_valid():
                 recusar_contestacao_form.save()
                 return redirect('detalhes_negociacao', email_usuario=request.user.pk, id_negociacao=negociacao.pk)
-
         elif 'confirmar_pgto_pos_contest' in action:
             confirmar_pagamento_pos_contest_form = ConfirmarPagamentoPosContestForm(request.POST)
             if confirmar_pagamento_pos_contest_form.is_valid():
                 confirmar_pagamento_pos_contest_form.save()
                 return redirect('detalhes_negociacao', email_usuario=request.user.pk, id_negociacao=negociacao.pk)
-            else:
-                print(confirmar_pagamento_pos_contest_form.errors.as_data())
-
         elif 'responder_contestar_pagamento' in action:
             responder_contestacao_pgto_form = ResponderContestacaoPgtoForm(request.POST, request.FILES)
             if responder_contestacao_pgto_form.is_valid():
@@ -216,46 +212,3 @@ def comprovante_contestacao(request, email_usuario, id_contestacao):
         return HttpResponse("Arquivo não encontrado.", status=404)
     except Exception as e:
         return HttpResponse(f"Erro ao processar o arquivo: {e}", status=500)
-    
-
-# @login_required
-# def comprovante_contestacao(request, email_usuario, id_contestacao):
-#     contestacao = ContestacaoPagamento.objects.get(pk=id_contestacao)
-#     file_object = contestacao.comprovante
-    
-#     try:
-#         # Garante que o arquivo esteja aberto
-#         file_object.open('rb') 
-        
-#         # Lê os primeiros 4 bytes para checar o tipo
-#         header = file_object.read(4) 
-#         file_object.close() 
-
-#         # 3. Define MIME type e nome do arquivo
-#         mime_type = 'application/octet-stream'
-#         filename = f"comprovante_contestacao_{id_contestacao}.bin"
-        
-#         # Lógica de MIME Type baseada no cabeçalho
-#         if header == b'\x89PNG':
-#             mime_type = 'image/png'
-#             filename = f"comprovante_{id_contestacao}.png"
-#         elif header[:3] == b'\xff\xd8\xff': # Assinatura JPEG/JPG
-#             mime_type = 'image/jpeg'
-#             filename = f"comprovante_{id_contestacao}.jpg"
-        
-#         # 4. Lê o arquivo INTEIRO novamente para o corpo da resposta
-#         # NOTA: O read(4) moveu o ponteiro. Reabra ou mova o ponteiro.
-#         file_object.open('rb') # Reabre o arquivo
-#         file_data = file_object.read()
-#         file_object.close()
-
-#         # 5. Cria a resposta HTTP
-#         response = HttpResponse(file_data, content_type=mime_type)
-#         response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        
-#         return response
-
-#     except FileNotFoundError:
-#         return HttpResponse("Arquivo não encontrado no servidor.", status=404)
-#     except Exception as e:
-#         return HttpResponse(f"Erro ao processar o arquivo: {e}", status=500)

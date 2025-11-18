@@ -2,7 +2,7 @@ from django import forms
 from ..models import Usuario, Demanda, Residuo, Negociacao, NegociacaoPagaTrabalho
 from django.forms.models import ModelChoiceField
 
-from ..utils import seleciona_producoes
+from ..utils import seleciona_producoes, enviar_email_template
 
 
 class MyModelChoiceField(ModelChoiceField):
@@ -50,22 +50,29 @@ class ExcluirDemandaForm(forms.Form):
         except Exception as e:
             print(f'Erro ao deletar demanda: {e}')
 
-class AlterarDemandaForm(CadastrarDemandaForm):
-    # Sobrescreve a action
+class AlterarDemandaForm(forms.ModelForm):
     action = forms.CharField(widget=forms.HiddenInput(), initial='alterar_demanda')
+    id_residuo = MyModelChoiceField(queryset=Residuo.objects.all(), label='Resíduo')
     id_demanda = forms.CharField(widget=forms.HiddenInput()) 
 
-    class Meta(CadastrarDemandaForm.Meta):
-        fields = CadastrarDemandaForm.Meta.fields
+    class Meta:
+        model = Demanda
+        fields = ['id_residuo', 'quantidade']
 
-    def save(self, commit=True):
-        id_demanda = self.cleaned_data.get('id_demanda')
-        try:
-            demanda_instancia = Demanda.objects.get(pk=id_demanda)
-            super().save(commit=commit, instance=demanda_instancia)
-        except Exception:
-            print('Não foi possível encontrar ou alterar a demanda especificada')
-        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        style = 'mt-3 block w-full bg-background-light dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm'
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': style})
+
+    def save(self):        
+        id_demanda = self.cleaned_data['id_demanda']
+        demanda = Demanda.objects.get(pk=id_demanda)
+        id_residuo = self.cleaned_data['id_residuo']
+        quantidade = self.cleaned_data['quantidade']
+        demanda.id_residuo = id_residuo
+        demanda.quantidade = quantidade
+        demanda.save()
 
 class CadastrarAtendimentoDemandaForm(forms.Form):
     id_demanda = forms.CharField(widget=forms.HiddenInput())
@@ -87,7 +94,6 @@ class CadastrarAtendimentoDemandaForm(forms.Form):
         preco_inicial = self.cleaned_data['preco_inicial']
 
         if preco_inicial is None or preco_inicial <= 0 or preco_inicial == ' ':
-            # Isso força o erro de "Este campo é obrigatório"
             raise forms.ValidationError('Erro no preenchimento do campo de preço. Verifique novamente')
 
         try:
@@ -108,6 +114,9 @@ class CadastrarAtendimentoDemandaForm(forms.Form):
                                     demanda_associada=demanda,
                                     status='ACE')
             
+            enviar_email_template(cooperativa.email, 'negociacao/negociacao_iniciada.html', 'Negociação Iniciada')
+            enviar_email_template(demanda.id_empresa.email, 'negociacao/negociacao_iniciada.html', 'Negociação Iniciada')
+
             # seleciona producoes e aloca elas para negociação
             producoes = seleciona_producoes(id_demanda)
             for (producao, quantidade) in producoes.items():

@@ -3,11 +3,8 @@
         <form action="{% url 'gestao_usuarios' email_usuario=request.user.pk %}" method="POST" class="space-y-6">
             {% csrf_token %}
             
-            <!-- Campos ocultos do formulário -->
             {{ aprovar_usuario_form.usuario_id }}
             {{ aprovar_usuario_form.action }}
-
-            <!-- Cabeçalho do modal -->
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-2xl font-bold text-gray-800 dark:text-white">Aprovação de Usuário</h3>
                 <button id="modal-aprovar-close-btn" type="button" 
@@ -26,7 +23,7 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Nome
                             </label>
-                            <div id="catador-nome-display" class="text-gray-900 dark:text-white font-medium">
+                            <div id="nome-display" class="text-gray-900 dark:text-white font-medium">
                                 <!-- Nome será preenchido via JavaScript -->
                             </div>
                         </div>
@@ -35,7 +32,7 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Email
                             </label>
-                            <div id="catador-email-display" class="text-gray-700 dark:text-gray-300">
+                            <div id="email-display" class="text-gray-700 dark:text-gray-300">
                                 <!-- Email será preenchido via JavaScript -->
                             </div>
                         </div>
@@ -44,7 +41,7 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Status Atual
                             </label>
-                            <div id="catador-status-display" class="text-yellow-600 dark:text-yellow-400 font-medium">
+                            <div id="status-display" class="text-yellow-600 dark:text-yellow-400 font-medium">
                                 <!-- Status será preenchido via JavaScript -->
                             </div>
                         </div>
@@ -86,7 +83,6 @@
                 </div>
             </div>
 
-            <!-- Botões de ação -->
             <div class="flex justify-end gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button id="modal-aprovar-cancel-btn" type="button"
                         class="px-6 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-medium rounded-lg">

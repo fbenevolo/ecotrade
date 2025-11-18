@@ -40,11 +40,9 @@ password_reset_patterns = [
 ]
 
 gestao_usuarios = [
-    path('dashboard/<str:email_usuario>/desativar_conta', views_common.desativar_conta, name='desativar_conta'),
+    path('dashboard/<str:email_usuario>/desativar_conta', views_admin.desativar_conta, name='desativar_conta'),
     path('dashboard/<str:email_usuario>/aceitar_desativacao', views_admin.aceitar_desativacao, name='aceitar_desativacao'),
     path('dashboard/<str:email_usuario>/recusar_desativacao', views_admin.recusar_desativacao, name='recusar_desativacao'),
-    path('dashboard/<str:email_usuario>/aceitar_exclusao', views_admin.aceitar_exclusao, name='aceitar_exclusao'),
-    path('dashboard/<str:email_usuario>/recusar_exclusao', views_admin.recusar_exclusao, name='recusar_exclusao'),
     path('dashboard/<str:email_usuario>/reativar_conta', views_admin.reativar_conta, name='reativar_conta')
 ]
 
@@ -59,7 +57,7 @@ urlpatterns = [
     path('cadastro/', views_common.cadastro_view, name='cadastro'),
     path('login/', views_common.login_view, name='login'),
     path('logout/', views_common.logout_view, name='logout'),
-    path('aprovacao_usuario', views_common.aprovacao_usuario, name='aprovacao_usuario'),
+    path('aprovacao_usuario/', views_common.aprovacao_usuario, name='aprovacao_usuario'),
     path('dashboard/<str:email_usuario>/', views_common.dashboard, name='dashboard'),
     path('dashboard/<str:email_usuario>/gestao_usuarios', views_admin.gestao_usuarios, name='gestao_usuarios'),
 

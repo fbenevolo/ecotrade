@@ -42,9 +42,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 residuoPk: row.getAttribute('data-residuo-id'),
                 quantidade: row.getAttribute('data-quantidade'),
             };
-
-            console.log(demandaData);
-            
             openAlterarDemandaModal(demandaData);
         });
     });

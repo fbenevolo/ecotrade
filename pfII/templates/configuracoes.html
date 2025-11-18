@@ -96,4 +96,9 @@
     </div>
 </main>
 
-{% endblock %}
+{% endblock dashboard_content %}
+
+{% block footer_scripts %}
+    {% load static %}
+    <script src="{% static 'js/aprovacao_usuario.js' %}"></script>  
+{% endblock footer_scripts %}

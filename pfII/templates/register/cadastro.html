@@ -12,10 +12,9 @@
             </div>
             <form action="#" class="mt-8 space-y-6" method="POST">
                 {% csrf_token %}
-
                 <!-- mostra erros globais do form -->
                 {% if cadastro_form.non_field_errors %}
-                <div class="text-red-600 text-sm">
+                <div class="rounded-lg bg-red-100 text-red-600 font-semibold text-sm p-3">
                     {{ cadastro_form.non_field_errors }}
                 </div>
                 {% endif %}
@@ -68,7 +67,7 @@
                                             peer-placeholder-shown:opacity-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:text-base
                                             peer-focus:-top-3 peer-focus:opacity-100 peer-focus:translate-y-0 peer-focus:text-sm peer-focus:text-primary
                                             opacity-0 -translate-y-2">
-                                CNPJ
+                                CNPJ (apenas números, sem pontuação)
                             </label>
                         </div>
                     </div>

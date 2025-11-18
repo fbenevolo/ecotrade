@@ -38,21 +38,18 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         ('EA', 'Esperando Aprovação'),
         ('D', 'Desativado'),
         ('EAD', 'Esperando Aprovação para Desativação'),
-        ('EAX', 'Esperando Aprovação para Exclusão'),
     ) 
 
     OPCOES_TIPO_USUARIO = (
         ('CO', 'Cooperativa'),
         ('CA', 'Catador'),
         ('E', 'Empresa'),
-        # ('A', 'Administrador')
     )
 
     # Campos de Autenticação OBRIGATÓRIOS (estamos adicionando-os ao AbstractBasesUser que o Django usa)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
-    # O Django precisa de um campo para salvar quando o usuário se juntou.
     date_joined = models.DateTimeField(auto_now_add=True)
 
     email = models.EmailField(primary_key=True)
@@ -226,7 +223,7 @@ class ContestacaoPagamento(models.Model):
 
     OPCOES_USUARIO = (
         ('E', 'Empresa'),
-        ('C', 'Cooperativa'),
+        ('CO', 'Cooperativa'),
     )
 
     id_negociacao = models.ForeignKey('Negociacao', 
@@ -235,7 +232,7 @@ class ContestacaoPagamento(models.Model):
     justificativa = models.TextField()
     status = models.CharField(choices=OPCOES_STATUS)
     usuario = models.CharField(choices=OPCOES_USUARIO)
-    comprovante = models.ImageField(null=True)
+    comprovante = models.FileField(upload_to='comprovantes/', null=True)
 
 
 class NegociacaoPagaTrabalho(models.Model):
@@ -250,14 +247,3 @@ class NegociacaoPagaTrabalho(models.Model):
                                     null=True)
     
     quantidade = models.FloatField()
-
-
-class Notificacao(models.Model):
-    texto = models.TextField()
-
-
-class NotificacaoUsuario(models.Model):
-    id_notificacao = models.ForeignKey('Notificacao', 
-                                       on_delete=models.CASCADE)
-    id_usuario = models.ForeignKey('Usuario', 
-                                   on_delete=models.CASCADE)

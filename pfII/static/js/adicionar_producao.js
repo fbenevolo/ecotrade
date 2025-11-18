@@ -13,15 +13,9 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     if (modalAdicionarProducao) {
-        openAdicionarBtn.addEventListener('click', () => openModal(modalAdicionarProducao));
-        adicionarCloseBtn.addEventListener('click', () => closeModal(modalAdicionarProducao));
-        adicionarCancelBtn.addEventListener('click', () => closeModal(modalAdicionarProducao));
-
-        modalAdicionarProducao.addEventListener('click', function (e) {
-            if (e.target.id === 'modal-adicionar-producao') {
-                closeModal(modalAdicionarProducao);
-            }
-        });
+        openAdicionarBtn.addEventListener('click', (e) => { e.preventDefault(); openModal(modalAdicionarProducao)});
+        adicionarCloseBtn.addEventListener('click', (e) => { e.preventDefault(); closeModal(modalAdicionarProducao)});
+        adicionarCancelBtn.addEventListener('click', (e) => { e.preventDefault(); closeModal(modalAdicionarProducao)});
     }
 
     openAdicionarBtn.addEventListener('click', (e) => {

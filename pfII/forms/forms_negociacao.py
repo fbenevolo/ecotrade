@@ -2,7 +2,7 @@ from django import forms
 from django.utils import timezone
 from ..models import Producao, Negociacao, NegociacaoPagaTrabalho, ContestacaoPreco, ContestacaoPagamento
 
-from ..utils import atualiza_producoes, atualiza_preco_medio_residuo
+from ..utils import atualiza_producoes, atualiza_preco_medio_residuo, enviar_email_template
 
 class ConfirmarNegociacaoForm(forms.Form):
     '''
@@ -107,6 +107,10 @@ class ContestarPrecoForm(forms.Form):
             )
             negociacao.status = status
             negociacao.save()
+
+            # envia email para as partes
+            enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/nova_contestacao_preco.html', 'Contestação de Preço')
+            enviar_email_template(negociacao.id_empresa.email, 'negociacao/nova_contestacao_preco.html', 'Contestação de Preço')
         except Exception as e:
             print(f'Erro ao criar contestação de preço: {e}')
 
@@ -133,6 +137,9 @@ class AceitarContestacaoPrecoForm(forms.Form):
             negociacao.confirmacao_preco_cooperativa = True 
             negociacao.confirmacao_preco_empresa = True
             negociacao.save()
+
+            enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/aceite_contestacao_preco.html', 'Aceite na Contestação de Preço')
+            enviar_email_template(negociacao.id_empresa.email, 'negociacao/aceite_contestacao_preco.html', 'Aceite na Contestação de Preço')
         except Exception as e:
             print(f'Erro ao alterar contestação ou negociação: {e}')
 
@@ -173,28 +180,28 @@ class RecusarContestacaoPrecoForm(forms.Form):
         if tipo_usuario == 'CO':
             contestacao_antiga.status = 'DC'
             novo_status = 'ACE'
-
+            enviar_email_template(negociacao.id_empresa.email, 'negociacao/recusa_contestacao_preco.html', 'Recusa na Contestação de Preço')
         else:
             contestacao_antiga.status = 'DE'
             novo_status = 'ACC'
+            enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/recusa_contestacao_preco.html', 'Recusa na Contestação de Preço')
+
         contestacao_antiga.save()
+        # altera o status da negociação para ser a confirmação da parte que receberá a contestação
+        negociacao.status = novo_status
+        negociacao.save()
 
-        try:
-            # altera o status da negociação para ser a confirmação da parte que receberá a contestação
-            negociacao.status = novo_status
+        # abre uma nova contestação
+        ContestacaoPreco.objects.create(
+            id_negociacao=negociacao,
+            status=novo_status,
+            contestador=contestador,
+            justificativa=justificativa,
+            preco_proposto=preco_proposto
+        )
 
-            print(novo_status)
-            negociacao.save()
-            # abre uma nova contestação
-            ContestacaoPreco.objects.create(
-                id_negociacao=negociacao,
-                status=novo_status,
-                contestador=contestador,
-                justificativa=justificativa,
-                preco_proposto=preco_proposto
-            )
-        except Exception as e:
-            print(f'Erro ao criar uma nova contestação: {e}')
+        enviar_email_template(negociacao.id_empresa.email, 'negociacao/nova_contestacao_preco.html', 'Recusa na Contestação de Preço')
+        enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/nova_contestacao_preco.html', 'Recusa na Contestação de Preço')
 
 
 class ConfirmarColetaForm(forms.Form):
@@ -216,6 +223,11 @@ class ConfirmarColetaForm(forms.Form):
         negociacao.data_coleta = data_coleta
         negociacao.save()
 
+        enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/mudanca_status.html', 
+                              'Mudança de Status na Negociação', context={ 'novo_status': 'Em Transporte' })
+        enviar_email_template(negociacao.id_empresa.email, 'negociacao/mudanca_status.html', 
+                              'Mudança de Status na Negociação', context={ 'novo_status': 'Em Transporte' })
+
 
 class ConfirmarEntregaForm(forms.Form):
     action = forms.CharField(widget=forms.HiddenInput(), initial='confirmar_entrega')
@@ -230,6 +242,11 @@ class ConfirmarEntregaForm(forms.Form):
         negociacao.status = 'ACPE'
         negociacao.data_coleta = data_entrega
         negociacao.save()
+
+        enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/mudanca_status.html', 
+                              'Mudança de Status na Negociação', context={ 'novo_status': 'Aguardando Confirmação de Pagamento da Empresa' })
+        enviar_email_template(negociacao.id_empresa.email, 'negociacao/mudanca_status.html', 
+                              'Mudança de Status na Negociação', context={ 'novo_status': 'Aguardando Confirmação de Pagamento da Empresa' })
 
 
 class ConfirmarPagamentoForm(forms.Form):
@@ -258,11 +275,19 @@ class ConfirmarPagamentoForm(forms.Form):
                 negociacao.confirmacao_pgto_empresa = True
                 negociacao.status = 'ACPC'
                 negociacao.save()
+
+                enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/pagamento_confirmado_empresa.html', 
+                                      'Pagamento Confirmado', context={ 'nome_empresa': negociacao.id_empresa.nome })
             else:
                 negociacao.confirmacao_pgto_coop = True
                 negociacao.data_conclusao = timezone.now()
                 negociacao.status = 'C'
                 negociacao.save()
+
+                enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/negociacao_concluida.html', 
+                                      'Negociação Concluída')
+                enviar_email_template(negociacao.id_empresa.email, 'negociacao/negociacao_concluida.html', 
+                                      'Negociação Concluída')
                 
                 atualiza_producoes(negociacao.pk)
                 atualiza_preco_medio_residuo(negociacao.id_residuo.pk)
@@ -306,6 +331,9 @@ class ContestarPagamentoForm(forms.Form):
                 id_negociacao=negociacao,
                 usuario='CO',
             )
+
+            enviar_email_template(negociacao.id_empresa.email, 'negociacao/pagamento_contestado.html',
+                                  'Pagamento de Negociação Contestado')
 
         except Exception as e:
             print(f'Erro ao criar contestação de pagamento: {e}')
@@ -355,6 +383,10 @@ class ResponderContestacaoPgtoForm(forms.Form):
                 status='EE',
                 usuario='E'
             )
+
+            enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/resposta_pagamento_contestado.html',
+                                  'Resposta à Contestação de Pagamento', context={'nome_empresa': negociacao.id_empresa.nome})
+
         except Exception as e:
             print(f'Erro ao criar resposta à contestação de pagamento: {e}')
 
@@ -379,6 +411,9 @@ class ConfirmarPagamentoPosContestForm(forms.Form):
         negociacao.data_conclusao = timezone.now()
         negociacao.status = 'C'
         negociacao.save()
+
+        enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/negociacao_concluida.html', 
+                                      'Negociação Concluída')
 
         atualiza_producoes(negociacao.pk)
         atualiza_preco_medio_residuo(negociacao.id_residuo.pk)

@@ -60,7 +60,6 @@ class AprovarContaCatadorForm(forms.Form):
                 self.fields['cooperativa_associada'].initial = 'Não informada'
         
         # Aplicar estilos CSS aos campos
-        common_style = "w-full bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-primary focus:border-primary"
         readonly_style = "w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg cursor-not-allowed"
         
         # Aplicar estilo aos campos readonly

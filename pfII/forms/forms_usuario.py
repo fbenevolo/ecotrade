@@ -20,7 +20,6 @@ class AlterarUsuarioForm(forms.ModelForm):
         self.fields['email'].widget.attrs.update({'class': readonly_style})
         self.fields['cnpj'].widget.attrs.update({'class': common_style })
 
-
         if self.instance:
             self.fields['nome'].initial = self.instance.nome
             if self.instance.tipo_usuario != 'E':

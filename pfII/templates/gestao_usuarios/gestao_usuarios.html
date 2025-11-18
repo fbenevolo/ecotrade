@@ -24,31 +24,13 @@
                             <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                 {{ usuario.email }} </td>
                             <td class="px-6 py-4"> {{ usuario.nome }} </td>
-                            <td class="px-6 py-4"> {{ usuario.tipo_ususarios }} </td>
+                            <td class="px-6 py-4"> {{ usuario.get_tipo_usuario_display }} </td>
                             <td class="px-6 py-4">-</td>
                             <td class="px-6 py-4">
-                                {% if usuario.status == 'EA' %}
+                                {% if usuario.status == 'EA' or usuario.status == 'EAD' or usuario.status == 'D' %}
                                 <span
                                     class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
                                     <span class="w-2 h-2 mr-1.5 bg-yellow-500 rounded-full"></span>
-                                    {{ usuario.get_status_display  }}
-                                </span>
-                                {% elif usuario.status == 'EAD' %}
-                                <span
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
-                                    <span class="w-2 h-2 mr-1.5 bg-yellow-500 rounded-full"></span>
-                                    {{ usuario.get_status_display  }}
-                                </span>
-                                {% elif usuario.status == 'D' %}
-                                <span
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
-                                    <span class="w-2 h-2 mr-1.5 bg-yellow-500 rounded-full"></span>
-                                    {{ usuario.get_status_display  }}
-                                </span>
-                                {% elif usuario.status == 'EAX' %}
-                                <span
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
-                                    <span class="w-2 h-2 mr-1.5 bg-red-500 rounded-full"></span>
                                     {{ usuario.get_status_display  }}
                                 </span>
                                 {% else %}
@@ -60,10 +42,38 @@
                                 {% endif %}
                             </td>
                            <td class="px-6 py-4 flex items-center space-x-2">
-                                {% if usuario.status == 'EA' %}
-                                <button class="text-green-500 hover:text-green-700 aprovar-usuario-btn" 
+                                {% if usuario.status == 'A' %}
+                                <form action="{% url 'desativar_conta' email_usuario=usuario.pk %}" method="POST"
+                                    class="inline-block form-desativar-conta">
+                                    {% csrf_token %}
+                                    <button type="button" class="abrir-modal-desativar text-green-500 hover:text-green-700" title="Desativar Conta">
+                                        <span class="material-symbols-outlined">how_to_reg</span>
+                                    </button>
+                                    <div class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 modal-desativar-conta hidden">
+                                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm transform transition-all">
+                                            <div class="p-6">
+                                                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Confirmar Desativação</h3>
+                                                <p class="text-gray-600 dark:text-gray-400 mb-6">
+                                                    Você tem certeza que deseja <strong>desativar</strong> a conta do usuário <strong>{{ usuario.email }}</strong>?
+                                                </p>
+                                                <div class="flex justify-end gap-3">
+                                                    <button type="button"
+                                                        class="fechar-modal-btn px-4 py-2 text-sm font-medium rounded-lg text-gray-700 bg-gray-200 hover:bg-gray-300 dark:text-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600">
+                                                        Cancelar
+                                                    </button>
+                                                    <button type="button"
+                                                        class="confirmar-desativar-btn px-4 py-2 text-sm font-bold rounded-lg text-white bg-red-600 hover:bg-red-700">
+                                                        Confirmar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                                {% elif usuario.status == 'EA' %}
+                                <button id="ativar-conta-btn" class="text-green-500 hover:text-green-700 aprovar-usuario-btn" 
                                         title="Aprovar/Rejeitar Conta"
-                                        data-usuario-email="{{ usuario.email }}"
+                                        data-usuario-email="{{ usuario.pk }}"
                                         data-usuario-nome="{{ usuario.nome }}"
                                         data-usuario-status="{{ usuario.get_status_display }}">
                                     <span class="material-symbols-outlined">how_to_reg</span>
@@ -81,25 +91,36 @@
                                         <span class="material-symbols-outlined">close</span>
                                     </button>
                                 </form>
-                                {% elif usuario.status == 'EAX' %}
-                                <form action="{% url 'aceitar_exclusao' email_usuario=usuario.pk %}" method="POST">
-                                    {% csrf_token %}
-                                    <button type="submit" class="text-green-500 hover:text-green-700" title="Aceitar Exclusão">
-                                        <span class="material-symbols-outlined">check</span>
-                                    </button>
-                                </form>
-                                <form action="{% url 'recusar_exclusao' email_usuario=usuario.pk %}" method="POST">
-                                    {% csrf_token %}
-                                    <button type="submit" class="text-red-500 hover:text-red-700" title="Recusar Exclusão">
-                                        <span class="material-symbols-outlined">close</span>
-                                    </button>
-                                </form>
                                 {% elif usuario.status == 'D' %}
-                                <form action="{% url 'reativar_conta' email_usuario=usuario.pk %}" method="POST">
+                                <form action="{% url 'reativar_conta' email_usuario=usuario.pk %}" method="POST"
+                                    class="inline-block form-reativar-conta">
                                     {% csrf_token %}
-                                    <button type="submit" class="text-green-500 hover:text-green-700" title="Reativar Conta">
+                                
+                                    <button type="button" class="abrir-modal-reativar text-green-500 hover:text-green-700" title="Reativar Conta">
                                         <span class="material-symbols-outlined">published_with_changes</span>
                                     </button>
+                                
+                                    <div
+                                        class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 modal-reativar-conta hidden">
+                                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm transform transition-all">
+                                            <div class="p-6">
+                                                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Confirmar Reativação</h3>
+                                                <p class="text-gray-600 dark:text-gray-400 mb-6">
+                                                    Você tem certeza que deseja <strong>reativar</strong> a conta do usuário <strong>{{ usuario.email }}</strong>?
+                                                </p>
+                                                <div class="flex justify-end gap-3">
+                                                    <button type="button"
+                                                        class="fechar-modal-btn px-4 py-2 text-sm font-medium rounded-lg text-gray-700 bg-gray-200 hover:bg-gray-300 dark:text-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600">
+                                                        Cancelar
+                                                    </button>
+                                                    <button type="submit"
+                                                        class="confirmar-reativar-btn px-4 py-2 text-sm font-bold rounded-lg text-white bg-green-600 hover:bg-green-700">
+                                                        Confirmar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </form>
                                 {% endif %}
                             </td>
@@ -112,11 +133,99 @@
             </div>
         </div>
     </main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.abrir-modal-desativar').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const form = e.currentTarget.closest('.form-desativar-conta');
+                const modal = form.querySelector('.modal-desativar-conta');
+                
+                if (modal) {
+                    modal.classList.remove('hidden');
+                }
+            });
+        });
+
+        const fecharModal = (element) => {
+            const modal = element.closest('.modal-desativar-conta');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        };
+
+        document.querySelectorAll('.fechar-modal-btn').forEach(btn => {
+            btn.addEventListener('click', () => fecharModal(btn));
+        });
+
+        document.querySelectorAll('.confirmar-desativar-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Navega do botão de confirmação (btn) para o FORM pai
+                const form = e.currentTarget.closest('.form-desativar-conta');
+                
+                if (form) {
+                    // Fecha o modal
+                    fecharModal(e.currentTarget);
+                    
+                    // Dispara a submissão do formulário
+                    form.submit();
+                }
+            });
+        });
+
+        // 4. Fechar ao clicar fora do conteúdo (usando a classe do modal)
+        document.querySelectorAll('.modal-desativar-conta').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                // Verifica se o clique foi diretamente no background (não no conteúdo interno)
+                if (e.target.classList.contains('modal-desativar-conta')) {
+                    e.currentTarget.classList.add('hidden');
+                }
+            });
+        });
+    });
+    document.addEventListener('DOMContentLoaded', function () {
+        const openBtns = document.querySelectorAll('.abrir-modal-reativar');
+        
+        openBtns.forEach(button => {
+            button.addEventListener('click', function() {
+                // Encontra o formulário pai e, dentro dele, o modal correspondente
+                const form = this.closest('.form-reativar-conta');
+                const modal = form.querySelector('.modal-reativar-conta');
+                
+                if (modal) {
+                    modal.classList.remove('hidden');
+                }
+            });
+        });
+
+        // Função para fechar qualquer modal
+        function setupCloseModal(modal) {
+            if (!modal) return;
+
+            // Fecha ao clicar no botão 'Cancelar'
+            const closeBtns = modal.querySelectorAll('.fechar-modal-btn');
+            closeBtns.forEach(btn => {
+                btn.addEventListener('click', () => modal.classList.add('hidden'));
+            });
+
+            // Fecha ao clicar fora do modal
+            modal.addEventListener('click', function(event) {
+                // Verifica se o clique foi diretamente no fundo (o modal container)
+                if (event.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        }
+
+        // Configura o fechamento para todos os modais de reativação
+        document.querySelectorAll('.modal-reativar-conta').forEach(setupCloseModal);
+        });
+</script>
+
 </div>
 {% endblock dashboard_content %}
 
 {% block footer_scripts %}
 {% load static %}
-
     <script src="{% static 'js/aprovacao_usuario.js' %}"></script>
 {% endblock footer_scripts %}

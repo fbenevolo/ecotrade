@@ -18,7 +18,7 @@ class MyModelChoiceField(ModelChoiceField):
 
 class SignUpForm(UserCreationForm):
     cooperativa_associada = MyModelChoiceField(
-        queryset=Usuario.objects.filter(tipo_usuario='CO'),)
+        queryset=Usuario.objects.filter(tipo_usuario='CO', status='A', is_superuser=False))
 
     class Meta(UserCreationForm.Meta):
         model = Usuario
@@ -31,24 +31,26 @@ class SignUpForm(UserCreationForm):
 
         self.fields['tipo_usuario'].initial = 'CO'
 
-        # classes para inputs: full width + peer para floating label + placeholder transparente
         common = "appearance-none w-full rounded-lg block px-4 py-3 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white bg-transparent focus:outline-none focus:ring-primary focus:border-primary sm:text-sm peer placeholder-transparent"
 
         for fname in self.fields:
-            # if fname in self.fields:
-                # placeholder ' ' é importante para ativar peer-placeholder-shown nos labels flutuantes
-                self.fields[fname].widget.attrs.update({'class': common, 'placeholder': ' '})
+            self.fields[fname].widget.attrs.update({'class': common, 'placeholder': ' '})
     
     def clean(self):
         cleaned = super().clean()
         tipo = cleaned.get('tipo_usuario')
         cnpj = cleaned.get('cnpj')
         coop = cleaned.get('cooperativa_associada')
+        email = cleaned.get('email')
 
+        if cnpj:
+            cnpj = cnpj.replace(',', '').replace('.', '')
+        if email and Usuario.objects.filter(email=email).exists():
+            self.add_error(None, 'Este email já está cadastrado no sistema. Por favor, use outro.')
         if tipo == 'E' and not cnpj:
-            self.add_error('cnpj', 'CNPJ é obrigatório para usuários do tipo Empresa.')
+            self.add_error(None, 'CNPJ é obrigatório para usuários do tipo Empresa.')
         if tipo == 'CA' and not coop:
-            self.add_error('cooperativa_associada', 'Cooperativa associada é obrigatória para Catador.')
+            self.add_error(None, 'Cooperativa associada é obrigatória para Catador.')
 
         return cleaned
     
@@ -57,6 +59,7 @@ class SignUpForm(UserCreationForm):
         usuario.status = 'EA'
         if commit:
             usuario.save()
+
         return usuario
 
 

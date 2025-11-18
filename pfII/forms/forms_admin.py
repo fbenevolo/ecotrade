@@ -54,9 +54,10 @@ class AprovarContaForm(forms.Form):
             usuario = Usuario.objects.get(email=usuario_email)
             if acao == 'aprovar':
                 Usuario.objects.filter(email=usuario_email).update(status='A')
-                
+                return usuario
             elif acao == 'rejeitar':
                 usuario.delete()
+                return None
             
         except Usuario.DoesNotExist:
             raise forms.ValidationError('Usuário não encontrado.')

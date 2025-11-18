@@ -17,8 +17,6 @@ def demandas(request, email_usuario):
         return redirect(reverse('demandas', kwargs={'email_usuario': request.user.pk}))
     
     demandas_atendiveis = [] # exclusivo para cooperativa
-    # preco_sugerido = None
-    # producoes_elegiveis = {} # exclusivo para cooperativa
     
     cadastrar_demanda_form = CadastrarDemandaForm()
     alterar_demanda_form = AlterarDemandaForm()
@@ -39,28 +37,23 @@ def demandas(request, email_usuario):
                 excluir_demanda_form.save()
                 return redirect(reverse('demandas', kwargs={'email_usuario': request.user.pk}))
         elif 'alterar_demanda' in action:
+            alterar_demanda_form = AlterarDemandaForm(request.POST)
             if alterar_demanda_form.is_valid():
                 alterar_demanda_form.save()
                 return redirect(reverse('demandas', kwargs={'email_usuario': request.user.pk}))
         elif 'cadastrar_atendimento_demanda' in action:
             cadastrar_atendimento_demanda_form = CadastrarAtendimentoDemandaForm(request.POST)
             if cadastrar_atendimento_demanda_form.is_valid():
-                # id_demanda = int(request.POST.get('id_demanda'))
-                # id_residuo = Demanda.objects.get(pk=id_demanda).id_residuo
-                # producoes_elegiveis = seleciona_producoes(id_demanda)
                 cadastrar_atendimento_demanda_form.save()
                 return redirect(reverse('demandas', kwargs={'email_usuario': request.user.pk}))
-
 
     if usuario.tipo_usuario == 'E':
         demandas = Demanda.objects.filter(id_empresa=usuario, status='EA')
     else:
         demandas = Demanda.objects.filter(status='EA')
-        # filtra as demandas que a cooperativa pode atender
         for demanda in demandas:
             filtro_residuos = Producao.objects.filter(id_residuo=demanda.id_residuo)
             sum_residuo = filtro_residuos.aggregate(total=Sum('producao'))
-            # 3. Extrair o valor da soma e tratar o caso None (se não houver produções)
             qtd_residuo = sum_residuo['total'] if sum_residuo['total'] is not None else 0
             if qtd_residuo:
                 if qtd_residuo >= demanda.quantidade:
@@ -86,8 +79,6 @@ def preparar_atendimento_ajax(request, id_demanda):
             demanda = get_object_or_404(Demanda, pk=id_demanda)
             preco_sugerido = demanda.id_residuo.preco_medio  
             producoes_elegiveis = seleciona_producoes(id_demanda) 
-            
-            # Converter o QuerySet para uma lista de dicionários serializáveis
             producoes_data = [
                 {
                     'catador': producao.id_catador.nome,
@@ -97,8 +88,6 @@ def preparar_atendimento_ajax(request, id_demanda):
                 }
                 for (producao, qtd) in producoes_elegiveis.items()
             ]
-
-            # Retorna os dados em JSON
             return JsonResponse({
                 'success': True,
                 'preco_sugerido': preco_sugerido,

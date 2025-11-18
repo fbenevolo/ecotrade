@@ -4,8 +4,9 @@ from django.contrib.auth import login, logout
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.sites.shortcuts import get_current_site
 
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, F
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
 
@@ -26,17 +27,24 @@ def cadastro_view(request):
         cadastro_form = SignUpForm(request.POST)
         if cadastro_form.is_valid():
             try:
-                cadastro_form.save()
+                novo_usuario = cadastro_form.save()
+                protocolo = 'https' if request.is_secure() else 'http'
+                dominio = get_current_site(request).domain
+                caminho_login = reverse('login')
+                link = f'{protocolo}://{dominio}{caminho_login}'
+                # envia email para novo usuário e para administradores do sistema
+                enviar_email_template(novo_usuario.email, 'conta/criacao_conta.html', 
+                                      'Criação de Conta', context = { 'nome': novo_usuario.nome, 'link_acesso': link })
+                
+                admins = Usuario.objects.filter(is_staff=True, is_superuser=True)
+                for admin in admins:
+                    enviar_email_template(admin.email, 'conta/criacao_conta_admin.html', 'Nova Conta Criada')
                 return redirect(reverse('aprovacao_usuario'))  
             except ValidationError as e:
                 cadastro_form.add_error(None, f'Erro de validação: {e.messages}')
             except ValueError as e:#
                 cadastro_form.add_error(None, "Erro ao salvar o usuário: " + str(e))
-        else:
-            print('Formulário inválido. Erros detalhados:')
-            print(cadastro_form.errors.as_data()) 
             cadastro_form.add_error(None, "Dados inválidos — verifique os campos.")
-
     context = {
         'cadastro_form': cadastro_form
     }
@@ -106,7 +114,6 @@ def configuracoes(request, email_usuario):
 @login_required
 def dashboard(request, email_usuario):
     if request.user.email != email_usuario:
-        # Usando request.user.pk aqui, assumindo que é o mesmo que email_usuario
         return redirect(reverse('dashboard', kwargs={'email_usuario': request.user.pk}))
     
     usuario = get_object_or_404(Usuario, pk=email_usuario)    
@@ -116,7 +123,7 @@ def dashboard(request, email_usuario):
         negociacoes_concluidas = Negociacao.objects.filter(id_cooperativa=usuario.pk, status='C')
         negociacoes_ativas_qs = Negociacao.objects.filter(id_cooperativa=usuario.pk).exclude(status__in=['C', 'CA'])
 
-        outras_infos['count_catadores'] = request.user.catadores.count()
+        outras_infos['count_catadores'] = request.user.catadores.filter(status='A').count()
     
     elif usuario.tipo_usuario == 'CA':
         cooperativa_pk = usuario.cooperativa_associada.pk if usuario.cooperativa_associada else None
@@ -137,12 +144,13 @@ def dashboard(request, email_usuario):
     volume_por_residuo_qs = negociacoes_concluidas.values('id_residuo__tipo').annotate(total_volume=Sum('quantidade')).order_by()
     volume_por_residuo_dict = { item['id_residuo__tipo']: item['total_volume'] for item in volume_por_residuo_qs }
     volumes_list = list(volume_por_residuo_dict.values())
+    # Variável definida para gerar tamanho máximo do eixo y do gráfico
     max_volume = max(volumes_list) if volumes_list else 1 # Define 1 para evitar divisão por zero se vazio
-
 
     negociacoes_por_mes_qs = negociacoes_concluidas.annotate(mes=TruncMonth('data_conclusao')).values('mes').annotate(total_negociacoes=Count('pk')).order_by('mes')
     negociacoes_por_mes_dict = { item['mes']: item['total_negociacoes']  for item in negociacoes_por_mes_qs if item['mes'] is not None }
     contagens_list = list(negociacoes_por_mes_dict.values())
+    # Variável definida para gerar tamanho máximo do eixo y do gráfico
     max_negociacoes_mes = max(contagens_list) if contagens_list else 1
 
     volume_total_residuos = negociacoes_concluidas.aggregate(Sum('quantidade'))['quantidade__sum'] or 0
@@ -168,7 +176,6 @@ def historico(request, email_usuario):
     if request.user.email != email_usuario:
         return redirect(reverse('historico', kwargs={'email_usuario': request.user.pk}))
     
-    usuario = request.user
     if request.user.tipo_usuario == 'E':
         negociacoes_concluidas = Negociacao.objects.filter(id_empresa=request.user.pk, status__in=('C', 'CA')).order_by()
     elif request.user.tipo_usuario == 'CO':
@@ -184,41 +191,19 @@ def historico(request, email_usuario):
 
 
 @login_required
-def desativar_conta(request, email_usuario):
-    if request.method == 'POST':
-        usuario = get_object_or_404(Usuario, pk=email_usuario)
-        usuario.status = 'D'
-        usuario.save()
-        logout(request)
-        messages.success(request, 'Sua conta foi desativada com sucesso.')
-        return redirect(reverse('home'))
-    return redirect(reverse('configuracoes', kwargs={'email_usuario': request.user.pk}))
-
-
-@login_required
 def rendimentos(request, email_usuario):
-
-    # rendimentos de negociação concluídas
     rendimentos = NegociacaoPagaTrabalho.objects.filter(id_catador=request.user.pk, id_negociacao__status='C').order_by('-id_negociacao__data_conclusao')
     total_recebido = sum([rendimento.quantidade * rendimento.id_negociacao.preco for rendimento in rendimentos]) if rendimentos else 0
 
     hoje = timezone.now()
     primeiro_dia_do_mes = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    rendimentos_mes_atual = rendimentos.filter(
-    id_negociacao__data_conclusao__gte=primeiro_dia_do_mes)
-
-    resultado_total_mes = rendimentos_mes_atual.aggregate(
-    soma_total_mes=Sum('quantidade'))
-
-    soma_mes_atual = resultado_total_mes['soma_total_mes'] if resultado_total_mes['soma_total_mes'] is not None else 0
-
-    # total de rendimento mensal
-    rendimentos_por_mes = rendimentos.annotate(mes=TruncMonth('id_negociacao__data_conclusao')).values('mes').annotate(soma_quantidades=Sum('quantidade'))
+    rendimentos_mes_atual = rendimentos.filter(id_negociacao__data_conclusao__gte=primeiro_dia_do_mes)
+    resultado_total_mes = rendimentos_mes_atual.aggregate(soma_total_mes=Sum(F('id_negociacao__preco') * F('quantidade')))['soma_total_mes']
 
     context = {
         'rendimentos': rendimentos,
         'total_recebido': total_recebido,
-        'rendimento_total_mes_atual': soma_mes_atual
+        'rendimento_total_mes_atual': resultado_total_mes
     }
 
     return render(request, 'rendimentos.html', context)

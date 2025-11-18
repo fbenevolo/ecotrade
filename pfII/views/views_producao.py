@@ -22,6 +22,7 @@ def producoes(request, email_usuario):
     alterar_producao_form = AlterarProducaoForm()        
     remover_producao_form = RemoverProducaoForm()
     
+    outras_infos = {}
 
     if request.method == 'POST':
         # pega a ação que é para ser feita: criação, alteração, remoção de produção ou aprovação de catador
@@ -38,7 +39,6 @@ def producoes(request, email_usuario):
                     messages.error(request, f'Erro ao processar aprovação: {str(e)}')
                     return redirect(reverse('producoes', kwargs={'email_usuario': usuario.email}))
         
-        # --- PROCESSAMENTO DE ALTERAÇÃO DE CATADOR ---
         elif 'alterar_catador' in action:
             catador = get_object_or_404(Usuario, email=request.POST.get('catador_id'))
             alterar_catador_form = AlterarCatadorForm(request.POST, instance=catador)
@@ -50,7 +50,6 @@ def producoes(request, email_usuario):
                     messages.error(request, f'Erro ao alterar dados do catador: {str(e)}')
                     return redirect(reverse('producoes', kwargs={'email_usuario': usuario.email}))
         
-        # PROCESSAMENTO DE CRIAÇÃO DE RESÍDUO
         if 'create_residuo' in action:            
             adicionar_producao_form = AdicionarProducaoForm(request.POST, cooperativa=usuario)
             if adicionar_producao_form.is_valid():
@@ -58,10 +57,8 @@ def producoes(request, email_usuario):
                 messages.success(request, "Produção registrada com sucesso!")
                 return redirect(reverse('producoes', kwargs={'email_usuario': usuario.email}))
 
-        # PROCESSAMENTO DE ALTERAÇÃO DE RESÍDUO
-        elif 'update' in action:
+        elif 'alterar_producao' in action:
             producao_pk = request.POST.get('producao_pk')
-            # Garante que a produção existe e pertence à cooperativa
             producao_instancia = get_object_or_404(Producao, pk=producao_pk, id_cooperativa=usuario)
             
             alterar_form = AlterarProducaoForm(request.POST, instance=producao_instancia)
@@ -75,19 +72,17 @@ def producoes(request, email_usuario):
             producao_pk = request.POST.get('producao_pk')
             producao_instancia = get_object_or_404(Producao, pk=producao_pk, id_cooperativa=usuario)
             producao_instancia.delete()
-    
 
             messages.success(request, "Produção removida com sucesso.")
             return redirect(reverse('producoes', kwargs={'email_usuario': usuario.email}))
     
     if request.user.tipo_usuario == 'CA':
         producoes = Producao.objects.filter(id_cooperativa=usuario.cooperativa_associada)
+        outras_infos['producoes_catador'] = producoes.filter(id_catador=usuario.pk).exclude(status='z')
     else:
         producoes = Producao.objects.filter(id_cooperativa=usuario.pk)
     
     catadores = Usuario.objects.filter(cooperativa_associada=usuario.pk)
-
-    print(producoes)
 
     context = {
         'producoes': producoes,
@@ -98,5 +93,7 @@ def producoes(request, email_usuario):
         'aprovar_catador_form': aprovar_catador_form,
         'alterar_catador_form': alterar_catador_form,
     }
+
+    context['outras_infos'] = outras_infos
 
     return render(request, 'producao/producoes.html', context)

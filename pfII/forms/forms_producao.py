@@ -45,9 +45,11 @@ class AdicionarProducaoForm(forms.ModelForm):
             
 
 class AlterarProducaoForm(forms.ModelForm):
+    action = forms.CharField(widget=forms.HiddenInput(), initial='alterar_producao') 
+    producao_pk = forms.CharField(widget=forms.HiddenInput())
     id_residuo = MyModelChoiceField(queryset=Residuo.objects.all(), label='Resíduo')
+    producao = forms.FloatField(label='Produção')
     data = forms.DateField(label='Data', widget=forms.DateInput(attrs={'type': 'date',}))
-
 
     class Meta:
         model = Producao
@@ -55,17 +57,12 @@ class AlterarProducaoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        for field in self.fields.values():
-            field.widget.attrs.update({'class': 'mt-1 block w-full bg-background-light dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm'})
+        for field in self.fields:
+            common = 'mt-1 block w-full bg-background-light dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm'
+            self.fields[field].widget.attrs.update({'class': common})
 
 class RemoverProducaoForm(forms.Form):
     action = forms.CharField(widget=forms.HiddenInput(), initial='remover_producao')
     producao_pk = forms.CharField(widget=forms.HiddenInput())
-
     residuo = forms.CharField(widget=forms.HiddenInput())
     quantidade = forms.CharField(widget=forms.HiddenInput())
-
-
-    def save(self):
-        print()
