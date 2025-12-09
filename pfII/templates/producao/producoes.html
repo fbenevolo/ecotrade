@@ -121,9 +121,13 @@
                                         <td class="py-4 px-4 flex justify-center items-center space-x-2">
                                         <button class="text-blue-500 hover:text-blue-700 editar-catador-btn" title="Editar Dados do Catador">
                                             <span class="material-symbols-outlined">edit</span>
-                                        </button>
+                                        </button></td>
                                     {% else %}
                                         <td class="py-4 px-4 text-yellow-500"> {{ catador.get_status_display }} </td>
+                                        <td class="py-4 px-4 flex justify-center items-center space-x-2">
+                                        <button class="text-blue-500 hover:text-blue-700 aprovar-catador-btn" title="Aprovar Catador">
+                                            <span class="material-symbols-outlined">how_to_reg</span>
+                                        </button></td>
                                     {% endif %}
                                 </tr>
                                 {% endfor %}
@@ -166,9 +170,6 @@
                                     <td class="py-4 px-4 text-gray-800 dark:text-white text-right"> {{ producao.producao }} </td>
                                 </tr>
                                 {% endfor %}
-                                
-                                {% include 'catador/aprovar_catador.html' %}
-                                {% include 'catador/alterar_catador.html' %}
                             </tbody>
                         </table>
                     </div>
