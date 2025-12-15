@@ -39,18 +39,6 @@ class AlterarDemandaForm(forms.ModelForm):
         self.fields['nome_residuo'].widget.attrs.update({'class': style + ' cursor-not-allowed bg-gray-100'}) # estilização readonly
 
 
-class ExcluirDemandaForm(forms.Form):
-    action = forms.CharField(widget=forms.HiddenInput(), initial='excluir_demanda')
-    id_demanda = forms.CharField(widget=forms.HiddenInput())
-
-    def save(self):
-        id_demanda = self.cleaned_data['id_demanda']
-        try:
-            Demanda.objects.filter(pk=id_demanda).delete()
-        except Exception as e:
-            print(f'Erro ao deletar demanda: {e}')
-
-
 class CadastrarAtendimentoDemandaForm(forms.Form):
     id_demanda = forms.CharField(widget=forms.HiddenInput())
     id_cooperativa = forms.CharField(widget=forms.HiddenInput())
@@ -64,50 +52,50 @@ class CadastrarAtendimentoDemandaForm(forms.Form):
         for field in self.fields.values():
             field.widget.attrs.update({'class': common})
 
-    def save(self):
-        id_demanda = self.cleaned_data['id_demanda']
-        id_residuo = self.cleaned_data['id_residuo']
-        id_cooperativa = self.cleaned_data['id_cooperativa']
-        preco_inicial = self.cleaned_data['preco_inicial']
+    # def save(self):
+    #     id_demanda = self.cleaned_data['id_demanda']
+    #     id_residuo = self.cleaned_data['id_residuo']
+    #     id_cooperativa = self.cleaned_data['id_cooperativa']
+    #     preco_inicial = self.cleaned_data['preco_inicial']
 
-        if preco_inicial is None or preco_inicial <= 0 or preco_inicial == ' ':
-            raise forms.ValidationError('Erro no preenchimento do campo de preço. Verifique novamente')
+    #     if preco_inicial is None or preco_inicial <= 0 or preco_inicial == ' ':
+    #         raise forms.ValidationError('Erro no preenchimento do campo de preço. Verifique novamente')
 
-        try:
-            # atualiza demanda
-            demanda = Demanda.objects.get(pk=id_demanda)
-            demanda.status='A'
-            demanda.save()
+    #     try:
+    #         # atualiza demanda
+    #         demanda = Demanda.objects.get(pk=id_demanda)
+    #         demanda.status='A'
+    #         demanda.save()
 
-            cooperativa = Usuario.objects.get(pk=id_cooperativa)
-            residuo = Residuo.objects.get(pk=id_residuo)
-            # Cria objeto negociação com as informações da demanda
-            negociacao = Negociacao.objects.create(id_empresa=demanda.id_empresa,
-                                    id_cooperativa=cooperativa,
-                                    id_residuo=residuo,
-                                    quantidade=demanda.quantidade,
-                                    preco=preco_inicial,
-                                    confirmacao_preco_cooperativa=True,
-                                    demanda_associada=demanda,
-                                    status='ACE')
+    #         cooperativa = Usuario.objects.get(pk=id_cooperativa)
+    #         residuo = Residuo.objects.get(pk=id_residuo)
+    #         # Cria objeto negociação com as informações da demanda
+    #         negociacao = Negociacao.objects.create(id_empresa=demanda.id_empresa,
+    #                                 id_cooperativa=cooperativa,
+    #                                 id_residuo=residuo,
+    #                                 quantidade=demanda.quantidade,
+    #                                 preco=preco_inicial,
+    #                                 confirmacao_preco_cooperativa=True,
+    #                                 demanda_associada=demanda,
+    #                                 status='ACE')
             
-            enviar_email_template(cooperativa.email, 'negociacao/negociacao_iniciada.html', 'Negociação Iniciada')
-            enviar_email_template(demanda.id_empresa.email, 'negociacao/negociacao_iniciada.html', 'Negociação Iniciada')
+    #         enviar_email_template(cooperativa.email, 'negociacao/negociacao_iniciada.html', 'Negociação Iniciada')
+    #         enviar_email_template(demanda.id_empresa.email, 'negociacao/negociacao_iniciada.html', 'Negociação Iniciada')
 
-            # seleciona producoes e aloca elas para negociação
-            producoes = seleciona_producoes(id_demanda)
-            for (producao, quantidade) in producoes.items():
-                producao.status = 'a'
-                producao.id_negociacao = negociacao 
-                producao.save()
+    #         # seleciona producoes e aloca elas para negociação
+    #         producoes = seleciona_producoes(id_demanda)
+    #         for (producao, quantidade) in producoes.items():
+    #             producao.status = 'a'
+    #             producao.id_negociacao = negociacao 
+    #             producao.save()
 
-                # cria objetos NegociacaoPagaTrabalho
-                NegociacaoPagaTrabalho.objects.create(id_negociacao=negociacao,
-                               id_producao=producao,
-                               quantidade=quantidade,
-                               id_catador=producao.id_catador)
+    #             # cria objetos NegociacaoPagaTrabalho
+    #             NegociacaoPagaTrabalho.objects.create(id_negociacao=negociacao,
+    #                            id_producao=producao,
+    #                            quantidade=quantidade,
+    #                            id_catador=producao.id_catador)
 
-        except Exception as e:
-            print(f'Erro ao criar negociação: {e}')
+    #     except Exception as e:
+    #         print(f'Erro ao criar negociação: {e}')
             
 

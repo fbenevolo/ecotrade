@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
         button.addEventListener('click', function(e) {
             e.preventDefault();
             const row = e.currentTarget.closest('tr');
-            const idDemanda = row.getAttribute('data-demanda-id')
+            const idDemanda = row.getAttribute('data-id-demanda')
             const tipoResiduo = row.getAttribute('data-tipo-residuo');
             openAlterarDemandaModal(idDemanda, tipoResiduo);
         });

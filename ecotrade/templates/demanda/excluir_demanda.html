@@ -1,9 +1,7 @@
 <div id="modal-excluir-demanda" class="absolute inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center hidden">
     <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-full max-w-md p-8 m-4">
-        <form action="{% url 'demandas' email_usuario=request.user.pk %}" method="POST">
+        <form id="form-excluir-demanda" action="{% url 'excluir_demanda' email_usuario=request.user.pk id_demanda=0 %}" method="POST">
             {% csrf_token %}
-            {{ excluir_demanda_form.action }}
-            {{ excluir_demanda_form.id_demanda }}
 
             <div class="flex flex-col items-center text-center">
                 <div class="w-16 h-16 bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center mb-4">

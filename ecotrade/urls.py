@@ -46,11 +46,6 @@ gestao_usuarios = [
     path('dashboard/<str:email_usuario>/reativar_conta', views_admin.reativar_conta, name='reativar_conta')
 ]
 
-# específico para exibir os resultados de seleção de produção de demandas
-ajax_api = [
-    path('api/demanda/preparar/<int:id_demanda>/', views_demanda.preparar_atendimento_ajax, name='preparar_atendimento_ajax')
-]
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views_common.home_view, name='home'),
@@ -63,10 +58,12 @@ urlpatterns = [
 
     path('dashboard/<str:email_usuario>/producoes', views_producao.producoes, name='producoes'),
 
-    # views de demanda
+    # URLs de demanda
     path('dashboard/<str:email_usuario>/demandas', views_demanda.demandas, name='demandas'),
     path('dashboard/<str:email_usuario>/demandas/cadastrar', views_demanda.cadastrar_demanda, name='cadastrar_demanda'),
     path('dashboard/<str:email_usuario>/demandas/alterar/<int:id_demanda>', views_demanda.alterar_demanda, name='alterar_demanda'),
+    path('dashboard/<str:email_usuario>/demandas/excluir/<int:id_demanda>', views_demanda.excluir_demanda, name='excluir_demanda'),
+    path('api/demanda/preparar/<int:id_demanda>/', views_demanda.preparar_atendimento_demanda, name='preparar_atendimento_ajax'),
 
 
     path('dashboard/<str:email_usuario>/negociacoes', views_negociacao.negociacoes, name='negociacoes'),
@@ -81,7 +78,6 @@ urlpatterns = [
 
 urlpatterns += password_reset_patterns
 urlpatterns += gestao_usuarios
-urlpatterns += ajax_api
 
 # ESTA CONFIGURAÇÃO SÓ É NECESSÁRIA E DEVE SER USADA EM AMBIENTE DE DESENVOLVIMENTO (DEBUG=True)
 if settings.DEBUG:

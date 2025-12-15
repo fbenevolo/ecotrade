@@ -12,20 +12,23 @@ document.addEventListener('DOMContentLoaded', function () {
         if (modal) modal.classList.remove('hidden');
     };
 
-    function openExcluirDemandaModal(demandaId) {
-        const hiddenDemandaIdInput = modalExcluirDemanda.querySelector('input[name="id_demanda"]');
-        hiddenDemandaIdInput.value = demandaId;
-        openModal(modalExcluirDemanda);
+    function openExcluirDemandaModal(idDemanda) {
+         // substituindo o placeholder 0 pelo id da demanda a ser excluida
+        const formExcluirDemanda = modalExcluirDemanda.querySelector('#form-excluir-demanda');
+        let actionUrl = formExcluirDemanda.getAttribute('action');
+        actionUrl = actionUrl.replace('0', `${idDemanda}`);
+        formExcluirDemanda.setAttribute('action', actionUrl);
 
+        openModal(modalExcluirDemanda);
     }
 
     openModalBtn.forEach(button => {
         button.addEventListener('click', (e) => {
             e.preventDefault();
             const row = e.currentTarget.closest('tr');
-            const demandaId = row.getAttribute('data-demanda-id');
+            const idDemanda = row.getAttribute('data-id-demanda');
 
-            openExcluirDemandaModal(demandaId);
+            openExcluirDemandaModal(idDemanda);
         });
     })
 

@@ -5,61 +5,80 @@
 <main class="flex-1 p-8 overflow-y-auto">
     <div class="flex justify-between items-center mb-8">
         <h2 class="text-3xl font-bold text-gray-800 dark:text-white">Demandas</h2>
-        <button 
-            data-id-empresa="{{ request.user.pk }}"
-            id="cadastrar-demanda-btn"
+        <button data-id-empresa="{{ request.user.pk }}" id="cadastrar-demanda-btn"
             class="bg-primary hover:bg-primary/90 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
             <span class="material-symbols-outlined">add</span>
             Cadastrar Demanda
         </button>
     </div>
     {% include 'demanda/cadastrar_demanda.html' with cadastrar_demanda_form=cadastrar_demanda_form %}
-        <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm">
-            <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-4">
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Demandas em Aberto</h3>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="border-b border-gray-200 dark:border-gray-800">
-                            <th class="py-3 px-4 font-semibold text-gray-500 dark:text-gray-400">Material</th>
-                            <th class="py-3 px-4 font-semibold text-gray-500 dark:text-gray-400 text-right">Quantidade
-                                (kg)</th>
-                            <th class="py-3 px-4 font-semibold text-gray-500 dark:text-gray-400 text-center">Ação</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for demanda in demandas %}
-                        <tr data-demanda-id="{{ demanda.pk }}"
-                            data-tipo-residuo="{{ demanda.id_residuo.get_tipo_display }}"
-                            data-residuo-id="{{ demanda.id_residuo.pk }}"
-                            class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                            <td class="py-4 px-4 text-gray-800 dark:text-white"> {{ demanda.id_residuo.get_tipo_display }}  </td>
-                            <td class="py-4 px-4 text-gray-800 dark:text-white text-right"> {{ demanda.quantidade }} </td>
-                            <td class="py-4 px-4 text-center">
-                                <div class="flex justify-center items-center gap-2">
-                                    <button
-                                        class="edit-demanda-btn bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg flex items-center justify-center">
-                                        <span class="material-symbols-outlined">edit</span>
-                                    </button>
-                                    <button
-                                        class="delete-demanda-btn bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg flex items-center justify-center">
-                                        <span class="material-symbols-outlined">delete</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
 
-                        {% include 'demanda/alterar_demanda.html' with alterar_demanda_form=alterar_demanda_form %}
-                        {% include 'demanda/excluir_demanda.html' with excluir_demanda_form=excluir_demanda_form %}
-                    </tbody>
-                </table>
-            </div>
+    <div class="message-container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-4">
+        {% for message in messages %}
+            <div class="p-4 rounded-lg shadow-md mb-4 flex items-center justify-between
+                {% if message.tags == 'success' %}
+                    bg-green-100 border-l-4 border-green-500 text-green-700 dark:bg-green-900 dark:text-green-200
+                {% elif message.tags == 'error' %}
+                    bg-red-100 border-l-4 border-red-500 text-red-700 dark:bg-red-900 dark:text-red-200
+                {% elif message.tags == 'warning' %}
+                    bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200
+                {% else %}
+                    bg-blue-100 border-l-4 border-blue-500 text-blue-700 dark:bg-blue-900 dark:text-blue-200
+                {% endif %}
+                " role="alert">
+                
+                <p class="font-medium">
+                    {{ message }}
+                </p>
+                
+                </div>
+        {% endfor %}
+    </div>
+
+    <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm">
+        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-4">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Demandas em Aberto</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="border-b border-gray-200 dark:border-gray-800">
+                        <th class="py-3 px-4 font-semibold text-gray-500 dark:text-gray-400">Material</th>
+                        <th class="py-3 px-4 font-semibold text-gray-500 dark:text-gray-400 text-right">Quantidade
+                            (kg)</th>
+                        <th class="py-3 px-4 font-semibold text-gray-500 dark:text-gray-400 text-center">Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for demanda in demandas %}
+                    <tr data-id-demanda="{{ demanda.pk }}"
+                        data-tipo-residuo="{{ demanda.id_residuo.get_tipo_display }}"
+                        data-residuo-id="{{ demanda.id_residuo.pk }}"
+                        class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                        <td class="py-4 px-4 text-gray-800 dark:text-white"> {{ demanda.id_residuo.get_tipo_display }}  </td>
+                        <td class="py-4 px-4 text-gray-800 dark:text-white text-right"> {{ demanda.quantidade }} </td>
+                        <td class="py-4 px-4 text-center">
+                            <div class="flex justify-center items-center gap-2">
+                                <button
+                                    class="edit-demanda-btn bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg flex items-center justify-center">
+                                    <span class="material-symbols-outlined">edit</span>
+                                </button>
+                                <button
+                                    class="delete-demanda-btn bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg flex items-center justify-center">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                    {% include 'demanda/alterar_demanda.html' with alterar_demanda_form=alterar_demanda_form %}
+                    {% include 'demanda/excluir_demanda.html' with excluir_demanda_form=excluir_demanda_form %}
+                </tbody>
+            </table>
         </div>
     </div>
 </main>
-</div>
 {% elif request.user.tipo_usuario == 'CO' %}
 <main class="flex-1 p-8 overflow-y-auto">
     <div class="flex justify-between items-center mb-8">
