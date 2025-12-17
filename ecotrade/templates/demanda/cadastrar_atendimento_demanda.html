@@ -2,26 +2,15 @@
     class="absolute inset-0 bg-black/60 dark:bg-black/80 flex items-center justify-center z-20 hidden">
     <div class="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-2xl mx-4">
         <div class="p-8">
-            <form action="{% url 'demandas' email_usuario=request.user.pk %}" method="POST" class="space-y-6">
+            <form id="cadastrar-atendimento-form" action="{% url 'cadastrar_atendimento_demanda' email_usuario=request.user.pk id_demanda=0 %}" method="POST" class="space-y-6">
                 {% csrf_token %}
-
-                {{ cadastrar_atendimento_demanda_form.id_cooperativa }}
-                {{ cadastrar_atendimento_demanda_form.id_demanda }}
-                {{ cadastrar_atendimento_demanda_form.id_residuo }}
-                {{ cadastrar_atendimento_demanda_form.action }}
 
                 <div class="flex justify-between items-start mb-6">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Cadastro em Demanda</h2>
                         <p class="text-gray-600 dark:text-gray-400 mt-1">Demanda <span
                                 class="font-semibold text-gray-800 dark:text-gray-200">
-                                <strong>
-                                    <span id="confirm-residuo">...</span>
-                                </strong> -
-                                <strong>
-                                    <span id="confirm-quantidade">... </span>
-                                </strong>
-
+                                <strong> <span id="confirm-residuo">...</span> </strong> - <strong> <span id="confirm-quantidade">... </span> </strong>
                         </p>
                     </div>
                     <button id="modal-close-btn" type="button"
@@ -30,7 +19,14 @@
                     </button>
                 </div>
 
+                
                 <div class="space-y-6">
+                    <div class="flex items-center bg-blue-100 text-blue-800 border border-blue-400 rounded-lg px-4 py-3 gap-2">
+                        <span class="material-symbols-outlined text-lg">info</span>
+                        <p class="text-sm font-medium">
+                            Para valores decimais, utilize o <strong>ponto</strong> (.) como separador (Ex: 10.5).
+                        </p>
+                    </div>
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                             for="{{ cadastrar_atendimento_demanda_form.preco_inicial.id_for_label }}">

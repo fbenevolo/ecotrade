@@ -1,17 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const modalCadastrarAtendimentoDemanda = document.getElementById('modal-cadastrar-atendimento-demanda');
+    const cadastrarAtendimentoModal = document.getElementById('modal-cadastrar-atendimento-demanda');
     const openModalBtns = document.querySelectorAll('button.negociar-btn');
-    const closeModalBtn = document.getElementById('modal-close-btn');
-    const cancelModalBtn = document.getElementById('modal-cancel-btn');
 
-    // Elementos de Display Dinâmico (Ajuste este ID para o local onde o preço sugerido aparece)
-    const precoSugeridoDisplay = modalCadastrarAtendimentoDemanda ? modalCadastrarAtendimentoDemanda.querySelector('#preco-sugerido-display') : null;
-    const producoesGridBody = modalCadastrarAtendimentoDemanda ? modalCadastrarAtendimentoDemanda.querySelector('#catadores-grid-container') : null; // Assumindo este ID
-
-    // Variáveis que persistem entre o AJAX e a abertura
-    let currentDemandaData = {}; 
-
-    // Funções genéricas de modal
     const closeModal = (modal) => {
         if (modal) modal.classList.add('hidden');
     };
@@ -19,70 +9,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const openModal = (modal) => {
         if (modal) modal.classList.remove('hidden');
     };
-
-    // =========================================================
-    // I. FUNÇÃO PRINCIPAL DE ABERTURA (Agora recebe os dados do AJAX)
-    // =========================================================
-
-    function openCadastrarAtendimentoModal(data) {
-        if (!modalCadastrarAtendimentoDemanda) return;
-        
-        // Campos que o formulário submeterá
-        const hiddenCooperativaIdInput = modalCadastrarAtendimentoDemanda.querySelector('input[name="id_cooperativa"]');
-        const hiddenResiduoIdInput = modalCadastrarAtendimentoDemanda.querySelector('input[name="id_residuo"]');
-        const hiddenDemandaIdInput = modalCadastrarAtendimentoDemanda.querySelector('input[name="id_demanda"]');
-        
-        // Elementos visuais
-        const confirmTextResiduo = modalCadastrarAtendimentoDemanda.querySelector('#confirm-residuo');
-        const confirmTextQuantidade = modalCadastrarAtendimentoDemanda.querySelector('#confirm-quantidade');
-    
-        // 1. Injeta os IDs e Quantidade nos campos ocultos e displays
-        if (hiddenCooperativaIdInput) hiddenCooperativaIdInput.value = currentDemandaData.cooperativaId;
-        if (hiddenResiduoIdInput) hiddenResiduoIdInput.value = currentDemandaData.residuoId;
-        if (hiddenDemandaIdInput) hiddenDemandaIdInput.value = currentDemandaData.demandaId;
-        
-        if (confirmTextResiduo) confirmTextResiduo.textContent = currentDemandaData.residuoTexto;
-        if (confirmTextQuantidade) confirmTextQuantidade.textContent = currentDemandaData.quantidade + " kg";
-
-        // 2. Injeta os dados do AJAX
-        if (data.preco_sugerido && precoSugeridoDisplay) {
-            // Formata o valor com 2 casas decimais e prefixo R$
-            precoSugeridoDisplay.textContent = 'R$ ' + data.preco_sugerido.toFixed(2);
-        } else if (precoSugeridoDisplay) {
-            // Se o preço for nulo ou zero, exibe uma mensagem
-            precoSugeridoDisplay.textContent = 'Não há sugestão de preço para esta negociação';
-        }
-
-        if (data.producoes && producoesGridBody) {
-            // 3. Renderiza a tabela de catadores elegíveis
-            renderProducoesGrid(data.producoes, producoesGridBody, data.preco_sugerido);
-        }
-
-        openModal(modalCadastrarAtendimentoDemanda);
-    }
-    
-    // =========================================================
-    // II. FUNÇÃO DE CHAMADA AJAX (NOVA)
-    // =========================================================
-
-    function loadDataAndOpenModal(demandaId) {
-        // Obtenha a URL do endpoint AJAX (Ajuste o caminho se necessário)
-        const ajaxUrl = `/api/demanda/preparar/${demandaId}/`; 
-        fetch(ajaxUrl)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Chama a função principal para preencher e abrir o modal
-                    openCadastrarAtendimentoModal(data); 
-                } else {
-                    alert('Erro ao carregar dados: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error("Erro de rede ao buscar dados:", error);
-                alert('Ocorreu um erro de conexão ao tentar negociar.');
-            });
-    }
 
     const formatarDataParaBR = (dataString) => {
         const partes = dataString.split('-'); // ["YYYY", "MM", "DD"]
@@ -94,10 +20,68 @@ document.addEventListener('DOMContentLoaded', function () {
         return dataString; // Retorna o original se o formato for inesperado
     }
 
+    function openCadastrarAtendimentoModal(producoesSelecionadas, demandaData) {
+        if (!cadastrarAtendimentoModal) return;
+        
+        // substituindo o placeholder 0 pelo id da demanda a ser atendida
+        const cadastrarAtendimentoForm = cadastrarAtendimentoModal.querySelector('#cadastrar-atendimento-form');
+        let actionUrl = cadastrarAtendimentoForm.getAttribute('action');
+        actionUrl = actionUrl.replace('0', `${demandaData.idDemanda}`);
+        cadastrarAtendimentoForm.setAttribute('action', actionUrl);
+        
+        // Elementos visuais
+        const confirmTextResiduo = cadastrarAtendimentoModal.querySelector('#confirm-residuo');
+        const confirmTextQuantidade = cadastrarAtendimentoModal.querySelector('#confirm-quantidade');        
+        confirmTextResiduo.textContent = demandaData.residuo;
+        confirmTextQuantidade.textContent = demandaData.quantidade + " kg";
 
+        const precoSugeridoDisplay = cadastrarAtendimentoModal.querySelector('#preco-sugerido-display');
+        precoSugeridoDisplay.textContent = 'R$ ' + producoesSelecionadas.preco_sugerido.toFixed(2);
+        if (producoesSelecionadas.preco_sugerido && precoSugeridoDisplay) {
+            // Formata o valor com 2 casas decimais e prefixo R$
+            precoSugeridoDisplay.textContent = 'R$ ' + producoesSelecionadas.preco_sugerido.toFixed(2);
+        } else if (precoSugeridoDisplay) {
+            // Se o preço for nulo ou zero, exibe uma mensagem
+            precoSugeridoDisplay.textContent = 'Não há sugestão de preço para esta negociação';
+        }
 
-    // Esta função é vital e você deve implementá-la em seu JS
-    function renderProducoesGrid(producoes, containerElement, precoSugerido) {
+        const producoesGridBody = cadastrarAtendimentoModal.querySelector('#catadores-grid-container');
+        renderCatadoresElegiveisGrid(producoesSelecionadas.producoes, producoesGridBody);
+
+        openModal(cadastrarAtendimentoModal);
+    }
+    
+
+    async function loadProducoesSelecionadas(idDemanda) {
+        /* 
+        Esta função acessa um endpoint no qual ela obtém acesso às produções que são elegíveis para uma negociação
+        */
+        const ajaxUrl = `/api/demanda/preparar/${idDemanda}/`; 
+        return fetch(ajaxUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status} ao carregar produções demanda ${idDemanda}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    return data;
+                } else {
+                    console.log('Erro ao carregar dados: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error("Erro de rede ao buscar dados:", error);
+                console.log('Ocorreu um erro de conexão ao tentar negociar.');
+            });
+    }
+
+    function renderCatadoresElegiveisGrid(producoes, containerElement) {
+        /* 
+        Renderiza um grid com as produções/catadores elegíveis para a negociação 
+        */
+        
         // Limpa o conteúdo anterior e o placeholder "Carregando..."
         containerElement.innerHTML = ''; 
 
@@ -122,41 +106,29 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // =========================================================
-    // IV. LISTENER DE CLIQUE (AGORA CHAMA O AJAX)
-    // =========================================================
-
-    if (modalCadastrarAtendimentoDemanda) {
-        // Listener de Fechamento (Mantido)
-        closeModalBtn.addEventListener('click', () => closeModal(modalCadastrarAtendimentoDemanda));
-        cancelModalBtn.addEventListener('click', () => closeModal(modalCadastrarAtendimentoDemanda));
-        
-        modalCadastrarAtendimentoDemanda.addEventListener('click', function (e) {
-            if (e.target.id === 'modal-cadastrar-atendimento-demanda') { // Corrigido ID de fechamento
-                closeModal(modalCadastrarAtendimentoDemanda);
-            }
-        });
+    if (cadastrarAtendimentoModal) {
+        const closeModalBtn = document.getElementById('modal-close-btn');
+        const cancelModalBtn = document.getElementById('modal-cancel-btn');
+        closeModalBtn.addEventListener('click', (e) => { e.preventDefault(); closeModal(cadastrarAtendimentoModal) });
+        cancelModalBtn.addEventListener('click', (e) => { e.preventDefault(); closeModal(cadastrarAtendimentoModal) });
     }
     
     openModalBtns.forEach(button => {
-         button.addEventListener('click', function (e) {
+         button.addEventListener('click', async function (e) {
             e.preventDefault();
             const row = e.currentTarget.closest('tr');
             
             // Coleta os dados estáticos da linha (para preencher displays e hidden inputs)
-            const demandaId = row.getAttribute('data-demanda-id');
-            const cooperativaId = row.getAttribute('data-cooperativa-id');
-            const residuoId = row.getAttribute('data-residuo-id');
-            const residuoTexto = row.getAttribute('data-residuo-texto');
+            const idDemanda = row.getAttribute('data-id-demanda');
+            const residuo = row.getAttribute('data-residuo');
             const quantidade = row.getAttribute('data-quantidade');
 
-            if (demandaId) {
-                // Armazena os dados estáticos globalmente
-                currentDemandaData = { demandaId, cooperativaId, residuoId, residuoTexto, quantidade };
+            // Armazena os dados estáticos globalmente
+            const demandaData = { idDemanda: idDemanda, residuo: residuo, quantidade: quantidade };
                 
-                // Inicia o fluxo AJAX
-                loadDataAndOpenModal(demandaId);
-            }
+            const producoesSelecionadas = await loadProducoesSelecionadas(idDemanda);
+            openCadastrarAtendimentoModal(producoesSelecionadas, demandaData); 
+
         });
     });
 

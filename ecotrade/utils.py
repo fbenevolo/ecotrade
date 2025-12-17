@@ -22,16 +22,18 @@ def get_rendimento_total_catador(usuario: Usuario, negociacoes: List[Negociacao]
         recebido = negociacao.preco * n_paga_t.quantidade
         total_pago += recebido
 
-    return total_pago 
+    return total_pago
 
 
 def seleciona_producoes(id_demanda):
     '''
-    Seleciona catadores e suas produções para uma negociação.
-    
+    Seleciona produções de catadores para uma negociação.
+    Retorna um dicionário com o formato de cada item é:
+        <Producao object>: <quantidade_selecionada>
     '''
     demanda = Demanda.objects.get(pk=id_demanda)
     residuo = demanda.id_residuo.tipo
+    # IMPORTANTE - ordenação de produções por data, para selecionar as mais antigas primeiro
     producoes_residuo = Producao.objects.filter(id_residuo=residuo, status='l').order_by('data')
 
     selecao_producoes = {}

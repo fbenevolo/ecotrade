@@ -18,8 +18,10 @@ document,addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    openCadastrarDemanda.addEventListener('click', (e) => {
-        e.preventDefault();
-        openModal(cadastrarDemandaModal)
-    })
+    if (openCadastrarDemanda) {
+        openCadastrarDemanda.addEventListener('click', (e) => {
+            e.preventDefault();
+            openModal(cadastrarDemandaModal)
+        })
+    }
 });

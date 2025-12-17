@@ -128,11 +128,9 @@
                     <tbody>
                         {% for demanda in demandas_atendiveis %}
                             <tr 
-                                data-demanda-id="{{ demanda.pk }}"
-                                data-residuo-id="{{ demanda.id_residuo.pk }}"
-                                data-residuo-texto="{{ demanda.id_residuo.get_tipo_display }}" 
+                                data-id-demanda="{{ demanda.pk }}"
+                                data-residuo="{{ demanda.id_residuo.get_tipo_display }}" 
                                 data-quantidade = "{{ demanda.quantidade }}"
-                                data-cooperativa-id = {{ request.user.pk }}
                                 class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                                 <td class="py-4 px-4 text-gray-800 dark:text-white"> {{ demanda.id_empresa.nome }} </td>
                                 <td class="py-4 px-4 text-gray-600 dark:text-gray-300"> {{ demanda.id_residuo.get_tipo_display }} </td>

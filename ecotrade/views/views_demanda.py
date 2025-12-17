@@ -1,13 +1,14 @@
 from django.urls import reverse
-from django.db.models import Sum
-from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.db.models import Sum, OuterRef, Subquery, DecimalField, F
+from django.db.models.functions import Coalesce
+from django.http import JsonResponse
 
-from ..models import Usuario, Demanda, Producao, Negociacao
+from ..models import Usuario, Demanda, Producao, Negociacao, NegociacaoPagaTrabalho
 from ..forms.forms_demanda import CadastrarDemandaForm, AlterarDemandaForm, CadastrarAtendimentoDemandaForm
-from ..utils import seleciona_producoes
+from ..utils import seleciona_producoes, enviar_email_template
 
 @login_required
 def demandas(request, email_usuario):
@@ -21,26 +22,32 @@ def demandas(request, email_usuario):
     alterar_demanda_form = AlterarDemandaForm()
     cadastrar_atendimento_demanda_form = CadastrarAtendimentoDemandaForm()
     
-    usuario = get_object_or_404(Usuario, pk=email_usuario)
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        if 'cadastrar_atendimento_demanda' in action:
-            cadastrar_atendimento_demanda_form = CadastrarAtendimentoDemandaForm(request.POST)
-            if cadastrar_atendimento_demanda_form.is_valid():
-                cadastrar_atendimento_demanda_form.save()
-                return redirect(reverse('demandas', kwargs={'email_usuario': request.user.pk}))
-
     if usuario.tipo_usuario == 'E':
-        demandas = Demanda.objects.filter(id_empresa=usuario, status='EA')
+        demandas = Demanda.objects.filter(id_empresa=usuario)
     else:
-        demandas = Demanda.objects.filter(status='EA')
-        for demanda in demandas:
-            filtro_residuos = Producao.objects.filter(id_cooperativa=request.user.email, id_residuo=demanda.id_residuo)
-            sum_residuo = filtro_residuos.aggregate(total=Sum('producao'))
-            qtd_residuo = sum_residuo['total'] if sum_residuo['total'] is not None else 0
-            if qtd_residuo:
-                if qtd_residuo >= demanda.quantidade:
-                    demandas_atendiveis.append(demanda)
+        demandas = Demanda.objects.all()
+        
+        # subquery que soma a produção da cooperativa para cada resíduo específico
+        total_producao_por_residuo = Producao.objects.filter(
+            id_cooperativa=usuario.email,
+            id_residuo=OuterRef('id_residuo')
+            ).values('id_residuo').annotate(
+                total=Sum('producao')
+            ).values('total')
+
+        # dentro de Demandas, realizar a subquery e armazenar o resultado numa coluna temporária 'qtd_disponivel'
+        # Coalesce trata valores NULL, transformando-os em 0 
+        demandas = Demanda.objects.annotate(qtd_disponivel=Coalesce(Subquery(total_producao_por_residuo), 0, output_field=DecimalField()))
+        # compara a quantidade disponível de resíduo com a quantidade pedida na demanda
+        demandas_atendiveis = demandas.filter(qtd_disponivel__gte=F('quantidade'))
+
+        # for demanda in demandas:
+        #     filtro_residuos = Producao.objects.filter(id_cooperativa=usuario.email, id_residuo=demanda.id_residuo)
+        #     sum_residuo = filtro_residuos.aggregate(total=Sum('producao'))
+        #     qtd_residuo = sum_residuo['total'] if sum_residuo['total'] is not None else 0
+        #     if qtd_residuo:
+        #         if qtd_residuo >= demanda.quantidade:
+        #             demandas_atendiveis.append(demanda)
 
     context = {
         'usuario': usuario,
@@ -65,8 +72,8 @@ def cadastrar_demanda(request, email_usuario):
             try:
                 Demanda.objects.create(id_empresa=empresa,
                                        id_residuo=id_residuo,
-                                       quantidade=quantidade,
-                                       status='EA')
+                                       quantidade=quantidade
+                                       )
                 messages.success(request, 'Demanda adicionada com sucesso')
                 return redirect(reverse('demandas', kwargs={'email_usuario': request.user.email}))
             except Exception as e:
@@ -100,9 +107,12 @@ def alterar_demanda(request, email_usuario, id_demanda):
 def excluir_demanda(request, email_usuario, id_demanda):
     demanda = get_object_or_404(Demanda, pk=id_demanda)
     if demanda:
-        demanda.delete()
-        messages.success(request, 'Demanda excluída com sucesso')
-        return redirect(reverse('demandas', kwargs={'email_usuario': email_usuario}))
+        try:
+            demanda.delete()
+            messages.success(request, 'Demanda excluída com sucesso')
+            return redirect(reverse('demandas', kwargs={'email_usuario': email_usuario}))
+        except Exception as e:
+            print(f'Erro ao deletar demanda: {e}')
 
     return redirect(reverse('demandas', kwargs={'email_usuario': email_usuario}))
 
@@ -115,18 +125,47 @@ def cadastrar_atendimento_demanda(request, email_usuario, id_demanda):
             try:
                 preco_inicial = form.cleaned_data['preco_inicial']
                 cooperativa = get_object_or_404(Usuario, pk=request.user.email)
+
                 # cria uma nova negociação
-                Negociacao.objects.create(id_empresa=demanda.id_empresa,
+                id_negociacao = Negociacao.objects.create(id_empresa=demanda.id_empresa,
                                     id_cooperativa=cooperativa,
                                     id_residuo=demanda.id_residuo,
                                     quantidade=demanda.quantidade,
                                     preco=preco_inicial,
                                     confirmacao_preco_cooperativa=True,
-                                    demanda_associada=demanda,
                                     status='ACE')
 
-                # exclui a demanda anterior
-                # demanda.delete()
+                # envia emails de início de negociação
+                enviar_email_template(cooperativa.email, 'negociacao/negociacao_iniciada.html', 'Negociação Iniciada')
+                enviar_email_template(demanda.id_empresa.email, 'negociacao/negociacao_iniciada.html', 'Negociação Iniciada')
+                
+                # aloca produções à negociação
+                producoes = seleciona_producoes(id_demanda)
+                for (producao, quantidade) in producoes.items():
+                    # se a produção não tiver sido selecionada por inteiro, aloca parte da produção atual com a quantidade selecionada
+                    # e cria outra produção com o que restou
+                    if producao.producao - quantidade > 0:
+                        Producao.objects.create(id_cooperativa=cooperativa,
+                                                id_catador=producao.id_catador,
+                                                id_residuo=producao.id_residuo,
+                                                status='l',
+                                                data=producao.data,
+                                                producao=producao.producao - quantidade)
+
+                    producao.status = 'a'
+                    producao.producao = quantidade
+                    producao.id_negociacao = id_negociacao
+                    producao.save()
+
+                    # cria objetos NegociacaoPagaTrabalho
+                    NegociacaoPagaTrabalho.objects.create(id_negociacao=id_negociacao,
+                               id_producao=producao,
+                               quantidade=quantidade,
+                               id_catador=producao.id_catador)
+
+                # exclui a demanda, já que virou uma negociação
+                demanda.delete()
+
                 messages.success(request, 'Uma negociação foi iniciada. Entre na seção de Negociações para conferir.')
                 return redirect(reverse('demandas', kwargs={'email_usuario': email_usuario}))
 
@@ -135,11 +174,13 @@ def cadastrar_atendimento_demanda(request, email_usuario, id_demanda):
         else:
             return redirect(reverse('demandas', kwargs={'email_usuario': email_usuario}))
 
-
+    return redirect(reverse('demandas', kwargs={'email_usuario': email_usuario}))
 
 
 @login_required
 def preparar_atendimento_demanda(request, id_demanda):
+    '''
+    '''
     if request.method == 'GET':
         try:
             demanda = get_object_or_404(Demanda, pk=id_demanda)

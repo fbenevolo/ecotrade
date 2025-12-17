@@ -134,18 +134,12 @@ class Producao(models.Model):
 
 
 class Demanda(models.Model):
-    OPCOES_STATUS = (
-        ('A', 'Atentida'),
-        ('EA', 'Em Aberto'),
-    )
-
     id_empresa = models.ForeignKey('Usuario', 
                                    on_delete=models.SET_NULL,
                                    null=True,
                                    related_name='detentor_demanda')
     id_residuo = models.ForeignKey('Residuo', on_delete=models.CASCADE)
     quantidade = models.FloatField()
-    status = models.CharField(choices=OPCOES_STATUS)
 
 
 class Negociacao(models.Model):
@@ -178,9 +172,6 @@ class Negociacao(models.Model):
                                    blank=True)
     quantidade = models.FloatField()
     preco = models.FloatField()
-    demanda_associada = models.ForeignKey('Demanda', 
-                                           on_delete=models.SET_NULL,
-                                           null=True)
     confirmacao_preco_empresa = models.BooleanField(default=False)
     confirmacao_preco_cooperativa = models.BooleanField(default=False)
     status = models.CharField(choices=OPCOES_STATUS, max_length=4)

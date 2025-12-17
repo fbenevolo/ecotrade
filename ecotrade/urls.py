@@ -63,6 +63,8 @@ urlpatterns = [
     path('dashboard/<str:email_usuario>/demandas/cadastrar', views_demanda.cadastrar_demanda, name='cadastrar_demanda'),
     path('dashboard/<str:email_usuario>/demandas/alterar/<int:id_demanda>', views_demanda.alterar_demanda, name='alterar_demanda'),
     path('dashboard/<str:email_usuario>/demandas/excluir/<int:id_demanda>', views_demanda.excluir_demanda, name='excluir_demanda'),
+    path('dashboard/<str:email_usuario>/demandas/cadastrar_atendimento/<int:id_demanda>', views_demanda.cadastrar_atendimento_demanda, name='cadastrar_atendimento_demanda'),
+
     path('api/demanda/preparar/<int:id_demanda>/', views_demanda.preparar_atendimento_demanda, name='preparar_atendimento_ajax'),
 
 
