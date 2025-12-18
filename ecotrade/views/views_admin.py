@@ -6,7 +6,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.shortcuts import render, redirect, get_object_or_404
 
 from ..models import Usuario
-from ..utils import enviar_email_template
+from ..utils import enviar_email_template, gera_link_acesso
 from ..forms.forms_admin import AprovarContaForm
 
 @login_required
@@ -21,17 +21,13 @@ def gestao_usuarios(request, email_usuario):
                 try:
                     novo_usuario = aprovar_conta_form.save()
                     if novo_usuario is not None: 
-                        protocolo = 'https' if request.is_secure() else 'http'
-                        dominio = get_current_site(request).domain
-                        caminho_login = reverse('login')
-                        link = f'{protocolo}://{dominio}{caminho_login}'
+                        link = gera_link_acesso(request, 'login')
                         enviar_email_template(novo_usuario.email, 'conta/aprovacao_conta.html', 
                                         'Criação de Conta', context = { 'nome': novo_usuario.nome, 'link_acesso': link })
                     return redirect(reverse('gestao_usuarios', kwargs={'email_usuario': email_usuario}))                
-                except forms.ValidationError as ve:
+                except forms.ValidationError:
                     messages.error(request, 'Erro na operação. Verifique o formulário.') 
-            else:
-                print(aprovar_conta_form.errors.as_data())
+
     context = {
         'usuarios': Usuario.objects.all(),
         'aprovar_usuario_form': aprovar_usuario

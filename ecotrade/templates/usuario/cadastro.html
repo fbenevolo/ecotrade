@@ -13,10 +13,12 @@
             <form action="#" class="mt-8 space-y-6" method="POST">
                 {% csrf_token %}
                 <!-- mostra erros globais do form -->
-                {% if cadastro_form.non_field_errors %}
-                <div class="rounded-lg bg-red-100 text-red-600 font-semibold text-sm p-3">
-                    {{ cadastro_form.non_field_errors }}
-                </div>
+               {% if cadastro_form.non_field_errors %}
+                    {% for error in cadastro_form.non_field_errors %}
+                        <div class="p-4 rounded-lg shadow-md mb-4 flex items-center justify-between border-l-4 bg-red-100 border-red-500 text-red-700 dark:bg-red-900 dark:text-red-200" role="alert">
+                            <p class="font-medium">{{ error }}</p>
+                        </div>
+                    {% endfor %}
                 {% endif %}
                 <div class="relative w-full">
                     <label for="tipo_usuario" class="left-4 top-3 text-gray-500 dark:text-gray-300">Tipo de

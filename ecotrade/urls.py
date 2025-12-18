@@ -49,11 +49,12 @@ gestao_usuarios = [
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views_common.home_view, name='home'),
+    
     path('cadastro/', views_common.cadastro_view, name='cadastro'),
     path('login/', views_common.login_view, name='login'),
     path('logout/', views_common.logout_view, name='logout'),
+
     path('aprovacao_usuario/', views_common.aprovacao_usuario, name='aprovacao_usuario'),
-    path('dashboard/<str:email_usuario>/', views_common.dashboard, name='dashboard'),
     path('dashboard/<str:email_usuario>/gestao_usuarios', views_admin.gestao_usuarios, name='gestao_usuarios'),
 
     path('dashboard/<str:email_usuario>/producoes', views_producao.producoes, name='producoes'),
@@ -64,15 +65,16 @@ urlpatterns = [
     path('dashboard/<str:email_usuario>/demandas/alterar/<int:id_demanda>', views_demanda.alterar_demanda, name='alterar_demanda'),
     path('dashboard/<str:email_usuario>/demandas/excluir/<int:id_demanda>', views_demanda.excluir_demanda, name='excluir_demanda'),
     path('dashboard/<str:email_usuario>/demandas/cadastrar_atendimento/<int:id_demanda>', views_demanda.cadastrar_atendimento_demanda, name='cadastrar_atendimento_demanda'),
-
     path('api/demanda/preparar/<int:id_demanda>/', views_demanda.preparar_atendimento_demanda, name='preparar_atendimento_ajax'),
 
-
+    # URLs de negociação
     path('dashboard/<str:email_usuario>/negociacoes', views_negociacao.negociacoes, name='negociacoes'),
     path('dashboard/<str:email_usuario>/negociacoes/detalhes_negociacao/<int:id_negociacao>', views_negociacao.detalhes_negociacao, name='detalhes_negociacao'),
     path('dashboard/<str:email_usuario>/negociacoes/comprovante/<int:id_negociacao>', views_negociacao.comprovante_negociacao, name='visualizar_comprovante_negociacao'),        
     path('dashboard/<str:email_usuario>/negociacoes/detalhes_negociacao/comprovante/<int:id_contestacao>', views_negociacao.comprovante_contestacao, name='visualizar_comprovante_contestacao'),        
 
+    # URLs de fluxos do site
+    path('dashboard/<str:email_usuario>/', views_common.dashboard, name='dashboard'),
     path('dashboard/<str:email_usuario>/historico', views_common.historico, name='historico'),
     path('dashboard/<str:email_usuario>/rendimentos', views_common.rendimentos, name='rendimentos'),
     path('dashboard/<str:email_usuario>/configuracoes', views_common.configuracoes, name='configuracoes'),

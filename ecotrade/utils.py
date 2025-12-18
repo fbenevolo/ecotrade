@@ -8,6 +8,9 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
 
+from django.urls import reverse
+from django.contrib.sites.shortcuts import get_current_site
+
 
 def get_rendimento_total_catador(usuario: Usuario, negociacoes: List[Negociacao]):
     """
@@ -139,3 +142,16 @@ def enviar_email_template(destinatario_email: str, template_name: str, subject: 
     except Exception as e:
         print(f"Erro ao enviar e-mail para {destinatario_email}: {e}")
         return 0
+    
+
+def gera_link_acesso(request, view_name: str):
+    '''
+    Função auxiliar que gera um link do site
+    para email.
+    '''
+    protocolo = 'https' if request.is_secure() else 'http'
+    dominio = get_current_site(request).domain
+    path_to_view = reverse(view_name)
+    link = f'{protocolo}://{dominio}{path_to_view}'
+
+    return link

@@ -41,14 +41,6 @@ def demandas(request, email_usuario):
         # compara a quantidade disponível de resíduo com a quantidade pedida na demanda
         demandas_atendiveis = demandas.filter(qtd_disponivel__gte=F('quantidade'))
 
-        # for demanda in demandas:
-        #     filtro_residuos = Producao.objects.filter(id_cooperativa=usuario.email, id_residuo=demanda.id_residuo)
-        #     sum_residuo = filtro_residuos.aggregate(total=Sum('producao'))
-        #     qtd_residuo = sum_residuo['total'] if sum_residuo['total'] is not None else 0
-        #     if qtd_residuo:
-        #         if qtd_residuo >= demanda.quantidade:
-        #             demandas_atendiveis.append(demanda)
-
     context = {
         'usuario': usuario,
         'demandas': demandas,
@@ -117,6 +109,7 @@ def excluir_demanda(request, email_usuario, id_demanda):
     return redirect(reverse('demandas', kwargs={'email_usuario': email_usuario}))
 
 
+@login_required
 def cadastrar_atendimento_demanda(request, email_usuario, id_demanda):
     demanda = get_object_or_404(Demanda, pk=id_demanda)
     if request.method == 'POST':
@@ -180,6 +173,9 @@ def cadastrar_atendimento_demanda(request, email_usuario, id_demanda):
 @login_required
 def preparar_atendimento_demanda(request, id_demanda):
     '''
+    Função auxiliar que recupera as produções elegíveis para uma negociação,
+    além do preço sugerido para a negociação, e retorna um objeto JSON com
+    o preço sugerido e com os dados das produções elegíveis
     '''
     if request.method == 'GET':
         try:

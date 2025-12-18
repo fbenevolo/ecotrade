@@ -12,23 +12,30 @@
             <form action="{% url 'login' %}" class="space-y-6" method="POST">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ next|default:'' }}">
-                {% if messages %}
-                <div role="alert">
-                    <ul class="list-none m-0 p-0">
-                        {% for message in messages %}
-                            {% if 'error' in message.tags %}
-                                <li class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-200 dark:text-red-800">
-                                    {{ message }}
-                                </li>
-                            {% elif 'warning' in message.tags %}
-                              <li class="p-4 mb-4 text-sm text-yellow-700 bg-yellow-100 rounded-lg dark:bg-yellow-200 dark:text-yellow-800">
-                                    {{ message }}
-                                </li>
+
+                <div class="message-container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-4">
+                    {% for message in messages %}
+                        <div class="p-4 rounded-lg shadow-md mb-4 flex items-center justify-between
+                            {% if message.tags == 'success' %}
+                                bg-green-100 border-l-4 border-green-500 text-green-700 dark:bg-green-900 dark:text-green-200
+                            {% elif message.tags == 'error' %}
+                                bg-red-100 border-l-4 border-red-500 text-red-700 dark:bg-red-900 dark:text-red-200
+                            {% elif message.tags == 'warning' %}
+                                bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200
+                            {% else %}
+                                bg-blue-100 border-l-4 border-blue-500 text-blue-700 dark:bg-blue-900 dark:text-blue-200
                             {% endif %}
-                        {% endfor %}
-                    </ul>
+                            " role="alert">
+                            
+                            <p class="font-medium">
+                                {{ message }}
+                            </p>
+                            
+                            </div>
+                    {% endfor %}
                 </div>
-                {% endif %}
+
+
                 <div class="space-y-4">
                     <div class="relative w-full">
                         {{ login_form.username }}
@@ -39,10 +46,14 @@
                             Email
                         </label>
                     </div>
-                    <div>
-                        <label class="sr-only" for="{{ login_form.password.id_for_label }}">Senha</label>
+                    <div class="relative w-full">
                         {{ login_form.password }}
-                        <div class="text-red-600 text-sm mt-1">{{ login_form.password.errors }}</div>
+                        <label for="{{ login_form.password.id_for_label }}" class="absolute left-4 top-3 text-gray-500 dark:text-gray-300 transition-all duration-150 transform origin-left pointer-events-none
+                                        peer-placeholder-shown:opacity-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:text-base
+                                        peer-focus:-top-3 peer-focus:opacity-100 peer-focus:translate-y-0 peer-focus:text-sm peer-focus:text-primary
+                                        opacity-0 -translate-y-2">
+                            Senha
+                        </label>
                     </div>
                 </div>
 

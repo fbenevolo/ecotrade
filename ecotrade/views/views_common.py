@@ -4,16 +4,15 @@ from django.contrib.auth import login, logout
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.sites.shortcuts import get_current_site
 
 from django.db.models import Sum, Count, F
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
 
-from ..models import Usuario, Negociacao, NegociacaoPagaTrabalho, Producao, Demanda
-from ..forms.forms_common import SignUpForm, LoginForm
+from ..models import Usuario, Negociacao, NegociacaoPagaTrabalho
+from ..forms.forms_common import CadastroForm, LoginForm
 from ..forms.forms_usuario import AlterarUsuarioForm
-from ..utils import enviar_email_template
+from ..utils import enviar_email_template, gera_link_acesso
 
 
 def home_view(request):    
@@ -21,35 +20,36 @@ def home_view(request):
 
 
 def cadastro_view(request):
-    if request.method == 'GET':
-        cadastro_form = SignUpForm()
-    else:
-        cadastro_form = SignUpForm(request.POST)
+    cadastro_form = CadastroForm()
+    if request.method == 'POST':
+        cadastro_form = CadastroForm(request.POST)
         if cadastro_form.is_valid():
             try:
                 novo_usuario = cadastro_form.save()
-                protocolo = 'https' if request.is_secure() else 'http'
-                dominio = get_current_site(request).domain
-                caminho_login = reverse('login')
-                link = f'{protocolo}://{dominio}{caminho_login}'
+                link = gera_link_acesso(request, 'login')
+
                 # envia email para novo usuário e para administradores do sistema
                 enviar_email_template(novo_usuario.email, 'conta/criacao_conta.html', 
                                       'Criação de Conta', context = { 'nome': novo_usuario.nome, 'link_acesso': link })
                 
+                # envia email para administradores
                 admins = Usuario.objects.filter(is_staff=True, is_superuser=True)
                 for admin in admins:
                     enviar_email_template(admin.email, 'conta/criacao_conta_admin.html', 'Nova Conta Criada')
+                
                 return redirect(reverse('aprovacao_usuario'))  
             except ValidationError as e:
-                cadastro_form.add_error(None, f'Erro de validação: {e.messages}')
+                cadastro_form.add_error(None, f'Erro de validação: { e.messages }')
             except ValueError as e:#
                 cadastro_form.add_error(None, "Erro ao salvar o usuário: " + str(e))
+        else:
             cadastro_form.add_error(None, "Dados inválidos — verifique os campos.")
+    
     context = {
         'cadastro_form': cadastro_form
     }
 
-    return render(request, 'register/cadastro.html', context)
+    return render(request, 'usuario/cadastro.html', context)
 
 
 def aprovacao_usuario(request):
@@ -58,54 +58,54 @@ def aprovacao_usuario(request):
 
 def login_view(request):
     next_url = request.GET.get('next') or request.POST.get('next') or reverse('home')
+    login_form = LoginForm(request)
     if request.method == 'POST':
-        form = LoginForm(request, data=request.POST)
-        if form.is_valid():
-            usuario = Usuario.objects.get(email=form.get_user())
+        login_form = LoginForm(request, data=request.POST)
+        if login_form.is_valid():
+            usuario = Usuario.objects.get(email=login_form.get_user())
             if usuario.status == 'A':
                 login(request, usuario)
                 return redirect(next_url)
+            # usuario desativado
             elif usuario.status == 'D':
                 return render(request, 'gestao_usuarios/modal_usuario_desativado.html')
+            # usuario em aprovação
             elif usuario.status == 'EA':
                 if usuario.tipo_usuario == 'CA':
                     messages.warning(request, 'Sua conta deve ser aprovada por sua cooperativa.')
                 else:
                     messages.warning(request, 'Sua conta deve ser aprovada por um administrador do sistema')
-
         else:
             messages.error(request, "Credenciais inválidas. Verifique seu email/senha.")
-    else:
-        form = LoginForm(request)
 
     context = {
-        'login_form': form,
+        'login_form': login_form,
         'next': next_url
     }
 
-    return render(request, 'login.html', context)
+    return render(request, 'usuario/login.html', context)
 
 
 def logout_view(request):
     logout(request)
     return redirect(reverse('home'))
 
+
 @login_required
 def configuracoes(request, email_usuario):
     usuario = get_object_or_404(Usuario, pk=email_usuario)
+    form = AlterarUsuarioForm(instance=usuario)
     if request.method == 'POST':
         form = AlterarUsuarioForm(request.POST, instance=usuario)
         if form.is_valid():
             form.save()
             messages.success(request, 'Dados alterados com sucesso!')
             return redirect(reverse('configuracoes', kwargs={'email_usuario': request.user.pk}))
-    else:
-        form = AlterarUsuarioForm(instance=usuario)
 
     context = {
         'form': form,
         'usuario': usuario,
-        'email_usuario': request.user.email
+        'email_usuario': email_usuario
     }
 
     return render(request, 'configuracoes.html', context)
@@ -118,29 +118,34 @@ def dashboard(request, email_usuario):
     
     usuario = get_object_or_404(Usuario, pk=email_usuario)    
     outras_infos = {} 
-
+    
+    # cooperativa
     if usuario.tipo_usuario == 'CO':
         negociacoes_concluidas = Negociacao.objects.filter(id_cooperativa=usuario.pk, status='C')
-        negociacoes_ativas_qs = Negociacao.objects.filter(id_cooperativa=usuario.pk).exclude(status__in=['C', 'CA'])
+        negociacoes_ativas = Negociacao.objects.filter(id_cooperativa=usuario.pk).exclude(status__in=['C', 'CA']).count()
 
         outras_infos['count_catadores'] = request.user.catadores.filter(status='A').count()
     
+    # catador
     elif usuario.tipo_usuario == 'CA':
-        cooperativa_pk = usuario.cooperativa_associada.pk if usuario.cooperativa_associada else None
-        negociacoes_concluidas = Negociacao.objects.filter(id_cooperativa=cooperativa_pk, status='C')
-        negociacoes_ativas_qs = Negociacao.objects.filter(id_cooperativa=cooperativa_pk).exclude(status__in=['C', 'CA'])
+        coop_associada = usuario.cooperativa_associada.pk
+        negociacoes_concluidas = Negociacao.objects.filter(id_cooperativa=coop_associada, status='C')
+        negociacoes_ativas = Negociacao.objects.filter(id_cooperativa=coop_associada).exclude(status__in=['C', 'CA']).count()
 
         outras_infos['rendimento_total'] = 0
         n_paga_t = NegociacaoPagaTrabalho.objects.filter(id_negociacao__status='C', id_catador=request.user.tipo_usuario)
         for n in n_paga_t:
              outras_infos['rendimento_total'] += n.quantidade * n.id_negociacao.preco
+    
+    # empresa
     else: 
         negociacoes_concluidas = Negociacao.objects.filter(id_empresa=usuario.pk, status='C')
-        negociacoes_ativas_qs = Negociacao.objects.filter(id_empresa=usuario.pk).exclude(status__in=['C', 'CA'])
+        negociacoes_ativas = Negociacao.objects.filter(id_empresa=usuario.pk).exclude(status__in=['C', 'CA'])
         
-        contagem_cooperativas_unicas = negociacoes_concluidas.values('id_cooperativa').distinct().count()
-        outras_infos['cooperativas_unicas'] = contagem_cooperativas_unicas
+        qtd_coops_unicas = negociacoes_concluidas.values('id_cooperativa').distinct().count()
+        outras_infos['cooperativas_unicas'] = qtd_coops_unicas
     
+    # Dados gerais
     volume_por_residuo_qs = negociacoes_concluidas.values('id_residuo__tipo').annotate(total_volume=Sum('quantidade')).order_by()
     volume_por_residuo_dict = { item['id_residuo__tipo']: item['total_volume'] for item in volume_por_residuo_qs }
     volumes_list = list(volume_por_residuo_dict.values())
@@ -154,7 +159,6 @@ def dashboard(request, email_usuario):
     max_negociacoes_mes = max(contagens_list) if contagens_list else 1
 
     volume_total_residuos = negociacoes_concluidas.aggregate(Sum('quantidade'))['quantidade__sum'] or 0
-    negociacoes_ativas = negociacoes_ativas_qs.count()
 
     context = {
         'usuario': usuario,
@@ -177,7 +181,7 @@ def historico(request, email_usuario):
         return redirect(reverse('historico', kwargs={'email_usuario': request.user.pk}))
     
     if request.user.tipo_usuario == 'E':
-        negociacoes_concluidas = Negociacao.objects.filter(id_empresa=request.user.pk, status__in=('C', 'CA')).order_by()
+        negociacoes_concluidas = Negociacao.objects.filter(id_empresa=request.user.pk, status__in=('C', 'CA')).order_by('data_conclusao')
     elif request.user.tipo_usuario == 'CO':
         negociacoes_concluidas = Negociacao.objects.filter(id_cooperativa=request.user.pk, status__in=('C', 'CA'))
     else:
