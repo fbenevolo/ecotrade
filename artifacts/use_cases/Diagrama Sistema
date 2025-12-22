@@ -1,0 +1,67 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64; rv:143.0) Gecko/20100101 Firefox/143.0" version="28.2.5">
+  <diagram name="Page-1" id="DkmHdbeYI9npojSVbcr7">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2DjgNnSz1OPQRcCxGXvB-84" value="Sistema" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="250" y="380" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="2DjgNnSz1OPQRcCxGXvB-85" value="Iniciar Negociação" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="350" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="2DjgNnSz1OPQRcCxGXvB-86" value="Calcular Recebimento de Catador em uma Negociação" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="320" y="527.5" width="150" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="2DjgNnSz1OPQRcCxGXvB-87" value="Calcular preço médio de quilo de resíduo" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="260" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="2DjgNnSz1OPQRcCxGXvB-88" value="Atualizar Recebimento Total de Catador" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="170" y="532.5" width="135" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="2DjgNnSz1OPQRcCxGXvB-89" value="Atribuir Produções de Catadores à Atendimento de Demanda" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="480" y="530" width="140" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="2DjgNnSz1OPQRcCxGXvB-90" value="Alterar Preço de Negociação + Mudar Status" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="440" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="2DjgNnSz1OPQRcCxGXvB-91" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" target="2DjgNnSz1OPQRcCxGXvB-85">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="310" y="430" as="sourcePoint" />
+            <mxPoint x="370" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2DjgNnSz1OPQRcCxGXvB-92" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.375;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" target="2DjgNnSz1OPQRcCxGXvB-90">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="310" y="430" as="sourcePoint" />
+            <mxPoint x="470" y="450" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2DjgNnSz1OPQRcCxGXvB-93" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" target="2DjgNnSz1OPQRcCxGXvB-89">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="310" y="430" as="sourcePoint" />
+            <mxPoint x="390" y="480" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2DjgNnSz1OPQRcCxGXvB-94" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.413;entryY=0.012;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" target="2DjgNnSz1OPQRcCxGXvB-86">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="310" y="430" as="sourcePoint" />
+            <mxPoint x="360" y="490" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2DjgNnSz1OPQRcCxGXvB-95" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" target="2DjgNnSz1OPQRcCxGXvB-88">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="310" y="430" as="sourcePoint" />
+            <mxPoint x="350" y="470" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2DjgNnSz1OPQRcCxGXvB-97" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" target="2DjgNnSz1OPQRcCxGXvB-87">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="310" y="430" as="sourcePoint" />
+            <mxPoint x="200" y="460" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
