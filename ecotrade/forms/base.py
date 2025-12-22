@@ -6,7 +6,7 @@ class StyledFormMixin:
     '''
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        common = 'appearance-none w-full rounded-lg block px-4 py-3 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white bg-transparent focus:outline-none focus:ring-primary focus:border-primary sm:text-sm peer placeholder-transparent '
+        common = 'appearance-none w-full block rounded-lg px-4 py-3 border border-gray-300 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm peer placeholder-transparent dark:border-gray-700 dark:text-white dark:bg-gray-700 '
         read_only = 'cursor-not-allowed bg-gray-100'
 
 

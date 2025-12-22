@@ -6,6 +6,7 @@
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
+
         <form action="{% url 'producoes' email_usuario=request.user.pk %}" method="POST" class="space-y-6">
             {% csrf_token %}
             {{ adicionar_producao.action }}
@@ -30,7 +31,7 @@
                 {{ adicionar_producao.id_catador }}
             </div>
              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="{{ adicionar_producao.data.id_for_label }}"">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="{{ adicionar_producao.data.id_for_label }}">
                     {{ adicionar_producao.data.label }}
                 </label>
                 {{ adicionar_producao.data }}

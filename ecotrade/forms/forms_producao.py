@@ -3,11 +3,13 @@ from ..models import Producao, Usuario, Residuo
 from django.forms.models import ModelChoiceField
 from django.db.models import F
 
+from .base import StyledFormMixin
+
 class MyModelChoiceField(ModelChoiceField):
     def label_from_instance(self, obj):
         return obj.get_tipo_display
 
-class AdicionarProducaoForm(forms.ModelForm):
+class AdicionarProducaoForm(StyledFormMixin, forms.ModelForm):
     action = forms.CharField(widget=forms.HiddenInput(), initial='create_residuo')
     id_residuo = MyModelChoiceField(queryset=Residuo.objects.all(), label='Resíduo')
     data = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), label='Data')
@@ -29,11 +31,7 @@ class AdicionarProducaoForm(forms.ModelForm):
         if cooperativa:
             self.fields['id_catador'].queryset = Usuario.objects.filter(
                 cooperativa_associada=cooperativa.pk # Use .pk do objeto Usuario da cooperativa
-            )
-
-        for field in self.fields:
-            style = 'mt-1 block w-full bg-background-light dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm'
-            self.fields[field].widget.attrs.update({'class': style})    
+            ) 
 
     def save(self, cooperativa=None, commit=True):
         producao = super().save(commit=False)
@@ -44,7 +42,7 @@ class AdicionarProducaoForm(forms.ModelForm):
             producao.save()
             
 
-class AlterarProducaoForm(forms.ModelForm):
+class AlterarProducaoForm(StyledFormMixin, forms.ModelForm):
     action = forms.CharField(widget=forms.HiddenInput(), initial='alterar_producao') 
     producao_pk = forms.CharField(widget=forms.HiddenInput())
     id_residuo = MyModelChoiceField(queryset=Residuo.objects.all(), label='Resíduo')
@@ -54,12 +52,7 @@ class AlterarProducaoForm(forms.ModelForm):
     class Meta:
         model = Producao
         fields = ['id_residuo', 'data', 'producao']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in self.fields:
-            common = 'mt-1 block w-full bg-background-light dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm'
-            self.fields[field].widget.attrs.update({'class': common})
+        
 
 class RemoverProducaoForm(forms.Form):
     action = forms.CharField(widget=forms.HiddenInput(), initial='remover_producao')
