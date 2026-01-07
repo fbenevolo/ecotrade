@@ -6,13 +6,13 @@
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
-        
-        <form action="{% url 'producoes' email_usuario=request.user.pk %}" method="POST" id="form-alterar-producao" class="space-y-10">
+
+        <form action="{% url 'alterar_producao' email_usuario=request.user.pk id_producao=0 %}" method="POST" id="form-alterar-producao" class="space-y-10">
             {% csrf_token %}
-            {{ alterar_producao.action }}
-            {{ alterar_producao.producao_pk }}
             <div class="space-y-6">
-                <div>
+
+                {% include 'components/alerta_decimal.html' %}
+                
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" 
                     for="{{ alterar_producao.id_residuo.id_for_label }}">
                     {{ alterar_producao.id_residuo.label }}

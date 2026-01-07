@@ -2,9 +2,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const modalAlterarDemanda = document.getElementById('modal-alterar-demanda');
     const editDemandaButtons = document.querySelectorAll('button.edit-demanda-btn');
 
-    const alterarCloseBtn = document.getElementById('modal-alterar-close-btn');
-    const alterarCancelBtn = document.getElementById('modal-alterar-cancel-btn');
-
     const closeModal = (modal) => {
         if (modal) modal.classList.add('hidden');
     };
@@ -13,8 +10,14 @@ document.addEventListener('DOMContentLoaded', function () {
         if (modal) modal.classList.remove('hidden');
     };
 
+    if (modalAlterarDemanda) {
+        const alterarCloseBtn = document.getElementById('modal-alterar-close-btn');
+        const alterarCancelBtn = document.getElementById('modal-alterar-cancel-btn');
+        alterarCloseBtn.addEventListener('click', () => closeModal(modalAlterarDemanda));
+        alterarCancelBtn.addEventListener('click', () => closeModal(modalAlterarDemanda));
+    }
+
     function openAlterarDemandaModal(idDemanda, tipoResiduo) {
-        if (!modalAlterarDemanda) return;
         
         // substituindo o placeholder 0 pelo id da demanda a ser alterada
         const formAlterarDemanda = modalAlterarDemanda.querySelector('#form-alterar-demanda');
@@ -38,9 +41,4 @@ document.addEventListener('DOMContentLoaded', function () {
             openAlterarDemandaModal(idDemanda, tipoResiduo);
         });
     });
-
-    if (modalAlterarDemanda) {
-        alterarCloseBtn.addEventListener('click', () => closeModal(modalAlterarDemanda));
-        alterarCancelBtn.addEventListener('click', () => closeModal(modalAlterarDemanda));
-    }
 });

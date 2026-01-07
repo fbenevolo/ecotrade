@@ -40,7 +40,7 @@
                         Adicionar Produção
                     </button>
 
-                    {% include 'producao/adicionar_producao.html' with adicionar_producao=adicionar_producao_form %}
+                    {% include 'producao/cadastrar_producao.html' with adicionar_producao=adicionar_producao_form %}
                 </div>
                 {% endif %}
                 <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm">
@@ -63,11 +63,11 @@
                                 {% for producao in producoes %}
                                     {% if producao.status != 'z' %}
                                         <tr class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                                            data-producao-id="{{ producao.pk }}"
-                                            data-residuo="{{ producao.id_residuo.tipo }}"
+                                            data-id-producao="{{ producao.pk }}"
+                                            data-tipo-residuo="{{ producao.id_residuo.tipo }}"
                                             data-data-producao="{{ producao.data|date:'Y-m-d' }}"
                                             data-quantidade="{{ producao.producao }}"
-                                            data-catador-pk="{{ producao.id_catador.pk }}">
+                                            data-id-catador="{{ producao.id_catador.pk }}">
                                             <td class="py-4 px-4 text-gray-800 dark:text-white">{{ producao.id_catador.nome }}</td>
                                             <td class="py-4 px-4 text-gray-600 dark:text-gray-300"> {{ producao.data|date }}  </td>
                                             <td class="py-4 px-4 text-gray-600 dark:text-gray-300"> {{ producao.id_residuo.get_tipo_display }}  </td>
@@ -153,7 +153,7 @@
             </div>
             {% elif request.user.tipo_usuario == 'CA' %}
              <div>
-                <h3 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Minhas Produções</h3>
+                <h2 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Minhas Produções</h2>
                 <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">

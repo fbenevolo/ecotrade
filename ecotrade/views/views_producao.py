@@ -10,15 +10,12 @@ from ..forms.forms_catador import AprovarContaCatadorForm, AlterarCatadorForm
 @login_required
 def producoes(request, email_usuario):
     # verificacao de segurança
-    usuario = request.user
-    if usuario.email != email_usuario:
-        messages.error(request, "Acesso negado. Você só pode ver produção para sua conta.")
-        return redirect('home') 
+    usuario = get_object_or_404(Usuario, pk=email_usuario)
     
-    adicionar_producao_form = AdicionarProducaoForm(cooperativa=usuario)
     aprovar_catador_form = AprovarContaCatadorForm()
     alterar_catador_form = AlterarCatadorForm()
 
+    adicionar_producao_form = AdicionarProducaoForm(cooperativa=usuario)
     alterar_producao_form = AlterarProducaoForm()        
     remover_producao_form = RemoverProducaoForm()
     
@@ -66,15 +63,6 @@ def producoes(request, email_usuario):
                 alterar_form.save()
                 messages.success(request, "Produção alterada com sucesso!")
                 return redirect(reverse('producoes', kwargs={'email_usuario': usuario.email}))
-
-        # PROCESSAMENTO DE REMOÇÃO DE RESÍDUO
-        elif 'remover_producao' in action:
-            producao_pk = request.POST.get('producao_pk')
-            producao_instancia = get_object_or_404(Producao, pk=producao_pk, id_cooperativa=usuario)
-            producao_instancia.delete()
-
-            messages.success(request, "Produção removida com sucesso.")
-            return redirect(reverse('producoes', kwargs={'email_usuario': usuario.email}))
     
     if request.user.tipo_usuario == 'CA':
         producoes = Producao.objects.filter(id_cooperativa=usuario.cooperativa_associada)
@@ -97,3 +85,54 @@ def producoes(request, email_usuario):
     context['outras_infos'] = outras_infos
 
     return render(request, 'producao/producoes.html', context)
+
+
+def cadastrar_producao(request, email_usuario):
+    usuario = get_object_or_404(Usuario, pk=email_usuario)
+    if request.method == 'POST':
+        form = AdicionarProducaoForm(request.POST, cooperativa=usuario)
+        if form.is_valid():
+            try:
+                form.save(cooperativa=usuario)
+                messages.success(request, 'Produção adicionada com sucesso.')
+                return redirect(reverse('producoes', kwargs={'email_usuario': email_usuario}))
+            except Exception as e:
+                print(f'Erro ao adicionar produção: {e}')
+        else:
+            messages.error(request, 'Erro ao adicionar produção.')
+            return redirect(reverse('producoes', kwargs={'email_usuario': email_usuario}))
+
+    return redirect(reverse('producoes', kwargs={'email_usuario': email_usuario}))
+
+
+def alterar_producao(request, email_usuario, id_producao):
+    producao = get_object_or_404(Producao, pk=id_producao)
+    if request.method == 'POST':
+        form = AlterarProducaoForm(request.POST, instance=producao)
+        if form.is_valid():
+            try:
+                form.save()
+                return redirect(reverse('producoes', kwargs={'email_usuario': email_usuario}))
+            except Exception as e:
+                print(f'Erro ao alterar produçã: {e}')
+        else:
+            messages.error(request, 'Erro ao alterar produção.')
+            return redirect(reverse('producoes', kwargs={'email_usuario': email_usuario}))
+                
+    return redirect(reverse('producoes', kwargs={'email_usuario': email_usuario}))
+
+
+def remover_producao(request, email_usuario, id_producao):
+    producao = get_object_or_404(Producao, pk=id_producao)
+    if request.method == 'POST':
+        try:
+            producao.delete()
+            messages.success(request, 'Produção removida com sucesso.')
+            return redirect(reverse('producoes', kwargs={'email_usuario': email_usuario}))
+        except Exception as e:
+            print(f'Erro ao remover produção: {e}')
+            messages.error(request, 'Erro ao remover produção')
+            return redirect(reverse('producoes', kwargs={'email_usuario': email_usuario}))                
+
+    return redirect(reverse('producoes', kwargs={'email_usuario': email_usuario}))
+

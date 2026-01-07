@@ -7,9 +7,11 @@
             </button>
         </div>
 
-        <form action="{% url 'producoes' email_usuario=request.user.pk %}" method="POST" class="space-y-6">
+        <form action="{% url 'cadastrar_producao' email_usuario=request.user.pk %}" method="POST" class="space-y-6">
             {% csrf_token %}
-            {{ adicionar_producao.action }}
+
+            {% include 'components/alerta_decimal.html' %}
+            
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                     for="{{ adicionar_producao.id_residuo.id_for_label }}">

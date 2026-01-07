@@ -2,9 +2,11 @@ from django import forms
 from django.db.models import F
 from django.contrib.auth import get_user_model
 
+from .base import StyledFormMixin
+
 Usuario = get_user_model()
 
-class AprovarContaCatadorForm(forms.Form):
+class AprovarContaCatadorForm(StyledFormMixin, forms.Form):
     """
     Formulário para aprovar ou rejeitar contas de catadores.
     Exibe o email e nome do catador para visualização.
@@ -58,17 +60,6 @@ class AprovarContaCatadorForm(forms.Form):
                 self.fields['cooperativa_associada'].initial = usuario.cooperativa_associada.nome
             else:
                 self.fields['cooperativa_associada'].initial = 'Não informada'
-        
-        # Aplicar estilos CSS aos campos
-        readonly_style = "w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg cursor-not-allowed"
-        
-        # Aplicar estilo aos campos readonly
-        self.fields['email'].widget.attrs.update({'class': readonly_style})
-        self.fields['nome'].widget.attrs.update({'class': readonly_style})
-        self.fields['cooperativa_associada'].widget.attrs.update({'class': readonly_style})
-        
-        # Aplicar estilo ao campo de ação
-        self.fields['acao'].widget.attrs.update({'class': 'text-primary'})
     
     def save(self):
         """
@@ -91,7 +82,7 @@ class AprovarContaCatadorForm(forms.Form):
         except Usuario.DoesNotExist:
             raise forms.ValidationError('Usuário não encontrado.')
 
-class AlterarCatadorForm(forms.ModelForm):
+class AlterarCatadorForm(StyledFormMixin, forms.ModelForm):
     """
     Formulário para alterar dados cadastrais de catadores.
     """
@@ -109,15 +100,6 @@ class AlterarCatadorForm(forms.ModelForm):
         widgets = {
             'email': forms.EmailInput(attrs={'readonly': True}),  # Email não pode ser alterado
         }
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        
-        common_style = "w-full bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-primary focus:border-primary"
-        readonly_style = "w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg cursor-not-allowed"
-        
-        self.fields['nome'].widget.attrs.update({'class': common_style})
-        self.fields['email'].widget.attrs.update({'class': readonly_style})
     
     def save(self, commit=True):
         """

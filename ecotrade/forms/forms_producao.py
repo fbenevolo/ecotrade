@@ -5,24 +5,37 @@ from django.db.models import F
 
 from .base import StyledFormMixin
 
-class MyModelChoiceField(ModelChoiceField):
+class ResiduoModelChoiceField(ModelChoiceField):
+    '''
+    Sobrescreve a função label_from_instance para se obter os nomes dos resíduos ao invés de IDs numéricos.
+    '''
     def label_from_instance(self, obj):
-        return obj.get_tipo_display
+        return obj.get_tipo_display 
+    
+
+class UsuarioChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        # Retorna a string personalizada: email (nome)
+        return f'{obj.email} ({obj.nome})'
+
 
 class AdicionarProducaoForm(StyledFormMixin, forms.ModelForm):
-    action = forms.CharField(widget=forms.HiddenInput(), initial='create_residuo')
-    id_residuo = MyModelChoiceField(queryset=Residuo.objects.all(), label='Resíduo')
-    data = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), label='Data')
+    id_residuo = ResiduoModelChoiceField(queryset=Residuo.objects.all(), label='Resíduo')
+    id_catador = UsuarioChoiceField(queryset=Usuario.objects.none(), label='Catador') # inicializa o queryset como vazio 
 
     class Meta:
         model = Producao
         fields = ['id_catador', 'id_residuo', 'producao', 'data']
 
         labels = {
-            'id_catador': 'Catador',
-            'producao': 'Quantidade Produzida (kg)'
+            'producao': 'Quantidade Produzida (kg)',
+            'data': 'Data'
         }
 
+        widgets = {
+            'data': forms.DateInput(attrs={'type': 'date'})
+        }
+    
     def __init__(self, *args, **kwargs):
         cooperativa = kwargs.pop('cooperativa', None)
         super().__init__(*args, **kwargs)
@@ -34,8 +47,9 @@ class AdicionarProducaoForm(StyledFormMixin, forms.ModelForm):
             ) 
 
     def save(self, cooperativa=None, commit=True):
+        ''' Foi necessário sobrescrever para linkar a produção com uma cooperativa '''
         producao = super().save(commit=False)
-        
+
         if cooperativa:
             producao.id_cooperativa = cooperativa 
         if commit:
@@ -43,19 +57,28 @@ class AdicionarProducaoForm(StyledFormMixin, forms.ModelForm):
             
 
 class AlterarProducaoForm(StyledFormMixin, forms.ModelForm):
-    action = forms.CharField(widget=forms.HiddenInput(), initial='alterar_producao') 
-    producao_pk = forms.CharField(widget=forms.HiddenInput())
-    id_residuo = MyModelChoiceField(queryset=Residuo.objects.all(), label='Resíduo')
-    producao = forms.FloatField(label='Produção')
-    data = forms.DateField(label='Data', widget=forms.DateInput(attrs={'type': 'date',}))
+    id_residuo = ResiduoModelChoiceField(queryset=Residuo.objects.all(), label='Resíduo')
 
     class Meta:
         model = Producao
         fields = ['id_residuo', 'data', 'producao']
-        
 
-class RemoverProducaoForm(forms.Form):
-    action = forms.CharField(widget=forms.HiddenInput(), initial='remover_producao')
-    producao_pk = forms.CharField(widget=forms.HiddenInput())
-    residuo = forms.CharField(widget=forms.HiddenInput())
-    quantidade = forms.CharField(widget=forms.HiddenInput())
+        labels = {
+            'producao': 'Produção',
+            'data': 'Data'
+        }
+
+        widgets = {
+            'data': forms.DateInput(attrs={'type': 'date'})
+        }
+
+
+class RemoverProducaoForm(forms.ModelForm):
+    # action = forms.CharField(widget=forms.HiddenInput(), initial='remover_producao')
+    # producao_pk = forms.CharField(widget=forms.HiddenInput())
+    # residuo = forms.CharField(widget=forms.HiddenInput())
+    # quantidade = forms.CharField(widget=forms.HiddenInput())
+
+    class Meta:
+        model = Producao
+        fields = []

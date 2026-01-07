@@ -2,6 +2,7 @@ from django import forms
 from django.utils import timezone
 from ..models import Producao, Negociacao, NegociacaoPagaTrabalho, ContestacaoPreco, ContestacaoPagamento
 
+from .base import StyledFormMixin
 from ..utils import atualiza_producoes, atualiza_preco_medio_residuo, enviar_email_template
 
 class ConfirmarNegociacaoForm(forms.Form):
@@ -67,7 +68,7 @@ class ConfirmarNegociacaoForm(forms.Form):
         negociacao.save()
 
 
-class ContestarPrecoForm(forms.Form):
+class ContestarPrecoForm(StyledFormMixin, forms.Form):
     action = forms.CharField(widget=forms.HiddenInput(), initial='contestar_preco')
     id_negociacao = forms.CharField(widget=forms.HiddenInput())
     tipo_usuario = forms.CharField(widget=forms.HiddenInput()) 
@@ -79,13 +80,6 @@ class ContestarPrecoForm(forms.Form):
     )
     justificativa = forms.CharField(widget=forms.Textarea())
     novo_preco = forms.FloatField(label='Novo Preço Sugerido', required=True)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        for field in self.fields:
-            style = 'mt-1 block w-full bg-background-light dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm'
-            self.fields[field].widget.attrs.update({'class': style})
 
     def save(self):
         negociacao = Negociacao.objects.get(pk=self.cleaned_data['id_negociacao'])
@@ -144,7 +138,7 @@ class AceitarContestacaoPrecoForm(forms.Form):
             print(f'Erro ao alterar contestação ou negociação: {e}')
 
 
-class RecusarContestacaoPrecoForm(forms.Form):
+class RecusarContestacaoPrecoForm(StyledFormMixin, forms.Form):
     action = forms.CharField(widget=forms.HiddenInput(), initial='recusar_contestacao_preco')    
     id_contestacao = forms.CharField(widget=forms.HiddenInput())
 
@@ -159,13 +153,6 @@ class RecusarContestacaoPrecoForm(forms.Form):
         ),
         widget=forms.HiddenInput()
     )
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        for field in self.fields: # <--- O ERRO PODE ESTAR AQUI
-            style = 'mt-1 block w-full bg-background-light dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm'
-            self.fields[field].widget.attrs.update({'class': style})
     
     def save(self):
         negociacao = Negociacao.objects.get(pk=self.cleaned_data['id_negociacao'])
@@ -204,15 +191,10 @@ class RecusarContestacaoPrecoForm(forms.Form):
         enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/nova_contestacao_preco.html', 'Recusa na Contestação de Preço')
 
 
-class ConfirmarColetaForm(forms.Form):
+class ConfirmarColetaForm(StyledFormMixin, forms.Form):
     action = forms.CharField(widget=forms.HiddenInput(), initial='confirmar_coleta')
     id_negociacao = forms.CharField(widget=forms.HiddenInput())
     data = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        style = 'mt-1 block w-full bg-background-light dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm'
-        self.fields['data'].widget.attrs.update({'class': style})
 
     def save(self):
         id_negociacao = self.cleaned_data['id_negociacao']
@@ -229,7 +211,7 @@ class ConfirmarColetaForm(forms.Form):
                               'Mudança de Status na Negociação', context={ 'novo_status': 'Em Transporte' })
 
 
-class ConfirmarEntregaForm(forms.Form):
+class ConfirmarEntregaForm(StyledFormMixin, forms.Form):
     action = forms.CharField(widget=forms.HiddenInput(), initial='confirmar_entrega')
     id_negociacao = forms.CharField(widget=forms.HiddenInput())
     data = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
@@ -296,16 +278,12 @@ class ConfirmarPagamentoForm(forms.Form):
             print(f'Erro ao atualizar status de pagamento de negociação: {e}')
 
 
-class ContestarPagamentoForm(forms.Form):
+class ContestarPagamentoForm(StyledFormMixin, forms.Form):
     action = forms.CharField(widget=forms.HiddenInput(), initial='contestar_pagamento')
     id_negociacao = forms.CharField(widget=forms.HiddenInput())
     id_antiga_contestacao = forms.CharField(widget=forms.HiddenInput(), required=False)
     justificativa = forms.CharField(widget=forms.Textarea())
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        style = "w-full bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-primary focus:border-primary"
-        self.fields['justificativa'].widget.attrs.update({'class': style})
 
     def save(self):
         justificativa = self.cleaned_data['justificativa']
@@ -339,7 +317,7 @@ class ContestarPagamentoForm(forms.Form):
             print(f'Erro ao criar contestação de pagamento: {e}')
 
 
-class ResponderContestacaoPgtoForm(forms.Form):
+class ResponderContestacaoPgtoForm(StyledFormMixin, forms.Form):
     action = forms.CharField(widget=forms.HiddenInput(), initial='responder_contestar_pagamento')
     id_negociacao = forms.CharField(widget=forms.HiddenInput())
     id_contestacao = forms.CharField(widget=forms.HiddenInput())

@@ -23,29 +23,23 @@
                             <p class="text-sm text-gray-500 dark:text-gray-400">Preço atual por kg</p>
                             <p class="text-xl font-bold text-gray-800 dark:text-white">R$ <span id="span-preco-atual">...</span> </p>
                         </div>
-                        <!-- <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Valor total atual</p>
-                            <p class="text-xl font-bold text-primary">R$ 2.250,00</p>
-                        </div> -->
                     </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                         for="justification">Justificativa da contestação</label>
                     {{ contestar_preco_form.justificativa }}
-                    <!-- <textarea
-                        class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-primary focus:border-primary"
-                        id="justification" placeholder="Ex: O valor de mercado para este tipo de resíduo aumentou."
-                        rows="4"></textarea> -->
                 </div>
-                <div>
+                <div class="space-y-6">
+                    {% include 'components/alerta_decimal.html' %}
+                    
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="new-price">Sugerir
                         novo preço por kg </label>
                     <div class="relative">
                         <span
                             class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 dark:text-gray-400"></span>
                         {{ contestar_preco_form.novo_preco }}
-                        </div>
+                    </div>
                 </div>
                 <div class="flex justify-end space-x-4 mt-8">
                     <button id="cancel-btn"

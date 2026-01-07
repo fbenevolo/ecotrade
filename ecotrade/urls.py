@@ -58,6 +58,10 @@ urlpatterns = [
     path('dashboard/<str:email_usuario>/gestao_usuarios', views_admin.gestao_usuarios, name='gestao_usuarios'),
 
     path('dashboard/<str:email_usuario>/producoes', views_producao.producoes, name='producoes'),
+    path('dashboard/<str:email_usuario>/producoes/adicionar', views_producao.cadastrar_producao, name='cadastrar_producao'),
+    path('dashboard/<str:email_usuario>/producoes/alterar/<int:id_producao>>', views_producao.alterar_producao, name='alterar_producao'),
+    path('dashboard/<str:email_usuario>/producoes/remover/<int:id_producao>>', views_producao.remover_producao, name='remover_producao'),
+    
 
     # URLs de demanda
     path('dashboard/<str:email_usuario>/demandas', views_demanda.demandas, name='demandas'),

@@ -119,11 +119,11 @@ class Producao(models.Model):
     id_cooperativa = models.ForeignKey('Usuario', 
                                        on_delete=models.SET_NULL, 
                                        null=True,
-                                       related_name='catador_associado')
+                                       related_name='coop')
     id_catador = models.ForeignKey('Usuario', 
                                    on_delete=models.SET_NULL,
                                    null=True,
-                                   related_name='cooperativa_associado')
+                                   related_name='catador')
     id_residuo = models.ForeignKey('Residuo', on_delete=models.CASCADE)
     id_negociacao = models.ForeignKey('Negociacao', 
                                       null=True,
