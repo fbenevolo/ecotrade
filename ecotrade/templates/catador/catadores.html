@@ -1,0 +1,92 @@
+{% extends 'base_dashboard.html' %}
+{% block dashboard_content %}
+
+<div class="flex h-screen w-full">
+    <main class="flex-1 p-8 overflow-y-auto">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-800 dark:text-white">Catadores da Cooperativa</h2>
+        </div>
+
+        <div class="message-container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-4">
+            {% for message in messages %}
+            <div class="p-4 rounded-lg shadow-md mb-4 flex items-center justify-between
+                {% if message.tags == 'success' %}
+                    bg-green-100 border-l-4 border-green-500 text-green-700 dark:bg-green-900 dark:text-green-200
+                {% elif message.tags == 'error' %}
+                    bg-red-100 border-l-4 border-red-500 text-red-700 dark:bg-red-900 dark:text-red-200
+                {% elif message.tags == 'warning' %}
+                    bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200
+                {% else %}
+                    bg-blue-100 border-l-4 border-blue-500 text-blue-700 dark:bg-blue-900 dark:text-blue-200
+                {% endif %}
+                " role="alert">
+
+                <p class="font-medium">
+                    {{ message }}
+                </p>
+
+            </div>
+            {% endfor %}
+        </div>
+
+        <div>
+            <h3 class="text-2xl font-semibold text-gray-800 dark:text-white mb-4">Catadores da Cooperativa</h3>
+            <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b border-gray-200 dark:border-gray-800">
+                                <th class="py-4 px-4 font-semibold text-gray-500 dark:text-gray-400">Nome</th>
+                                <th class="py-4 px-4 font-semibold text-gray-500 dark:text-gray-400">Email</th>
+                                <th class="py-4 px-4 font-semibold text-gray-500 dark:text-gray-400">Status da
+                                    Conta</th>
+                                <th class="py-4 px-4 font-semibold text-gray-500 dark:text-gray-400 text-center">
+                                    Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for catador in catadores %}
+                            <tr class="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                                data-catador-email="{{ catador.email }}" data-catador-nome="{{ catador.nome }}"
+                                data-catador-status="{{ catador.status }}"
+                                data-catador-status-display="{{ catador.get_status_display }}"
+                                data-catador-cooperativa="{{ catador.cooperativa_associada.nome|default:'Não informada' }}">
+                                <td class="py-4 px-4 text-gray-800 dark:text-white">{{ catador.nome }}</td>
+                                <td class="py-4 px-4 text-gray-600 dark:text-gray-300"> {{ catador.email }} </td>
+                                {% if catador.status == 'A' %}
+                                    <td class="px-4 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                                            {{ catador.get_status_display  }}
+                                        </span>
+                                    </td>
+                                {% else %}
+                                    <td class="px-4 py-4"> 
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full     font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+                                        {{ catador.get_status_display  }}
+                                        </span> 
+                                    </td>
+                                    <td class="py-4 px-4 flex justify-center items-center space-x-2">
+                                        <button class="text-blue-500 hover:text-blue-700 aprovar-catador-btn"
+                                            title="Aprovar Catador">
+                                            <span class="material-symbols-outlined">how_to_reg</span>
+                                        </button>
+                                    </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+
+                            {% include 'catador/aprovar_catador.html' %}
+                            {% include 'catador/alterar_catador.html' %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+{% endblock dashboard_content %}
+{% block footer_scripts %}
+{% load static %}
+    <script src="{% static 'js/catador/aprovar_catador.js' %}"></script>
+{% endblock footer_scripts %}

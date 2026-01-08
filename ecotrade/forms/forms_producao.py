@@ -71,14 +71,3 @@ class AlterarProducaoForm(StyledFormMixin, forms.ModelForm):
         widgets = {
             'data': forms.DateInput(attrs={'type': 'date'})
         }
-
-
-class RemoverProducaoForm(forms.ModelForm):
-    # action = forms.CharField(widget=forms.HiddenInput(), initial='remover_producao')
-    # producao_pk = forms.CharField(widget=forms.HiddenInput())
-    # residuo = forms.CharField(widget=forms.HiddenInput())
-    # quantidade = forms.CharField(widget=forms.HiddenInput())
-
-    class Meta:
-        model = Producao
-        fields = []

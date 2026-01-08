@@ -16,8 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .views import (views_common, views_producao, 
-                    views_demanda, views_negociacao, 
+from .views import (views_common, views_producao,
+                    views_catador, views_demanda, views_negociacao, 
                     views_admin)
 from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
@@ -54,8 +54,13 @@ urlpatterns = [
     path('login/', views_common.login_view, name='login'),
     path('logout/', views_common.logout_view, name='logout'),
 
+    # URLs de usuário
     path('aprovacao_usuario/', views_common.aprovacao_usuario, name='aprovacao_usuario'),
     path('dashboard/<str:email_usuario>/gestao_usuarios', views_admin.gestao_usuarios, name='gestao_usuarios'),
+    
+    # URLs de gerenciamento de catador
+    path('dashboard/<str:email_usuario>/catadores/', views_catador.catadores, name='catadores'),
+    path('dashboard/<str:email_usuario>/catadores/aprovar/<str:email_catador>', views_catador.aprovar_conta_catador, name='aprovar_catador'),
 
     path('dashboard/<str:email_usuario>/producoes', views_producao.producoes, name='producoes'),
     path('dashboard/<str:email_usuario>/producoes/adicionar', views_producao.cadastrar_producao, name='cadastrar_producao'),
