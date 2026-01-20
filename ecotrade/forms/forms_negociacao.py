@@ -68,127 +68,67 @@ class ConfirmarNegociacaoForm(forms.Form):
         negociacao.save()
 
 
-class ContestarPrecoForm(StyledFormMixin, forms.Form):
-    action = forms.CharField(widget=forms.HiddenInput(), initial='contestar_preco')
+class ContestarPrecoForm(StyledFormMixin, forms.ModelForm):
     id_negociacao = forms.CharField(widget=forms.HiddenInput())
-    tipo_usuario = forms.CharField(widget=forms.HiddenInput()) 
-    opcoes = forms.ChoiceField(
-        choices=(
-            ('contestar', 'Contestar Preço'),
-        ),
-        widget=forms.HiddenInput()
-    )
-    justificativa = forms.CharField(widget=forms.Textarea())
-    novo_preco = forms.FloatField(label='Novo Preço Sugerido', required=True)
+    class Meta:
+        model = ContestacaoPreco
+        fields = ['justificativa', 'preco_proposto']
 
-    def save(self):
+        labels = {
+            'justificativa': 'Justificativa',
+            'preco_proposto': 'Preço Proposto'
+        }
+
+        widgets = {
+            'justificativa': forms.Textarea()
+        }
+
+    def save(self, tipo_usuario):
         negociacao = Negociacao.objects.get(pk=self.cleaned_data['id_negociacao'])
-        contestador = self.cleaned_data['tipo_usuario']
-        justificativa = self.cleaned_data['justificativa']
-        preco_proposto = self.cleaned_data['novo_preco']
+        status = 'ACC' if tipo_usuario == 'E' else 'ACE'
 
-        try:
-            if contestador == 'E':
-                status = 'ACC'
-            else:
-                status = 'ACE'
-            ContestacaoPreco.objects.create(
-                id_negociacao=negociacao,
-                status=status,
-                contestador=contestador,
-                justificativa=justificativa,
-                preco_proposto=preco_proposto
-            )
-            negociacao.status = status
-            negociacao.save()
+        # Cria um objeto ContestacaoPreco
+        contestacao = super().save(commit=False)
+        contestacao.id_negociacao = negociacao
+        contestacao.contestador = tipo_usuario
+        contestacao.status = status
+        contestacao.save()
 
-            # envia email para as partes
-            enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/nova_contestacao_preco.html', 'Contestação de Preço')
-            enviar_email_template(negociacao.id_empresa.email, 'negociacao/nova_contestacao_preco.html', 'Contestação de Preço')
-        except Exception as e:
-            print(f'Erro ao criar contestação de preço: {e}')
-
-class AceitarContestacaoPrecoForm(forms.Form):
-    action = forms.CharField(widget=forms.HiddenInput(), initial='aceitar_contestacao_preco')
-    id_contestacao = forms.CharField(widget=forms.HiddenInput())
-    id_negociacao = forms.CharField(widget=forms.HiddenInput())
-    novo_preco = forms.CharField(widget=forms.HiddenInput())
-
-    def save(self):
-        id_contestacao = self.cleaned_data['id_contestacao']
-        id_negociacao = self.cleaned_data['id_negociacao']
-        novo_preco = float(self.cleaned_data['novo_preco'].replace(',', '.'))
-
-        contestacao = ContestacaoPreco.objects.get(pk=id_contestacao)
-        negociacao = Negociacao.objects.get(pk=id_negociacao)
-        try: 
-            # a contestacao foi concluida
-            contestacao.status = 'A'
-            contestacao.save()
-            # mudando preco e status da negociação e confirmando preço em ambas partes
-            negociacao.status = 'AC'
-            negociacao.preco = novo_preco 
-            negociacao.confirmacao_preco_cooperativa = True 
-            negociacao.confirmacao_preco_empresa = True
-            negociacao.save()
-
-            enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/aceite_contestacao_preco.html', 'Aceite na Contestação de Preço')
-            enviar_email_template(negociacao.id_empresa.email, 'negociacao/aceite_contestacao_preco.html', 'Aceite na Contestação de Preço')
-        except Exception as e:
-            print(f'Erro ao alterar contestação ou negociação: {e}')
-
-
-class RecusarContestacaoPrecoForm(StyledFormMixin, forms.Form):
-    action = forms.CharField(widget=forms.HiddenInput(), initial='recusar_contestacao_preco')    
-    id_contestacao = forms.CharField(widget=forms.HiddenInput())
-
-    id_negociacao = forms.CharField(widget=forms.HiddenInput())
-    tipo_usuario = forms.CharField(widget=forms.HiddenInput()) 
-    justificativa = forms.CharField(widget=forms.Textarea())
-    novo_preco = forms.FloatField(label='Novo Preço Sugerido', required=True)
-
-    opcoes = forms.ChoiceField(
-        choices=(
-            ('contestar', 'contestar'),    
-        ),
-        widget=forms.HiddenInput()
-    )
-    
-    def save(self):
-        negociacao = Negociacao.objects.get(pk=self.cleaned_data['id_negociacao'])
-        contestador = self.cleaned_data['tipo_usuario']
-        justificativa = self.cleaned_data['justificativa']
-        preco_proposto = self.cleaned_data['novo_preco']
-        tipo_usuario = self.cleaned_data['tipo_usuario']
-
-        # fecha a contestação declinada e confirma preço de negociação da parte que abriu a contestação
-        id_antiga_contestacao = self.cleaned_data['id_contestacao']
-        contestacao_antiga = ContestacaoPreco.objects.get(pk=id_antiga_contestacao)
-        if tipo_usuario == 'CO':
-            contestacao_antiga.status = 'DC'
-            novo_status = 'ACE'
-            enviar_email_template(negociacao.id_empresa.email, 'negociacao/recusa_contestacao_preco.html', 'Recusa na Contestação de Preço')
-        else:
-            contestacao_antiga.status = 'DE'
-            novo_status = 'ACC'
-            enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/recusa_contestacao_preco.html', 'Recusa na Contestação de Preço')
-
-        contestacao_antiga.save()
-        # altera o status da negociação para ser a confirmação da parte que receberá a contestação
-        negociacao.status = novo_status
+        # Modifica o status da negociação
+        negociacao.status = status
         negociacao.save()
 
-        # abre uma nova contestação
-        ContestacaoPreco.objects.create(
-            id_negociacao=negociacao,
-            status=novo_status,
-            contestador=contestador,
-            justificativa=justificativa,
-            preco_proposto=preco_proposto
-        )
 
-        enviar_email_template(negociacao.id_empresa.email, 'negociacao/nova_contestacao_preco.html', 'Recusa na Contestação de Preço')
-        enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/nova_contestacao_preco.html', 'Recusa na Contestação de Preço')
+class ResponderContestacaoPrecoForm(ContestarPrecoForm):
+    opcoes = forms.ChoiceField(
+        choices=(
+            ('aceitar', 'Aceitar'),
+            ('contestar', 'Propor Novo Preço'),    
+        ),
+        widget=forms.RadioSelect
+    )
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Tornamos os campos opcionais para que o 'aceitar' funcione
+        self.fields['id_negociacao'].required = False
+        self.fields['justificativa'].required = False
+        self.fields['preco_proposto'].required = False
+
+    def save(self, tipo_usuario, instance=None):
+        opcao = self.cleaned_data['opcoes']
+        if opcao == 'aceitar':
+            instance.status = 'A'
+            instance.save()
+            
+            negociacao = instance.id_negociacao
+            negociacao.status = 'AC'
+            negociacao.save()
+        else:
+            instance.status = 'DC' if tipo_usuario == 'CO' else 'DE'
+            instance.save()
+            # Se for 'contestar', usamos a lógica da classe pai para criar uma NOVA instância
+            return super().save(tipo_usuario)
 
 
 class ConfirmarColetaForm(StyledFormMixin, forms.Form):

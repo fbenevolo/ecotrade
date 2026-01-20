@@ -32,7 +32,7 @@
                                 {{ negociacao.get_status_display }}
                             </span>
                             {% else %}
-                             <span
+                            <span
                                 class="bg-green-100 text-green-800 text-xs font-medium px-5 py-2 rounded-full dark:bg-yellow-900 dark:text-yellow-300">
                                 {{ negociacao.get_status_display }}
                             </span>
@@ -81,10 +81,10 @@
                                         </td>
                                         <td
                                             class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                            {{  dados_producao.quantidade }}
+                                            {{ dados_producao.quantidade }}
                                         </td>
                                         <td class="whitespace-nowrap px-3 py-4 text-sm font-semibold text-primary">
-                                            {{ dados_producao.receber }}  </td>
+                                            {{ dados_producao.receber }} </td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -94,12 +94,12 @@
                 </div>
                 <div class="rounded-lg border border-primary/20 bg-transparent shadow-sm mt-8">
                     <div class="p-6">
-                        <h3 class="text-lg font-semibold leading-6 text-gray-900 dark:text-white">Contestações
-                            de Preço</h3>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Registro de contestações sobre
-                            o preço negociado.</p>
-                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 italic">A primeira linha da
-                            tabela representa o último preço negociado.</p>
+                        <h3 class="text-lg font-semibold leading-6 text-gray-900 dark:text-white">Contestações de Preço
+                        </h3>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Registro de contestações sobre o preço
+                            negociado.</p>
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 italic">A primeira linha da tabela
+                            representa o último preço negociado.</p>
                     </div>
                     <div class="overflow-x-auto">
                         <div class="inline-block min-w-full align-middle">
@@ -107,10 +107,9 @@
                                 <thead class="bg-transparent dark:bg-background-dark/30">
                                     <tr>
                                         <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6"
-                                            scope="col">
-                                            Contestador
+                                            scope="col"> Contestador
                                         </th>
-                                         <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6"
+                                        <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6"
                                             scope="col">
                                             Status
                                         </th>
@@ -122,7 +121,7 @@
                                             scope="col">
                                             Preço Proposto (R$)
                                         </th>
-                                         <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
+                                        <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
                                             scope="col">
                                             Ações
                                         </th>
@@ -130,40 +129,36 @@
                                 </thead>
                                 <tbody class="divide-y divide-primary/10 bg-transparent dark:bg-transparent">
                                     {% for contestacao in contestacoes_preco %}
-                                        <tr>
-                                            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
-                                                {{ contestacao.get_contestador_display }}
-                                            </td>
-                                             <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
-                                                {{ contestacao.get_status_display }}
-                                            </td>
-                                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                                {{ contestacao.justificativa }}
-                                            </td>
-                                            <td class="whitespace-nowrap px-3 py-4 text-sm font-semibold text-green-500">
-                                                {{ contestacao.preco_proposto }}  
-                                            </td>
-                                            {% if request.user.tipo_usuario == 'E' and contestacao.status == 'ACE' or request.user.tipo_usuario == 'CO' and contestacao.status == 'ACC' %}
-                                             <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
-                                                 <button 
-                                                    data-negociacao-id="{{ contestacao.id_negociacao.pk }}"
-                                                    data-contestacao-id="{{ contestacao.pk }}"
-                                                    data-preco-sugerido="{{ contestacao.preco_proposto }}"
-                                                    class="aceitar-contestacao-btn text-green-500 hover:text-green-700" title="Aceitar Novo Preço">
-                                                    <span class="material-symbols-outlined">check</span>
-                                                </button>         
-                                                 <button 
-                                                    data-contestacao-id="{{ contestacao.pk }}"
-                                                    data-negociacao-id="{{ contestacao.id_negociacao.pk }}"
-                                                    data-tipo-usuario="{{ request.user.tipo_usuario }}"
-                                                    data-preco-sugerido="{{ contestacao.preco_proposto }}"
-                                                    class="contestar-preco-btn text-red-500 hover:text-red-700" title="Abrir Nova Contestação">
-                                                    <span class="material-symbols-outlined">close</span>
-                                            </td>
-                                            {% endif %}
+                                    <tr>
+                                        <td
+                                            class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
+                                            {{ contestacao.get_contestador_display }}
+                                        </td>
+                                        <td
+                                            class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
+                                            {{ contestacao.get_status_display }}
+                                        </td>
+                                        <td
+                                            class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                            {{ contestacao.justificativa }}
+                                        </td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm font-semibold text-green-500">
+                                            {{ contestacao.preco_proposto }}
+                                        </td>
+                                        {% if request.user.tipo_usuario == 'E' and contestacao.status == 'ACE' or request.user.tipo_usuario == 'CO' and contestacao.status == 'ACC' %}
+                                        <td class="whitespace-nowrap text-sm pl-4 font-medium text-gray-900 dark:text-white">
+                                            <button class="responder-contest-preco-btn text-center" title="Responder à proposta">
+                                                <span class="material-symbols-outlined">
+                                                    reply_all
+                                                </span>
+                                            </button>
+                                        </td>
+                                        {% endif %}
                                     </tr>
+                                    {% include 'negociacao/modal_responder_contestacao_preco.html' with responder_contestacao_form=responder_contestacao_preco_form negociacao=negociacao contestacao=contestacao %}
                                     {% endfor %}
-                                    
+
+
                                     {% include 'negociacao/modal_aceitar_contestacao_preco.html' with aceitar_contestacao_form=aceitar_contestacao_form negociacao=negociacao %}
                                     {% include 'negociacao/modal_recusar_contestacao_preco.html' with recusar_contestacao_form=recusar_contestacao_form negociacao=negociacao %}
                                     {% include 'negociacao/contestar_preco.html' with contestar_preco_form=contestar_preco_form %}
@@ -211,27 +206,31 @@
                                     <tr>
                                         <td
                                             class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6">
-                                            {{ contestacao.get_usuario_display }} 
+                                            {{ contestacao.get_usuario_display }}
                                         </td>
-                                        <td
-                                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6">
-                                            {{ contestacao.justificativa }} 
+                                        <td <td
+                                            class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6">
+                                            {{ contestacao.justificativa }}
                                         </td>
                                         {% if contestacao.comprovante %}
-                                            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6">
-                                                {% url 'visualizar_comprovante_contestacao' email_usuario=request.user.pk id_contestacao=contestacao.pk as comprovante_url %}
-                                                <a href="{{ comprovante_url }}">
-                                                    <button
-                                                        class="inline-flex items-center gap-1.5 rounded-md bg-transparent px-3 py-1.5 text-sm font-semibold text-primary shadow-sm ring-1 ring-inset ring-primary/50 hover:bg-primary/10">
-                                                        <span class="material-symbols-outlined text-base">receipt_long</span>
-                                                        Comprovante
-                                                    </button>
-                                                </a>
-                                            </td>
+                                        <td
+                                            class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6">
+                                            {% url 'visualizar_comprovante_contestacao' email_usuario=request.user.pk
+                                            id_contestacao=contestacao.pk as comprovante_url %}
+                                            <a href="{{ comprovante_url }}">
+                                                <button
+                                                    class="inline-flex items-center gap-1.5 rounded-md bg-transparent px-3 py-1.5 text-sm font-semibold text-primary shadow-sm ring-1 ring-inset ring-primary/50 hover:bg-primary/10">
+                                                    <span
+                                                        class="material-symbols-outlined text-base">receipt_long</span>
+                                                    Comprovante
+                                                </button>
+                                            </a>
+                                        </td>
                                         {% else %}
-                                             <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6">
-                                                -
-                                            </td>
+                                        <td
+                                            class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6">
+                                            -
+                                        </td>
                                         {% endif %}
                                         <td
                                             class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
@@ -242,46 +241,42 @@
                                         </td>
                                         {% if request.user.tipo_usuario == 'E' and contestacao.status == 'EE' and contestacao.usuario == 'CO' %}
                                         <td class="px-6 py-4" title="Responder contestação">
-                                            <button 
-                                                data-id-negociacao="{{ contestacao.id_negociacao.pk }}" 
+                                            <button data-id-negociacao="{{ contestacao.id_negociacao.pk }}"
                                                 data-id-contestacao="{{ contestacao.pk }}"
                                                 class="responder-contestacao-btn">
                                                 <span class="material-symbols-outlined text-base">gavel</span>
                                             </button>
                                         </td>
                                         {% elif contestacao.status == 'EE' and request.user.tipo_usuario == 'CO' and contestacao.comprovante %}
-                                         <td class="px-6 py-4" title="Ver Comprovante">
+                                        <td class="px-6 py-4" title="Ver Comprovante">
                                             <button class="ver-comprovante-btn">
                                                 <span class="material-symbols-outlined text-base"></span>
                                             </button>
 
-                                            <button 
-                                                data-id-negociacao="{{ contestacao.id_negociacao.pk }}"
-                                                data-id-contestacao="{{ contestacao.pk }}"
-                                                class="confirmar-pgto-btn" title="Aceitar Pagamento">
+                                            <button data-id-negociacao="{{ contestacao.id_negociacao.pk }}"
+                                                data-id-contestacao="{{ contestacao.pk }}" class="confirmar-pgto-btn"
+                                                title="Aceitar Pagamento">
                                                 <span class="material-symbols-outlined text-base">check</span>
                                             </button>
 
-                                            <button 
-                                                data-negociacao-id="{{ contestacao.id_negociacao.pk }}"
-                                                data-contestacao-id="{{ contestacao.pk }}"
-                                                class="contestar-pgto-btn" title="Contestar Pagamento">
+                                            <button data-negociacao-id="{{ contestacao.id_negociacao.pk }}"
+                                                data-contestacao-id="{{ contestacao.pk }}" class="contestar-pgto-btn"
+                                                title="Contestar Pagamento">
                                                 <span class="material-symbols-outlined text-base">close</span>
                                             </button>
                                         </td>
                                         {% endif %}
                                     </tr>
-                                    
+
                                     {% url 'visualizar_comprovante_contestacao' email_usuario=request.user.pk id_contestacao=contestacao.pk as comprovante_url_contestacao %}
                                     {% include 'negociacao/modal_confirmar_pgto_pos_contest.html' with confirmar_pagamento_form=confirmar_pagamento_form modal_post_url=detalhes_url comprovante_url_download=comprovante_url_contestacao %}
-                                    
+
                                     {% endfor %}
-                                    
+
                                     {% include 'negociacao/modal_responder_contestacao_pgto.html' with responder_contestacao_pgto_form=responder_contestacao_pgto_form %}
-                                    
+
                                     {% url 'detalhes_negociacao' email_usuario=request.user.pk id_negociacao=negociacao.pk as detalhes_url %}
                                     {% include 'negociacao/modal_contestar_pagamento.html' with contestar_pagamento_form=contestar_pagamento_form modal_post_url=detalhes_url %}
-                                    
                                 </tbody>
                             </table>
                         </div>
@@ -295,9 +290,10 @@
 {% endblock dashboard_content %}
 
 {% block footer_scripts %}
-    {% load static %}
-    <script src="{% static 'js/negociacao/responder_contestacao_preco.js' %}"></script>  
-    <script src="{% static 'js/negociacao/confirmar_pagamento_pos_contest.js' %}"></script>      
-    <script src="{% static 'js/negociacao/contestar_pagamento.js' %}"></script>
-    <script src="{% static 'js/negociacao/responder_contestacao_pgto.js' %}"></script>
+{% load static %}
+<!-- <script src="{% static 'js/negociacao/responder_contestacao_preco.js' %}"></script> -->
+<script src="{% static 'js/negociacao/responder_contest_preco.js' %}"></script>
+<script src="{% static 'js/negociacao/confirmar_pagamento_pos_contest.js' %}"></script>
+<script src="{% static 'js/negociacao/contestar_pagamento.js' %}"></script>
+<script src="{% static 'js/negociacao/responder_contestacao_pgto.js' %}"></script>
 {% endblock footer_scripts %}

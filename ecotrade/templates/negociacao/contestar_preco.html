@@ -6,14 +6,10 @@
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
-        <form action="{% url 'negociacoes' email_usuario=request.user.pk %}" method="POST">
+        <form action="{% url 'contestar_preco' email_usuario=request.user.pk id_negociacao=0 %}" id="form-contestar-preco" method="POST">
             {% csrf_token %}
 
-             
-            {{ contestar_preco_form.action }}
             {{ contestar_preco_form.id_negociacao }}
-            {{ contestar_preco_form.opcoes }}
-            {{ contestar_preco_form.tipo_usuario }}
 
             <div class="space-y-6">
                 <div>
@@ -30,15 +26,15 @@
                         for="justification">Justificativa da contestação</label>
                     {{ contestar_preco_form.justificativa }}
                 </div>
-                <div class="space-y-6">
+                <div class="space-y-4">
                     {% include 'components/alerta_decimal.html' %}
-                    
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="new-price">Sugerir
-                        novo preço por kg </label>
-                    <div class="relative">
-                        <span
-                            class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 dark:text-gray-400"></span>
-                        {{ contestar_preco_form.novo_preco }}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="new-price">Sugerir
+                            novo preço por kg </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 dark:text-gray-400"></span>
+                            {{ contestar_preco_form.preco_proposto }}
+                        </div>
                     </div>
                 </div>
                 <div class="flex justify-end space-x-4 mt-8">

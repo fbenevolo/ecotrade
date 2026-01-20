@@ -6,8 +6,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from ..models import Usuario, Negociacao, NegociacaoPagaTrabalho, ContestacaoPreco, ContestacaoPagamento
 from ..forms.forms_negociacao import (ConfirmarNegociacaoForm, 
                                       ContestarPrecoForm,
-                                      AceitarContestacaoPrecoForm,
-                                      RecusarContestacaoPrecoForm,
+                                      ResponderContestacaoPrecoForm,
                                       ConfirmarColetaForm, 
                                       ConfirmarEntregaForm,
                                       ConfirmarPagamentoForm,
@@ -17,7 +16,7 @@ from ..forms.forms_negociacao import (ConfirmarNegociacaoForm,
                                       )
 from pathlib import Path
 
-from ..utils import calcula_valor_a_receber
+from ..utils import calcula_valor_a_receber, enviar_email_template
 
 @login_required
 def negociacoes(request, email_usuario):
@@ -47,11 +46,7 @@ def negociacoes(request, email_usuario):
             if confirmar_negociacao_form.is_valid():
                 confirmar_negociacao_form.save()
                 return redirect(reverse('negociacoes', kwargs={'email_usuario': request.user.pk}))
-        elif 'contestar_preco' in action:
-            contestar_preco_form = ContestarPrecoForm(request.POST)
-            if contestar_preco_form.is_valid():
-                contestar_preco_form.save()
-                return redirect(reverse('negociacoes', kwargs={'email_usuario': request.user.pk}))
+
         elif 'confirmar_coleta' in action:
             confirmar_coleta_form = ConfirmarColetaForm(request.POST)
             if confirmar_coleta_form.is_valid():
@@ -86,6 +81,45 @@ def negociacoes(request, email_usuario):
     return render(request, 'negociacao/negociacoes.html', context)
 
 
+def contestar_preco(request, email_usuario, id_negociacao):
+    negociacao = get_object_or_404(Negociacao, pk=id_negociacao)
+    tipo_usuario = request.user.tipo_usuario
+    if request.method == 'POST':
+        form = ContestarPrecoForm(request.POST)
+        print('form: ', form)
+        if form.is_valid():
+            form.save(tipo_usuario=tipo_usuario)
+
+            enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/nova_contestacao_preco.html', 'Contestação de Preço')
+            enviar_email_template(negociacao.id_empresa.email, 'negociacao/nova_contestacao_preco.html', 'Contestação de Preço')
+            
+            return redirect(reverse('negociacoes', kwargs={'email_usuario': email_usuario}))
+
+    return redirect(reverse('negociacoes', kwargs={'email_usuario': email_usuario}))
+
+
+def responder_contestacao_preco(request, email_usuario, id_negociacao, id_contestacao):
+    contestacao = get_object_or_404(ContestacaoPreco, pk=id_contestacao)
+    negociacao = get_object_or_404(Negociacao, pk=id_negociacao)
+    if request.method == 'POST':
+        print(request.POST)
+        form = ResponderContestacaoPrecoForm(request.POST)
+        if form.is_valid():
+            opcao = form.cleaned_data['opcoes']
+            if opcao == 'contestar':
+                enviar_email_template(negociacao.id_empresa.email, 'negociacao/nova_contestacao_preco.html', 'Recusa na Contestação de Preço')
+                enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/nova_contestacao_preco.html', 'Recusa na Contestação de Preço')
+            else:
+                enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/aceite_contestacao_preco.html', 'Aceite na Contestação de Preço')
+                enviar_email_template(negociacao.id_empresa.email, 'negociacao/aceite_contestacao_preco.html', 'Aceite na Contestação de Preço')
+            form.save(instance=contestacao, tipo_usuario=request.user.tipo_usuario)
+            return redirect(reverse('detalhes_negociacao', kwargs={'email_usuario': email_usuario, 'id_negociacao': id_negociacao}))
+        else:
+            print(form.errors.as_data())
+
+    return redirect(reverse('detalhes_negociacao', kwargs={'email_usuario': email_usuario, 'id_negociacao': id_negociacao}))
+ 
+
 @login_required
 def detalhes_negociacao(request, email_usuario, id_negociacao):
     
@@ -96,8 +130,8 @@ def detalhes_negociacao(request, email_usuario, id_negociacao):
     valores_a_receber = calcula_valor_a_receber(id_negociacao, catadores_elegiveis)
 
     contestar_preco_form = ContestarPrecoForm()
-    aceitar_contestacao_form = AceitarContestacaoPrecoForm()
-    recusar_contestacao_form = RecusarContestacaoPrecoForm()
+
+    responder_contestacao_preco_form = ResponderContestacaoPrecoForm()
 
     confirmar_pagamento_pos_contest_form = ConfirmarPagamentoPosContestForm()
     contestar_pagamento_form = ContestarPagamentoForm()
@@ -109,16 +143,6 @@ def detalhes_negociacao(request, email_usuario, id_negociacao):
             contestar_preco_form = ContestarPrecoForm(request.POST)
             if contestar_preco_form.is_valid():
                 contestar_preco_form.save()
-                return redirect('detalhes_negociacao', email_usuario=request.user.pk, id_negociacao=negociacao.pk)
-        elif 'aceitar_contestacao_preco' in action:
-            aceitar_contestacao_form = AceitarContestacaoPrecoForm(request.POST)
-            if aceitar_contestacao_form.is_valid():
-                aceitar_contestacao_form.save()
-                return redirect('detalhes_negociacao', email_usuario=request.user.pk, id_negociacao=negociacao.pk)
-        elif 'recusar_contestacao_preco' in action:
-            recusar_contestacao_form = RecusarContestacaoPrecoForm(request.POST)    
-            if recusar_contestacao_form.is_valid():
-                recusar_contestacao_form.save()
                 return redirect('detalhes_negociacao', email_usuario=request.user.pk, id_negociacao=negociacao.pk)
         elif 'confirmar_pgto_pos_contest' in action:
             confirmar_pagamento_pos_contest_form = ConfirmarPagamentoPosContestForm(request.POST)
@@ -154,6 +178,7 @@ def detalhes_negociacao(request, email_usuario, id_negociacao):
         'contestar_preco_form': contestar_preco_form,
         'aceitar_contestacao_form': aceitar_contestacao_form,
         'recusar_contestacao_form': recusar_contestacao_form,
+        'responder_contestacao_preco_form': responder_contestacao_preco_form,
         'confirmar_pagamento_pos_contest_form': confirmar_pagamento_pos_contest_form,
         'contestar_pagamento_form': contestar_pagamento_form, 
         'responder_contestacao_pgto_form': responder_contestacao_pgto_form,

@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const modalContestarPreco = document.getElementById('modal-contestar-preco');
     const contestarPrecoBtn = document.querySelectorAll('button.contestar-preco-btn');
-    // Funções genéricas de modal
+    
     const closeModal = (modal) => {
         if (modal) modal.classList.add('hidden');
     };
@@ -25,18 +25,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function prepareAndOpenModal(modal, negociacaoId, precoAtual, acao, tipoUsuario) {
-        if (!modal) return;
-        
-        const hiddenIdInput = modal.querySelector('input[name="id_negociacao"]');
-        const hiddenOpcoesInput = modal.querySelector('input[name="opcoes"]');
-        const hiddenTipoUsuarioInput = modal.querySelector('input[name="tipo_usuario"]');
+    function prepareAndOpenModal(modal, idNegociacao, precoAtual) {        
+        const negociacaoIdInput = modal.querySelector('input[name="id_negociacao"]');
         const spanPrecoAtual = modalContestarPreco.querySelector('#span-preco-atual');
-
-        if (hiddenIdInput) hiddenIdInput.value = negociacaoId;
+        if (negociacaoIdInput) negociacaoIdInput.value = idNegociacao;
         if (spanPrecoAtual) spanPrecoAtual.innerHTML = precoAtual;
-        if (hiddenOpcoesInput) hiddenOpcoesInput.value = acao; 
-        if (hiddenTipoUsuarioInput) hiddenTipoUsuarioInput.value = tipoUsuario;
+
+        // substituindo o placeholder 0 pelo id da negociacao a ser contestada
+        const formContestarPreco = modalContestarPreco.querySelector('#form-contestar-preco');
+        let actionUrl = formContestarPreco.getAttribute('action');
+        actionUrl = actionUrl.replace('0', `${idNegociacao}`);
+        formContestarPreco.setAttribute('action', actionUrl);
 
         openModal(modal);
     }
@@ -46,9 +45,8 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             let btn = e.currentTarget;
             let negociacaoId = btn.getAttribute('data-negociacao-id');
-            let tipoUsuario = btn.getAttribute('data-tipo-usuario');
             let precoAtual = btn.getAttribute('data-preco-atual');
-            prepareAndOpenModal(modalContestarPreco, negociacaoId, precoAtual, 'contestar', tipoUsuario);
+            prepareAndOpenModal(modalContestarPreco, negociacaoId, precoAtual);
         });
     });
 });

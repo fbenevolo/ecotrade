@@ -66,7 +66,6 @@ urlpatterns = [
     path('dashboard/<str:email_usuario>/producoes/adicionar', views_producao.cadastrar_producao, name='cadastrar_producao'),
     path('dashboard/<str:email_usuario>/producoes/alterar/<int:id_producao>>', views_producao.alterar_producao, name='alterar_producao'),
     path('dashboard/<str:email_usuario>/producoes/remover/<int:id_producao>>', views_producao.remover_producao, name='remover_producao'),
-    
 
     # URLs de demanda
     path('dashboard/<str:email_usuario>/demandas', views_demanda.demandas, name='demandas'),
@@ -79,6 +78,11 @@ urlpatterns = [
     # URLs de negociação
     path('dashboard/<str:email_usuario>/negociacoes', views_negociacao.negociacoes, name='negociacoes'),
     path('dashboard/<str:email_usuario>/negociacoes/detalhes_negociacao/<int:id_negociacao>', views_negociacao.detalhes_negociacao, name='detalhes_negociacao'),
+    path('dashboard/<str:email_usuario>/negociacoes/<int:id_negociacao>/contestar_preco/', views_negociacao.contestar_preco, name='contestar_preco'),
+    path('dashboard/<str:email_usuario>/negociacoes/<int:id_negociacao>/responder_contestacao/<int:id_contestacao>', views_negociacao.responder_contestacao_preco, name='responder_contestacao_preco'),
+   
+
+
     path('dashboard/<str:email_usuario>/negociacoes/comprovante/<int:id_negociacao>', views_negociacao.comprovante_negociacao, name='visualizar_comprovante_negociacao'),        
     path('dashboard/<str:email_usuario>/negociacoes/detalhes_negociacao/comprovante/<int:id_contestacao>', views_negociacao.comprovante_contestacao, name='visualizar_comprovante_contestacao'),        
 

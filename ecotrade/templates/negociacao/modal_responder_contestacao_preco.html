@@ -1,0 +1,58 @@
+<div id="modal-responder-contest-preco" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden">
+    <form action="{% url 'responder_contestacao_preco' email_usuario=request.user.pk id_negociacao=negociacao.pk id_contestacao=contestacao.pk %}" method="POST">
+        {% csrf_token %}
+        
+        <input type="hidden" name="id_negociacao" value="{{ negociacao.pk }}">
+        
+        <div class="w-full max-w-md rounded-xl bg-white dark:bg-gray-800 shadow-2xl p-8 space-y-4">
+            <div class="flex items-center">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Responder à Proposta</h3>
+                <button type="button" class="ml-auto close-btn text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                        <span class="material-symbols-outlined text-3xl">close</span>
+                </button>
+            </div>
+            <div class="flex justify-between items-center p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Preço proposto por kg</p>
+                            <p class="text-xl font-bold text-gray-800 dark:text-white">R$ <span id="span-preco-atual"> {{ contestacao.preco_proposto }}  </span> </p>
+                        </div>
+                    </div>
+            <p class="mt-2 text-base text-gray-500 dark:text-gray-400">
+                Você tem certeza que deseja confirmar o preço?
+            </p>
+            <div id="opcoes-contestacao" class="flex flex-col">
+                {% for radio in responder_contestacao_form.opcoes %}
+                    <div class="flex items-center"> {{ radio.tag }} <label class="ml-2">{{ radio.choice_label }}</label> </div>
+                {% endfor %}
+            </div>
+
+            <div id="contestar-preco" class="hidden space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                        for="justification">Justificativa da contestação</label>
+                    {{ contestar_preco_form.justificativa }}
+                </div>
+                    {% include 'components/alerta_decimal.html' %}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="new-price">Sugerir
+                        novo preço por kg </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 dark:text-gray-400"></span>
+                        {{ contestar_preco_form.preco_proposto }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-center gap-4">
+                <button 
+                    class="cancel-btn flex-1 rounded-full bg-white dark:bg-gray-700 px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="flex-1 rounded-full bg-primary px-6 py-3 text-sm font-medium text-white shadow-sm hover:bg-primary/80">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
