@@ -17,21 +17,9 @@ document.addEventListener('DOMContentLoaded', function () {
             closeModal(confirmarEntregaModal);
         })
     }
-
-    function openConfirmarColetaModal(idNegociacao) {
-        const hiddenIdNegociacao = confirmarEntregaModal.querySelector('input[name="id_negociacao"]');
-        hiddenIdNegociacao.value = idNegociacao;
-        openModal(confirmarEntregaModal);
-    }
-
+    
     confirmarEntregaBtn.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const btn = e.currentTarget.closest('button');
-            const idNegociacao = btn.getAttribute('data-id-negociacao');
-
-            openConfirmarColetaModal(idNegociacao);
-        });
+        btn.addEventListener('click', (e) => { e.preventDefault(); openModal(confirmarEntregaModal); });
 
     });
 });

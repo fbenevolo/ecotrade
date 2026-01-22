@@ -131,50 +131,44 @@ class ResponderContestacaoPrecoForm(ContestarPrecoForm):
             return super().save(tipo_usuario)
 
 
-class ConfirmarColetaForm(StyledFormMixin, forms.Form):
-    action = forms.CharField(widget=forms.HiddenInput(), initial='confirmar_coleta')
-    id_negociacao = forms.CharField(widget=forms.HiddenInput())
+class ConfirmarColetaForm(StyledFormMixin, forms.ModelForm):
     data = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
 
+    class Meta:
+        model = Negociacao
+        fields = ['data']
+
     def save(self):
-        id_negociacao = self.cleaned_data['id_negociacao']
-        data_coleta = self.cleaned_data['data']
-
-        negociacao = Negociacao.objects.get(pk=id_negociacao)
-        negociacao.status = 'ET'
-        negociacao.data_coleta = data_coleta
-        negociacao.save()
-
-        enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/mudanca_status.html', 
-                              'Mudança de Status na Negociação', context={ 'novo_status': 'Em Transporte' })
-        enviar_email_template(negociacao.id_empresa.email, 'negociacao/mudanca_status.html', 
-                              'Mudança de Status na Negociação', context={ 'novo_status': 'Em Transporte' })
+        instance = super().save(commit=False)
+        instance.data_coleta = self.cleaned_data['data']
+        instance.status = 'ET'
+        instance.save() 
 
 
-class ConfirmarEntregaForm(StyledFormMixin, forms.Form):
-    action = forms.CharField(widget=forms.HiddenInput(), initial='confirmar_entrega')
-    id_negociacao = forms.CharField(widget=forms.HiddenInput())
+class ConfirmarEntregaForm(StyledFormMixin, forms.ModelForm):
     data = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
 
+    class Meta:
+        model = Negociacao
+        fields = ['data']
+
     def save(self):
-        id_negociacao = self.cleaned_data['id_negociacao']
-        data_entrega = self.cleaned_data['data']
-        
-        negociacao = Negociacao.objects.get(pk=id_negociacao)
-        negociacao.status = 'ACPE'
-        negociacao.data_coleta = data_entrega
-        negociacao.save()
-
-        enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/mudanca_status.html', 
-                              'Mudança de Status na Negociação', context={ 'novo_status': 'Aguardando Confirmação de Pagamento da Empresa' })
-        enviar_email_template(negociacao.id_empresa.email, 'negociacao/mudanca_status.html', 
-                              'Mudança de Status na Negociação', context={ 'novo_status': 'Aguardando Confirmação de Pagamento da Empresa' })
+        instance = super().save(commit=False)        
+        instance.status = 'ACPE'
+        instance.data_coleta = self.cleaned_data['data']
+        instance.save()
 
 
-class ConfirmarPagamentoForm(forms.Form):
-    action = forms.CharField(widget=forms.HiddenInput(), initial='confirmar_pagamento')
-    id_negociacao = forms.CharField(widget=forms.HiddenInput())
-    comprovante = forms.FileField()
+class ConfirmarPagamentoForm(StyledFormMixin, forms.ModelForm):
+    class Meta:
+        model = Negociacao
+        fields = ['comprovante']
+
+        widgets = {
+            'comprovante': forms.ClearableFileInput(attrs={
+                'class': 'absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10'
+            }),
+        }
 
     def __init__(self, *args, **kwargs):
         self.tipo_usuario = kwargs.pop('tipo_usuario', None)
@@ -182,156 +176,104 @@ class ConfirmarPagamentoForm(forms.Form):
         # se usuário for cooperativa, não precisa anexar comprovante
         if self.tipo_usuario == 'CO':
             del self.fields['comprovante']
-        else: 
-            style_comprovante = 'absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10'
-            self.fields['comprovante'].widget.attrs.update({'class': style_comprovante})
-    
+
     def save(self):
-        id_negociacao = int(self.cleaned_data['id_negociacao'])
+        instance = super().save(commit=False)
+        if self.tipo_usuario == 'E':
+            instance.confirmacao_pgto_empresa = True
+            instance.status = 'ACPC'
+        else:
+            instance.confirmacao_pgto_coop = True
+            instance.data_conclusao = timezone.now().date()
+            instance.status = 'C'
+        
+        instance.save()
+
+
+class ContestarPagamentoForm(StyledFormMixin, forms.ModelForm):
+    class Meta:
+        model = ContestacaoPagamento
+        fields = ['justificativa']
+
+    def save(self, id_negociacao):
+        # mudando status de negociação para 'Aguardando Confirmação de Pagamento da Empresa'
         negociacao = Negociacao.objects.get(pk=id_negociacao)
-
-        try:
-            if self.tipo_usuario == 'E':
-                comprovante = self.cleaned_data['comprovante']
-                negociacao.comprovante = comprovante
-                negociacao.confirmacao_pgto_empresa = True
-                negociacao.status = 'ACPC'
-                negociacao.save()
-
-                enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/pagamento_confirmado_empresa.html', 
-                                      'Pagamento Confirmado', context={ 'nome_empresa': negociacao.id_empresa.nome })
-            else:
-                negociacao.confirmacao_pgto_coop = True
-                negociacao.data_conclusao = timezone.now()
-                negociacao.status = 'C'
-                negociacao.save()
-
-                enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/negociacao_concluida.html', 
-                                      'Negociação Concluída')
-                enviar_email_template(negociacao.id_empresa.email, 'negociacao/negociacao_concluida.html', 
-                                      'Negociação Concluída')
-                
-                atualiza_producoes(negociacao.pk)
-                atualiza_preco_medio_residuo(negociacao.id_residuo.pk)
-
-        except Exception as e:
-            print(f'Erro ao atualizar status de pagamento de negociação: {e}')
+        negociacao.status = 'ACPE' 
+        negociacao.save()
+        
+        instance = super().save(commit=False)
+        instance.id_negociacao = negociacao
+        instance.status = 'EE'
+        instance.usuario = 'CO'
+        instance.save()
 
 
-class ContestarPagamentoForm(StyledFormMixin, forms.Form):
-    action = forms.CharField(widget=forms.HiddenInput(), initial='contestar_pagamento')
-    id_negociacao = forms.CharField(widget=forms.HiddenInput())
-    id_antiga_contestacao = forms.CharField(widget=forms.HiddenInput(), required=False)
-    justificativa = forms.CharField(widget=forms.Textarea())
+class ResponderContestacaoPagamentoEmpresaForm(StyledFormMixin, forms.ModelForm):
+    class Meta:
+        model = ContestacaoPagamento
+        fields = ['justificativa', 'comprovante']
+
+        labels = {
+            'comprovante': 'Carregar um Arquivo'
+        }
+
+        widgets = {
+            'comprovante': forms.ClearableFileInput(attrs={
+                'class': 'absolute inset-0 w-full h-full opacity-0 cursor-pointer'
+            }),
+        }
+
+    def save(self, id_negociacao):
+        negociacao = Negociacao.objects.get(pk=id_negociacao)
+        negociacao.status = 'ACPC'
+        negociacao.save()
+        
+        instance = super().save(commit=False)
+        instance.id_negociacao = negociacao
+        instance.usuario = 'E'
+        instance.status = 'EE'
+        instance.save()
 
 
-    def save(self):
-        justificativa = self.cleaned_data['justificativa']
-        id_negociacao = self.cleaned_data['id_negociacao']
-        id_antiga_contestacao = self.cleaned_data['id_antiga_contestacao']
+class ResponderContestacaoPagamentoCoopForm(StyledFormMixin, forms.ModelForm):
+    justificativa = forms.CharField(required=False, widget=forms.Textarea())
+    opcoes = forms.ChoiceField(
+        choices=(
+            ('confirmar', 'Confirmar'),
+            ('contestar', 'Contestar Novamente'),
+        ),
+        widget=forms.RadioSelect()
+    )
 
-        try:
-            # muda status da negociação para 'Pagamento Contestado' (PC)
-            negociacao = Negociacao.objects.get(pk=id_negociacao)
+    class Meta:
+        model = ContestacaoPagamento
+        fields = ['justificativa', 'opcoes']
+
+    def save(self, id_negociacao):
+        opcao = self.cleaned_data['opcoes']
+        negociacao = Negociacao.objects.get(pk=id_negociacao)
+        
+        contestacao_atual = ContestacaoPagamento.objects.get(pk=self.instance.pk)
+        contestacao_atual.status = 'A'
+        contestacao_atual.save()
+        
+        if opcao == 'confirmar':
+            negociacao.comprovante = contestacao_atual.comprovante
+            negociacao.data_conclusao = timezone.now()
+            negociacao.status = 'C'
+            negociacao.save()
+
+            return contestacao_atual
+        else:
+            nova_contestacao = super().save(commit=False)
+            nova_contestacao.pk = None
+            nova_contestacao.comprovante = None
+            nova_contestacao.id_negociacao = negociacao
+            nova_contestacao.status = 'EE'
+            nova_contestacao.usuario = 'CO'
+            nova_contestacao.save()
+
             negociacao.status = 'ACPE'
             negociacao.save()
 
-            # se for uma resposta à uma contestação já existente, fecha essa contestação antiga
-            if id_antiga_contestacao:
-                antiga_contestacao = ContestacaoPagamento.objects.get(pk=id_antiga_contestacao)
-                antiga_contestacao.status = 'A'
-                antiga_contestacao.save()
-
-            # cria uma contestação de pagamento
-            ContestacaoPagamento.objects.create(
-                status='EE',
-                justificativa=justificativa,
-                id_negociacao=negociacao,
-                usuario='CO',
-            )
-
-            enviar_email_template(negociacao.id_empresa.email, 'negociacao/pagamento_contestado.html',
-                                  'Pagamento de Negociação Contestado')
-
-        except Exception as e:
-            print(f'Erro ao criar contestação de pagamento: {e}')
-
-
-class ResponderContestacaoPgtoForm(StyledFormMixin, forms.Form):
-    action = forms.CharField(widget=forms.HiddenInput(), initial='responder_contestar_pagamento')
-    id_negociacao = forms.CharField(widget=forms.HiddenInput())
-    id_contestacao = forms.CharField(widget=forms.HiddenInput())
-    justificativa = forms.CharField(widget=forms.Textarea())
-
-    comprovante = forms.FileField(  
-        widget=forms.ClearableFileInput(
-            attrs={
-                'class': 'absolute inset-0 w-full h-full opacity-0 cursor-pointer',
-                'id': 'id_comprovante',
-            }
-        ),
-        label='Carregar um arquivo' 
-    )
-
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        style = "w-full bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-primary focus:border-primary"
-        self.fields['justificativa'].widget.attrs.update({'class': style})
-
-    def save(self):
-        id_negociacao = self.cleaned_data['id_negociacao']
-        id_antiga_contestacao = self.cleaned_data['id_contestacao']
-        justificativa = self.cleaned_data['justificativa']
-        comprovante = self.cleaned_data['comprovante']
-
-        negociacao = Negociacao.objects.get(pk=id_negociacao)
-
-        try:
-            # fechando a antiga contestacao
-            antiga_contestacao = ContestacaoPagamento.objects.get(pk=id_antiga_contestacao)
-            antiga_contestacao.status = 'A'
-            antiga_contestacao.save()
-            
-            # criando nova "contestação", isto é, uma resposta da empresa à antiga contestação com um novo comprovante
-            ContestacaoPagamento.objects.create(
-                id_negociacao=negociacao,
-                justificativa=justificativa,
-                comprovante=comprovante,
-                status='EE',
-                usuario='E'
-            )
-
-            enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/resposta_pagamento_contestado.html',
-                                  'Resposta à Contestação de Pagamento', context={'nome_empresa': negociacao.id_empresa.nome})
-
-        except Exception as e:
-            print(f'Erro ao criar resposta à contestação de pagamento: {e}')
-
-
-class ConfirmarPagamentoPosContestForm(forms.Form):
-    action = forms.CharField(widget=forms.HiddenInput(), initial='confirmar_pgto_pos_contest')
-    id_negociacao = forms.CharField(widget=forms.HiddenInput())
-    id_contestacao = forms.CharField(widget=forms.HiddenInput())
-
-    def save(self):
-        id_contestacao = self.cleaned_data['id_contestacao']
-        id_negociacao = self.cleaned_data['id_negociacao']
-
-        # fechando a contestação
-        contestacao = ContestacaoPagamento.objects.get(pk=id_contestacao)
-        contestacao.status = 'A'
-        contestacao.save()
-
-        # anexando novo comprovante à negociação e concluindo ela
-        negociacao = Negociacao.objects.get(pk=id_negociacao)
-        negociacao.comprovante = contestacao.comprovante
-        negociacao.data_conclusao = timezone.now()
-        negociacao.status = 'C'
-        negociacao.save()
-
-        enviar_email_template(negociacao.id_cooperativa.email, 'negociacao/negociacao_concluida.html', 
-                                      'Negociação Concluída')
-
-        atualiza_producoes(negociacao.pk)
-        atualiza_preco_medio_residuo(negociacao.id_residuo.pk)
+            return nova_contestacao

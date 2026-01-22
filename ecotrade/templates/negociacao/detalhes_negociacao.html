@@ -158,9 +158,6 @@
                                     {% include 'negociacao/modal_responder_contestacao_preco.html' with responder_contestacao_form=responder_contestacao_preco_form negociacao=negociacao contestacao=contestacao %}
                                     {% endfor %}
 
-
-                                    {% include 'negociacao/modal_aceitar_contestacao_preco.html' with aceitar_contestacao_form=aceitar_contestacao_form negociacao=negociacao %}
-                                    {% include 'negociacao/modal_recusar_contestacao_preco.html' with recusar_contestacao_form=recusar_contestacao_form negociacao=negociacao %}
                                     {% include 'negociacao/contestar_preco.html' with contestar_preco_form=contestar_preco_form %}
                                 </tbody>
                             </table>
@@ -215,8 +212,7 @@
                                         {% if contestacao.comprovante %}
                                         <td
                                             class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6">
-                                            {% url 'visualizar_comprovante_contestacao' email_usuario=request.user.pk
-                                            id_contestacao=contestacao.pk as comprovante_url %}
+                                            {% url 'visualizar_comprovante_contestacao' email_usuario=request.user.pk id_contestacao=contestacao.pk as comprovante_url %}
                                             <a href="{{ comprovante_url }}">
                                                 <button
                                                     class="inline-flex items-center gap-1.5 rounded-md bg-transparent px-3 py-1.5 text-sm font-semibold text-primary shadow-sm ring-1 ring-inset ring-primary/50 hover:bg-primary/10">
@@ -228,8 +224,7 @@
                                         </td>
                                         {% else %}
                                         <td
-                                            class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6">
-                                            -
+                                            class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6"> -
                                         </td>
                                         {% endif %}
                                         <td
@@ -247,36 +242,22 @@
                                                 <span class="material-symbols-outlined text-base">gavel</span>
                                             </button>
                                         </td>
-                                        {% elif contestacao.status == 'EE' and request.user.tipo_usuario == 'CO' and contestacao.comprovante %}
+                                        {% elif request.user.tipo_usuario == 'CO' and contestacao.status == 'EE' and contestacao.comprovante %}
                                         <td class="px-6 py-4" title="Ver Comprovante">
-                                            <button class="ver-comprovante-btn">
-                                                <span class="material-symbols-outlined text-base"></span>
+                                             <button class="responder-contestacao-preco-coop-btn">
+                                                <span class="material-symbols-outlined text-base">gavel</span>
                                             </button>
 
-                                            <button data-id-negociacao="{{ contestacao.id_negociacao.pk }}"
-                                                data-id-contestacao="{{ contestacao.pk }}" class="confirmar-pgto-btn"
-                                                title="Aceitar Pagamento">
-                                                <span class="material-symbols-outlined text-base">check</span>
-                                            </button>
-
-                                            <button data-negociacao-id="{{ contestacao.id_negociacao.pk }}"
-                                                data-contestacao-id="{{ contestacao.pk }}" class="contestar-pgto-btn"
-                                                title="Contestar Pagamento">
-                                                <span class="material-symbols-outlined text-base">close</span>
-                                            </button>
                                         </td>
                                         {% endif %}
                                     </tr>
 
-                                    {% url 'visualizar_comprovante_contestacao' email_usuario=request.user.pk id_contestacao=contestacao.pk as comprovante_url_contestacao %}
-                                    {% include 'negociacao/modal_confirmar_pgto_pos_contest.html' with confirmar_pagamento_form=confirmar_pagamento_form modal_post_url=detalhes_url comprovante_url_download=comprovante_url_contestacao %}
+                                    {% include 'negociacao/modal_responder_contestacao_pgto_empresa.html' with responder_contestacao_pgto_form=responder_contestacao_pgto_empresa_form contestacao=contestacao %}
+                                    {% include 'negociacao/modal_responder_contestacao_pgto_coop.html' with responder_contestacao_pgto_form=responder_contestacao_pgto_coop_form contestacao=contestacao %}
 
                                     {% endfor %}
-
-                                    {% include 'negociacao/modal_responder_contestacao_pgto.html' with responder_contestacao_pgto_form=responder_contestacao_pgto_form %}
-
-                                    {% url 'detalhes_negociacao' email_usuario=request.user.pk id_negociacao=negociacao.pk as detalhes_url %}
-                                    {% include 'negociacao/modal_contestar_pagamento.html' with contestar_pagamento_form=contestar_pagamento_form modal_post_url=detalhes_url %}
+                                    
+                                    {% include 'negociacao/modal_contestar_pagamento.html' with contestar_pagamento_form=contestar_pagamento_form  %}
                                 </tbody>
                             </table>
                         </div>
@@ -293,7 +274,7 @@
 {% load static %}
 <!-- <script src="{% static 'js/negociacao/responder_contestacao_preco.js' %}"></script> -->
 <script src="{% static 'js/negociacao/responder_contest_preco.js' %}"></script>
-<script src="{% static 'js/negociacao/confirmar_pagamento_pos_contest.js' %}"></script>
+<script src="{% static 'js/negociacao/responder_contestacao_pgto_coop.js' %}"></script>
 <script src="{% static 'js/negociacao/contestar_pagamento.js' %}"></script>
 <script src="{% static 'js/negociacao/responder_contestacao_pgto.js' %}"></script>
 {% endblock footer_scripts %}

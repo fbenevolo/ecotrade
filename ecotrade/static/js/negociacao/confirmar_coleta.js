@@ -12,26 +12,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (confirmarColetaModal) {
         const cancelBtn = document.getElementById('cancel-btn');
-        cancelBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            closeModal(confirmarColetaModal);
-        })
-    }
-
-    function openConfirmarColetaModal(idNegociacao) {
-        const hiddenIdNegociacao = confirmarColetaModal.querySelector('input[name="id_negociacao"]');
-        hiddenIdNegociacao.value = idNegociacao;
-        openModal(confirmarColetaModal);
+        cancelBtn.addEventListener('click', (e) => { e.preventDefault(); closeModal(confirmarColetaModal); });
     }
 
     confirmarColetaBtn.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const btn = e.currentTarget.closest('button');
-            const idNegociacao = btn.getAttribute('data-id-negociacao');
-
-            openConfirmarColetaModal(idNegociacao);
-        });
-
+        btn.addEventListener('click', (e) => { e.preventDefault(); openModal(confirmarColetaModal); });
     });
 });

@@ -1,12 +1,8 @@
 <div id="modal-contestar-pgto" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden">
     <div class="bg-white dark:bg-background-dark/95 rounded-xl shadow-2xl w-full max-w-lg transform transition-all">
-        <form action={{ modal_post_url }} method="POST">
+        <form action="{% url 'contestar_pagamento' email_usuario=request.user.pk id_negociacao=negociacao.pk %}" method="POST">
             {% csrf_token %}
-
-            {{ contestar_pagamento_form.action }}
-            {{ contestar_pagamento_form.id_negociacao }}
-            {{ contestar_pagamento_form.id_antiga_contestacao }}
-
+            
             <div class="p-8 space-y-6">
                 <div class="flex justify-between items-start">
                     <div>

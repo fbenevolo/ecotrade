@@ -1,12 +1,8 @@
 {% load mathfilters %}
 <div id="modal-confirmar-pagamento" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden">
     <div class="bg-white dark:bg-background-dark/95 rounded-xl shadow-2xl w-full max-w-3xl transform transition-all">
-        <form action="{% url 'negociacoes' email_usuario=request.user.pk %}" method="POST" enctype="multipart/form-data">
+        <form action="{% url 'confirmar_pagamento' email_usuario=request.user.pk id_negociacao=negociacao.pk %}" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-
-            {{ confirmar_pagamento_form.action }}
-            {{ confirmar_pagamento_form.id_negociacao }}
-            {{ confirmar_pagamento_form.id_contestacao }}
 
             <div class="p-8 space-y-6">
                 <div class="flex justify-between items-start">
@@ -55,21 +51,15 @@
                     <div class="space-y-6">
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Resumo Financeiro</h3>
-                            <div
-                                class="mt-4 p-6 bg-primary/10 dark:bg-primary/20 rounded-lg space-y-4 flex flex-col justify-center h-full">
-                                {% if request.user.tipo_usuario == 'CO' %}
-                                    <div
-                                        class="flex justify-between items-center text-xl font-bold text-primary dark:text-primary">
+                            <div class="mt-4 p-6 bg-primary/10 dark:bg-primary/20 rounded-lg space-y-4 flex flex-col justify-center h-full">
+                                <div class="flex justify-between items-center text-xl font-bold text-primary dark:text-primary">
+                                    {% if request.user.tipo_usuario == 'CO' %}    
                                         <span>Valor a Receber:</span>
-                                        <span>R${{ negociacao.preco|mul:negociacao.quantidade|floatformat:2 }}</span>
-                                    </div>
-                                {% else %}
-                                    <div
-                                        class="flex justify-between items-center text-xl font-bold text-primary dark:text-primary">
+                                    {% else %}
                                         <span>Valor a Pagar:</span>
+                                    {% endif %}
                                         <span>R${{ negociacao.preco|mul:negociacao.quantidade|floatformat:2 }}</span>
-                                    </div>
-                                {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -6,44 +6,6 @@
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-3xl font-bold text-gray-800 dark:text-white">Negociações Correntes</h2>
     </div>
-    <!-- <div class="grid grid-cols-3 gap-4 mb-8">
-        <div class="relative">
-            <select
-                class="w-full pl-4 pr-10 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-primary focus:border-primary appearance-none text-sm">
-                <option selected="">Filtrar por Empresa</option>
-                <option>Indústria Têxtil Fibras S.A.</option>
-                <option>Recicla Papel e Celulose</option>
-                <option>Garrafas de Vidro Reciclado Ltda.</option>
-                <option>Metalúrgica Aço Forte</option>
-            </select>
-            <span
-                class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">expand_more</span>
-        </div>
-        <div class="relative">
-            <select
-                class="w-full pl-4 pr-10 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-primary focus:border-primary appearance-none text-sm">
-                <option selected="">Filtrar por Resíduo</option>
-                <option>Plástico PET</option>
-                <option>Papelão Ondulado</option>
-                <option>Vidro (Garrafas)</option>
-                <option>Metal (Alumínio)</option>
-            </select>
-            <span
-                class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">expand_more</span>
-        </div>
-        <div class="relative">
-            <select
-                class="w-full pl-4 pr-10 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-primary focus:border-primary appearance-none text-sm">
-                <option selected="">Filtrar por Status</option>
-                <option>Em Andamento</option>
-                <option>Aguardando Coleta</option>
-                <option>Em Transporte</option>
-                <option>Aguardando Confirmação de Pagamento</option>
-            </select>
-            <span
-                class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">expand_more</span>
-        </div>
-    </div> -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for negociacao in negociacoes %}
         <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm">
@@ -130,7 +92,7 @@
                     <span>Confirmar Coleta</span>
                     </button>
                 </div>
-                    {% include 'negociacao/confirmar_coleta.html' with confirmar_coleta_form=confirmar_coleta_form %}
+                    {% include 'negociacao/confirmar_coleta.html' with confirmar_coleta_form=confirmar_coleta_form id_negociacao=negociacao.pk %}
                 {% else %}
                     <p class="mt-3 text-base text-gray-600 dark:text-gray-400 font-medium text-center">Aguarde a cooperativa confirmar a coleta dos resíduos.</p>
                 {% endif %}
@@ -144,7 +106,7 @@
                         <span>Confirmar Entrega</span>
                     </button>
                 </div>
-                    {% include 'negociacao/confirmar_entrega.html' with confirmar_entrega_form=confirmar_entrega_form %}
+                    {% include 'negociacao/confirmar_entrega.html' with confirmar_entrega_form=confirmar_entrega_form id_negociacao=negociacao.pk %}
                 {% else %}
                     <p class="mt-3 text-base text-gray-600 dark:text-gray-400 font-medium text-center">Aguarde a empresa confirmar a entrega dos resíduos.</p>
                 {% endif %}
@@ -164,8 +126,7 @@
                                 <span>Contestar Pagamento</span>
                             </button>
 
-                          {% url 'negociacoes' email_usuario=request.user.pk as negociacoes_url %}
-                          {% include 'negociacao/modal_contestar_pagamento.html' with contestar_pagamento_form=contestar_pagamento_form modal_post_url=negociacoes_url %}
+                          {% include 'negociacao/modal_contestar_pagamento.html' with contestar_pagamento_form=contestar_pagamento_form negociacao=negociacao %}
 
                         {% endif %}
                 </div>
@@ -185,7 +146,7 @@
          
          {% url 'negociacoes' email_usuario=request.user.pk as negociacoes_url %}
          {% url 'visualizar_comprovante_negociacao' email_usuario=request.user.pk id_negociacao=negociacao.pk as comprovante_url_negociacao %}
-         {% include 'negociacao/confirmar_pagamento.html' with confirmar_pagamento_form=confirmar_pagamento_form tipo_usuario=request.user.tipo_usuario negociacao=negociacao modal_post_url=negociacoes_url comprovante_url_download=comprovante_url_negociacao %}
+         {% include 'negociacao/confirmar_pagamento.html' with confirmar_pagamento_form=confirmar_pagamento_form negociacao=negociacao %}
 
          {% endfor %}
 

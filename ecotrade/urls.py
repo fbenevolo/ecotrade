@@ -80,8 +80,12 @@ urlpatterns = [
     path('dashboard/<str:email_usuario>/negociacoes/detalhes_negociacao/<int:id_negociacao>', views_negociacao.detalhes_negociacao, name='detalhes_negociacao'),
     path('dashboard/<str:email_usuario>/negociacoes/<int:id_negociacao>/contestar_preco/', views_negociacao.contestar_preco, name='contestar_preco'),
     path('dashboard/<str:email_usuario>/negociacoes/<int:id_negociacao>/responder_contestacao/<int:id_contestacao>', views_negociacao.responder_contestacao_preco, name='responder_contestacao_preco'),
-   
-
+    path('dashboard/<str:email_usuario>/negociacoes/<int:id_negociacao>/confirmar_coleta', views_negociacao.confirmar_coleta, name='confirmar_coleta'),
+    path('dashboard/<str:email_usuario>/negociacoes/<int:id_negociacao>/confirmar_entrega', views_negociacao.confirmar_entrega, name='confirmar_entrega'),
+    path('dashboard/<str:email_usuario>/negociacoes/<int:id_negociacao>/confirmar_pagamento', views_negociacao.confirmar_pagamento, name='confirmar_pagamento'),
+    path('dashboard/<str:email_usuario>/negociacoes/<int:id_negociacao>/contestar_pagamento', views_negociacao.contestar_pagamento, name='contestar_pagamento'),
+    path('dashboard/<str:email_usuario>/negociacoes/<int:id_negociacao>/responder_contestar_pagamento_empresa/<int:id_contestacao>', views_negociacao.responder_contestacao_pagamento_empresa, name='responder_contestacao_pagamento_empresa'),
+    path('dashboard/<str:email_usuario>/negociacoes/<int:id_negociacao>/responder_contestar_pagamento_coop/<int:id_contestacao>', views_negociacao.responder_contestacao_pagamento_coop, name='responder_contestacao_pagamento_coop'),
 
     path('dashboard/<str:email_usuario>/negociacoes/comprovante/<int:id_negociacao>', views_negociacao.comprovante_negociacao, name='visualizar_comprovante_negociacao'),        
     path('dashboard/<str:email_usuario>/negociacoes/detalhes_negociacao/comprovante/<int:id_contestacao>', views_negociacao.comprovante_contestacao, name='visualizar_comprovante_contestacao'),        
