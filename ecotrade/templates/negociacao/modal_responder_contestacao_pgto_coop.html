@@ -1,6 +1,5 @@
 {% load mathfilters %}
-<div id="modal-responder-contest-pgto-coop"
-    class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden">
+<div id="modal-responder-contest-pgto-coop" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden">
     <div class="bg-white dark:bg-background-dark/95 rounded-xl shadow-2xl w-full max-w-3xl transform transition-all">
         <form
             action="{% url 'responder_contestacao_pagamento_coop' email_usuario=request.user.pk id_negociacao=negociacao.pk id_contestacao=contestacao.pk %}"

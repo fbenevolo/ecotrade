@@ -52,7 +52,7 @@ def cadastro_view(request):
     return render(request, 'usuario/cadastro.html', context)
 
 
-def aprovacao_usuario(request):
+def aprovacao_usuario_modal(request):
     return render(request, 'gestao_usuarios/modal_aprovacao_usuario.html')
 
 

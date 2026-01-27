@@ -12,10 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (confirmarEntregaModal) {
         const cancelBtn = document.getElementById('cancel-btn');
-        cancelBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            closeModal(confirmarEntregaModal);
-        })
+        cancelBtn.addEventListener('click', (e) => { e.preventDefault(); closeModal(confirmarEntregaModal); });
     }
     
     confirmarEntregaBtn.forEach(btn => {

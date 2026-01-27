@@ -13,35 +13,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (modalContestarPagamento) {
         const closeBtn = modalContestarPagamento.querySelector('#close-btn');
-        closeBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            closeModal(modalContestarPagamento);
-        });
         const cancelBtn = modalContestarPagamento.querySelector('#cancel-btn');
-        cancelBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            closeModal(modalContestarPagamento);
-        });
-    }
-
-    function openContestarModal(negociacaoId, antigaContestacaoId) {
-        const hiddenNegociacaoIdInput = modalContestarPagamento.querySelector('input[name="id_negociacao"]');
-        const hiddenAntigaContestacaoInput = modalContestarPagamento.querySelector('input[name="id_antiga_contestacao"]');
-
-        if (hiddenNegociacaoIdInput) hiddenNegociacaoIdInput.value = negociacaoId;
-        if (hiddenAntigaContestacaoInput) hiddenAntigaContestacaoInput.value = antigaContestacaoId;
-
-        openModal(modalContestarPagamento);
+        
+        closeBtn.addEventListener('click', (e) => { e.preventDefault(); closeModal(modalContestarPagamento); });
+        cancelBtn.addEventListener('click', (e) => { e.preventDefault(); closeModal(modalContestarPagamento); });
     }
 
     openModalBtn.forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
-            
-            const button = e.currentTarget.closest('button');
-            const negociacaoId = button.getAttribute('data-negociacao-id');
-            const antigaContestacaoId = button.getAttribute('data-contestacao-id')
-            openContestarModal(negociacaoId, antigaContestacaoId);
+            openModal(modalContestarPagamento);
         });
     })
 

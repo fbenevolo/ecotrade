@@ -2,38 +2,46 @@ from django import forms
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.sites.shortcuts import get_current_site
 from django.shortcuts import render, redirect, get_object_or_404
 
 from ..models import Usuario
+from ..forms.forms_admin import AprovarUsuarioForm
 from ..utils import enviar_email_template, gera_link_acesso
-from ..forms.forms_admin import AprovarContaForm
 
 @login_required
 def gestao_usuarios(request, email_usuario):
-    aprovar_usuario = AprovarContaForm()
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        if 'aprovar_usuario' in action:
-            usuario_id = request.POST.get('usuario_id')
-            aprovar_conta_form = AprovarContaForm(request.POST, usuario=usuario_id)
-            if aprovar_conta_form.is_valid():
-                try:
-                    novo_usuario = aprovar_conta_form.save()
-                    if novo_usuario is not None: 
-                        link = gera_link_acesso(request, 'login')
-                        enviar_email_template(novo_usuario.email, 'conta/aprovacao_conta.html', 
-                                        'Criação de Conta', context = { 'nome': novo_usuario.nome, 'link_acesso': link })
-                    return redirect(reverse('gestao_usuarios', kwargs={'email_usuario': email_usuario}))                
-                except forms.ValidationError:
-                    messages.error(request, 'Erro na operação. Verifique o formulário.') 
+    aprovar_usuario = AprovarUsuarioForm()
 
     context = {
-        'usuarios': Usuario.objects.all(),
+        'usuarios': Usuario.objects.all().exclude(is_staff=True),
         'aprovar_usuario_form': aprovar_usuario
     }
 
     return render(request, 'gestao_usuarios/gestao_usuarios.html', context)
+
+
+def aprovar_usuario(request, email_usuario, email_novo_usuario):
+    usuario = get_object_or_404(Usuario, pk=email_novo_usuario)
+    if request.method == 'POST':
+        form = AprovarUsuarioForm(request.POST, instance=usuario)
+        if form.is_valid():
+            form.save()
+            acao = form.cleaned_data['acao']
+            if acao == 'aprovar':
+                link = gera_link_acesso(request, 'login')
+                enviar_email_template(usuario.email, 
+                                    'conta/aprovacao_conta.html', 
+                                    'Criação de Conta', 
+                                    context = { 'nome': usuario.nome, 'link_acesso': link })
+                messages.success(request, 'Usuário aprovado com sucesso.')
+            else:
+                messages.success(request, 'Usuário deletado com sucesso.')
+            return redirect(reverse('gestao_usuarios', kwargs={'email_usuario': email_usuario}))
+        else:
+            print(form.errors.as_data())                
+
+    return redirect(reverse('gestao_usuarios', kwargs={'email_usuario': email_usuario}))                
+
 
 
 @login_required
@@ -77,13 +85,11 @@ def reativar_conta(request, email_usuario):
         usuario = get_object_or_404(Usuario, pk=email_usuario)
         usuario.status = 'A'
         usuario.save()
-
-        protocolo = 'https' if request.is_secure() else 'http'
-        dominio = get_current_site(request).domain
-        caminho_login = reverse('login')
-        link = f'{protocolo}://{dominio}{caminho_login}'
-        enviar_email_template(usuario.email, 'conta/reativacao_conta.html', 
-                              'Reativação de Conta', context={ 'link_site': link })
+        link = gera_link_acesso(request, 'login')
+        enviar_email_template(usuario.email, 
+                              'conta/reativacao_conta.html', 
+                              'Reativação de Conta', 
+                              context={ 'link_site': link })
         messages.success(request, f'A conta de {usuario.email} foi reativada.')
         return redirect(reverse('gestao_usuarios', kwargs={'email_usuario': request.user.pk}))
     return redirect(reverse('gestao_usuarios', kwargs={'email_usuario': request.user.pk}))

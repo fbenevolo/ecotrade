@@ -153,5 +153,4 @@ def gera_link_acesso(request, view_name: str):
     dominio = get_current_site(request).domain
     path_to_view = reverse(view_name)
     link = f'{protocolo}://{dominio}{path_to_view}'
-
     return link

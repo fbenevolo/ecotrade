@@ -55,9 +55,10 @@ urlpatterns = [
     path('logout/', views_common.logout_view, name='logout'),
 
     # URLs de usuário
-    path('aprovacao_usuario/', views_common.aprovacao_usuario, name='aprovacao_usuario'),
+    path('aprovacao_usuario/', views_common.aprovacao_usuario_modal, name='aprovacao_usuario'),
     path('dashboard/<str:email_usuario>/gestao_usuarios', views_admin.gestao_usuarios, name='gestao_usuarios'),
-    
+    path('dashboard/<str:email_usuario>/gestao_usuarios/aprovar_usuario/<str:email_novo_usuario>', views_admin.aprovar_usuario, name='aprovar_usuario'),    
+
     # URLs de gerenciamento de catador
     path('dashboard/<str:email_usuario>/catadores/', views_catador.catadores, name='catadores'),
     path('dashboard/<str:email_usuario>/catadores/aprovar/<str:email_catador>', views_catador.aprovar_conta_catador, name='aprovar_catador'),
