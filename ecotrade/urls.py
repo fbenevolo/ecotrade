@@ -39,12 +39,6 @@ password_reset_patterns = [
         template_name='register/password_reset_complete.html'), name='password_reset_complete'),
 ]
 
-gestao_usuarios = [
-    path('dashboard/<str:email_usuario>/desativar_conta', views_admin.desativar_conta, name='desativar_conta'),
-    path('dashboard/<str:email_usuario>/aceitar_desativacao', views_admin.aceitar_desativacao, name='aceitar_desativacao'),
-    path('dashboard/<str:email_usuario>/recusar_desativacao', views_admin.recusar_desativacao, name='recusar_desativacao'),
-    path('dashboard/<str:email_usuario>/reativar_conta', views_admin.reativar_conta, name='reativar_conta')
-]
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -54,10 +48,15 @@ urlpatterns = [
     path('login/', views_common.login_view, name='login'),
     path('logout/', views_common.logout_view, name='logout'),
 
-    # URLs de usuário
-    path('aprovacao_usuario/', views_common.aprovacao_usuario_modal, name='aprovacao_usuario'),
+    # URLs de conta de usuário (em aprovação e conta desativada) 
+    path('aprovacao_usuario/', views_common.usuario_em_aguardo_modal, name='aprovacao_usuario'),
+    path('modal_usuario_desativado', views_common.usuario_desativado_modal, name='usuario_desativado_modal'),
+
+    # URLs de gestão de usuário (admiin)
     path('dashboard/<str:email_usuario>/gestao_usuarios', views_admin.gestao_usuarios, name='gestao_usuarios'),
     path('dashboard/<str:email_usuario>/gestao_usuarios/aprovar_usuario/<str:email_novo_usuario>', views_admin.aprovar_usuario, name='aprovar_usuario'),    
+    path('dashboard/<str:email_usuario>/gestao_usuarios/desativar_usuario/<str:email_novo_usuario>', views_admin.desativar_usuario, name='desativar_usuario'),    
+    path('dashboard/<str:email_usuario>/reativar_conta', views_admin.reativar_conta, name='reativar_conta'),
 
     # URLs de gerenciamento de catador
     path('dashboard/<str:email_usuario>/catadores/', views_catador.catadores, name='catadores'),
@@ -99,7 +98,6 @@ urlpatterns = [
 ]
 
 urlpatterns += password_reset_patterns
-urlpatterns += gestao_usuarios
 
 # ESTA CONFIGURAÇÃO SÓ É NECESSÁRIA E DEVE SER USADA EM AMBIENTE DE DESENVOLVIMENTO (DEBUG=True)
 if settings.DEBUG:

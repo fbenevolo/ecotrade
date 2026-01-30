@@ -19,8 +19,7 @@ class MyModelChoiceField(ModelChoiceField):
         return obj.nome
 
 class CadastroForm(StyledFormMixin, UserCreationForm):
-    cooperativa_associada = MyModelChoiceField(
-        queryset=Usuario.objects.filter(tipo_usuario='CO', status='A', is_superuser=False))
+    cooperativa_associada = MyModelChoiceField(queryset=Usuario.objects.filter(tipo_usuario='CO', status='A', is_superuser=False))
 
     class Meta(UserCreationForm.Meta):
         model = Usuario

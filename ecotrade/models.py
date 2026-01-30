@@ -37,7 +37,6 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         ('A', 'Ativo'),
         ('EA', 'Esperando Aprovação'),
         ('D', 'Desativado'),
-        ('EAD', 'Esperando Aprovação para Desativação'),
     ) 
 
     OPCOES_TIPO_USUARIO = (

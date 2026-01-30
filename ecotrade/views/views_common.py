@@ -29,8 +29,10 @@ def cadastro_view(request):
                 link = gera_link_acesso(request, 'login')
 
                 # envia email para novo usuário e para administradores do sistema
-                enviar_email_template(novo_usuario.email, 'conta/criacao_conta.html', 
-                                      'Criação de Conta', context = { 'nome': novo_usuario.nome, 'link_acesso': link })
+                enviar_email_template(novo_usuario.email, 
+                                      'conta/criacao_conta.html', 
+                                      'Criação de Conta', 
+                                      context = { 'nome': novo_usuario.nome, 'link_acesso': link })
                 
                 # envia email para administradores
                 admins = Usuario.objects.filter(is_staff=True, is_superuser=True)
@@ -40,7 +42,7 @@ def cadastro_view(request):
                 return redirect(reverse('aprovacao_usuario'))  
             except ValidationError as e:
                 cadastro_form.add_error(None, f'Erro de validação: { e.messages }')
-            except ValueError as e:#
+            except ValueError as e:
                 cadastro_form.add_error(None, "Erro ao salvar o usuário: " + str(e))
         else:
             cadastro_form.add_error(None, "Dados inválidos — verifique os campos.")
@@ -52,8 +54,12 @@ def cadastro_view(request):
     return render(request, 'usuario/cadastro.html', context)
 
 
-def aprovacao_usuario_modal(request):
-    return render(request, 'gestao_usuarios/modal_aprovacao_usuario.html')
+def usuario_em_aguardo_modal(request):
+    return render(request, 'gestao_usuarios/modal_usuario_em_aguardo.html')
+
+
+def usuario_desativado_modal(request):
+    return render(request, 'usuario/usuario_desativado_modal.html')
 
 
 def login_view(request):
@@ -68,7 +74,7 @@ def login_view(request):
                 return redirect(next_url)
             # usuario desativado
             elif usuario.status == 'D':
-                return render(request, 'gestao_usuarios/modal_usuario_desativado.html')
+                return render(request, 'usuario/modal_usuario_desativado.html')
             # usuario em aprovação
             elif usuario.status == 'EA':
                 if usuario.tipo_usuario == 'CA':

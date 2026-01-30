@@ -23,7 +23,6 @@ class AprovarUsuarioForm(StyledFormMixin, forms.ModelForm):
     def save(self):
         instance = super().save(commit=False)
         acao = self.cleaned_data['acao']
-
         if acao == 'aprovar':
             instance.status = 'A'
             instance.save()

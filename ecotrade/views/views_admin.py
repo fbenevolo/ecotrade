@@ -10,11 +10,11 @@ from ..utils import enviar_email_template, gera_link_acesso
 
 @login_required
 def gestao_usuarios(request, email_usuario):
-    aprovar_usuario = AprovarUsuarioForm()
+    aprovar_usuario_form = AprovarUsuarioForm()
 
     context = {
         'usuarios': Usuario.objects.all().exclude(is_staff=True),
-        'aprovar_usuario_form': aprovar_usuario
+        'aprovar_usuario_form': aprovar_usuario_form
     }
 
     return render(request, 'gestao_usuarios/gestao_usuarios.html', context)
@@ -29,55 +29,29 @@ def aprovar_usuario(request, email_usuario, email_novo_usuario):
             acao = form.cleaned_data['acao']
             if acao == 'aprovar':
                 link = gera_link_acesso(request, 'login')
-                enviar_email_template(usuario.email, 
-                                    'conta/aprovacao_conta.html', 
-                                    'Criação de Conta', 
-                                    context = { 'nome': usuario.nome, 'link_acesso': link })
+                # enviar_email_template(usuario.email, 
+                #                     'conta/aprovacao_conta.html', 
+                #                     'Criação de Conta', 
+                #                     context = { 'nome': usuario.nome, 'link_acesso': link })
                 messages.success(request, 'Usuário aprovado com sucesso.')
             else:
                 messages.success(request, 'Usuário deletado com sucesso.')
             return redirect(reverse('gestao_usuarios', kwargs={'email_usuario': email_usuario}))
-        else:
-            print(form.errors.as_data())                
 
     return redirect(reverse('gestao_usuarios', kwargs={'email_usuario': email_usuario}))                
 
 
 
 @login_required
-def desativar_conta(request, email_usuario):
+def desativar_usuario(request, email_usuario, email_novo_usuario):
     if request.method == 'POST':
-        usuario = get_object_or_404(Usuario, pk=email_usuario)
+        usuario = get_object_or_404(Usuario, pk=email_novo_usuario)
         usuario.status = 'D'
         usuario.save()
         enviar_email_template(usuario.email, 'conta/desativacao_conta.html', 'Desativação de Conta')
-        return redirect(reverse('configuracoes', kwargs={'email_usuario': request.user.pk}))
-    return redirect(reverse('configuracoes', kwargs={'email_usuario': request.user.pk}))
-
-
-@login_required
-def aceitar_desativacao(request, email_usuario):
-    if request.method == 'POST':
-        usuario = get_object_or_404(Usuario, pk=email_usuario)
-        usuario.status = 'D'
-        usuario.save()
-        enviar_email_template(usuario.email, 'conta/desativacao_conta.html', 'Desativação de Conta')
-        messages.success(request, f'A conta de {usuario.email} foi desativada.')
-        return redirect(reverse('gestao_usuarios', kwargs={'email_usuario': request.user.pk}))
-
-    return redirect(reverse('gestao_usuarios', kwargs={'email_usuario': request.user.pk}))
-
-
-@login_required
-def recusar_desativacao(request, email_usuario):
-    if request.method == 'POST':
-        usuario = get_object_or_404(Usuario, pk=email_usuario)
-        usuario.status = 'A'
-        usuario.save()
-        messages.success(request, f'A desativação da conta de {usuario.email} foi recusada.')
-        return redirect(reverse('gestao_usuarios', kwargs={'email_usuario': request.user.pk}))
-    return redirect(reverse('gestao_usuarios', kwargs={'email_usuario': request.user.pk}))
-
+        return redirect(reverse('gestao_usuarios', kwargs={'email_usuario': email_usuario}))
+    
+    return redirect(reverse('gestao_usuarios', kwargs={'email_usuario': email_usuario}))
 
 @login_required
 def reativar_conta(request, email_usuario):
