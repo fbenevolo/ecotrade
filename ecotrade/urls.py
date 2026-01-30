@@ -78,6 +78,8 @@ urlpatterns = [
     # URLs de negociação
     path('dashboard/<str:email_usuario>/negociacoes', views_negociacao.negociacoes, name='negociacoes'),
     path('dashboard/<str:email_usuario>/negociacoes/detalhes_negociacao/<int:id_negociacao>', views_negociacao.detalhes_negociacao, name='detalhes_negociacao'),
+    path('dashboard/<str:email_usuario>/negociacoes/<int:id_negociacao>/confirmar_negociacao/', views_negociacao.confirmar_negociacao, name='confirmar_negociacao'),
+    path('dashboard/<str:email_usuario>/negociacoes/<int:id_negociacao>/cancelar_negociacao/', views_negociacao.cancelar_negociacao, name='cancelar_negociacao'),
     path('dashboard/<str:email_usuario>/negociacoes/<int:id_negociacao>/contestar_preco/', views_negociacao.contestar_preco, name='contestar_preco'),
     path('dashboard/<str:email_usuario>/negociacoes/<int:id_negociacao>/responder_contestacao/<int:id_contestacao>', views_negociacao.responder_contestacao_preco, name='responder_contestacao_preco'),
     path('dashboard/<str:email_usuario>/negociacoes/<int:id_negociacao>/confirmar_coleta', views_negociacao.confirmar_coleta, name='confirmar_coleta'),

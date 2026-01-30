@@ -141,7 +141,8 @@
             {% endif %}
         </div>
         
-         {% include 'negociacao/confirmar_negociacao.html' with confirmar_negociacao_form=confirmar_negociacao_form %}
+         {% include 'negociacao/confirmar_negociacao.html' with id_negociacao=negociacao.pk  %}
+         {% include 'negociacao/cancelar_negociacao.html' with id_negociacao=negociacao.pk %}
          {% include 'negociacao/contestar_preco.html' with contestar_preco_form=contestar_preco_form negociacao=negociacao %}
          
          {% url 'negociacoes' email_usuario=request.user.pk as negociacoes_url %}

@@ -3,8 +3,8 @@ from django.http import HttpResponse, FileResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 
-from ..models import Usuario, Negociacao, NegociacaoPagaTrabalho, ContestacaoPreco, ContestacaoPagamento
-from ..forms.forms_negociacao import (ConfirmarNegociacaoForm, 
+from ..models import Usuario, Producao, Negociacao, NegociacaoPagaTrabalho, ContestacaoPreco, ContestacaoPagamento
+from ..forms.forms_negociacao import ( 
                                       ContestarPrecoForm, ResponderContestacaoPrecoForm,
                                       ConfirmarColetaForm, ConfirmarEntregaForm,
                                       ConfirmarPagamentoForm,ContestarPagamentoForm, 
@@ -21,7 +21,6 @@ def negociacoes(request, email_usuario):
     
     usuario = get_object_or_404(Usuario, pk=email_usuario)
 
-    confirmar_negociacao_form = ConfirmarNegociacaoForm()
     contestar_preco_form = ContestarPrecoForm()
     confirmar_coleta_form = ConfirmarColetaForm()
     confirmar_entrega_form = ConfirmarEntregaForm()
@@ -35,18 +34,9 @@ def negociacoes(request, email_usuario):
         negociacoes = Negociacao.objects.filter(id_cooperativa=usuario.pk).exclude(status__in=('CA', 'C'))
     else:
         negociacoes = Negociacao.objects.filter(id_cooperativa=usuario.cooperativa_associada).exclude(status__in=('CA', 'C'))
-
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        if 'confirmar_negociacao' in action:
-            confirmar_negociacao_form = ConfirmarNegociacaoForm(request.POST)
-            if confirmar_negociacao_form.is_valid():
-                confirmar_negociacao_form.save()
-                return redirect(reverse('negociacoes', kwargs={'email_usuario': request.user.pk}))
             
     context = {
         'negociacoes': negociacoes,
-        'confirmar_negociacao_form': confirmar_negociacao_form,
         'contestar_preco_form': contestar_preco_form,
         'confirmar_coleta_form': confirmar_coleta_form,
         'confirmar_entrega_form': confirmar_entrega_form,
@@ -55,6 +45,63 @@ def negociacoes(request, email_usuario):
     }
 
     return render(request, 'negociacao/negociacoes.html', context)
+
+
+def confirmar_negociacao(request, email_usuario, id_negociacao):
+    '''
+    - 'ACE' (Aguardando Confirmação da Empresa),
+        Quando iniciação negociou ou a cooperativa contestou pagamento
+    - 'ACC', (Aguardando Confirmação da Segunda Parte),
+        Quando a empresa contesta o preço
+    - 'AC' (Aguardando Coleta)
+        Quando ambas partes confirmam
+    - 'C' (Cancelada)
+        Quando alguma parte cancela a negociação
+    '''
+    negociacao = get_object_or_404(Negociacao, pk=id_negociacao)
+    tipo_usuario = request.user.tipo_usuario
+    if request.method == 'POST':
+        if tipo_usuario == 'E':
+            if negociacao.status == 'ACE':
+                if negociacao.confirmacao_preco_cooperativa == True:
+                    negociacao.confirmacao_preco_empresa = True 
+                    negociacao.status = 'AC'
+                else:
+                    negociacao.confirmacao_preco_empresa = True 
+                    negociacao.status = 'ACC'                    
+        else:
+            if negociacao.status == 'ACC':
+                if negociacao.confirmacao_preco_empresa == True:
+                    negociacao.confirmacao_preco_cooperativa = True
+                    negociacao.status = 'AC'
+                else:
+                    negociacao.confirmacao_preco_cooperativa = True
+                    negociacao.status = 'ACE'
+
+        negociacao.save()
+
+    return redirect(reverse('negociacoes', kwargs={'email_usuario': email_usuario}))
+
+
+def cancelar_negociacao(request, email_usuario, id_negociacao):
+    negociacao = get_object_or_404(Negociacao, pk=id_negociacao)
+    if request.method == 'POST':
+        negociacao.status = 'CA'
+        negociacao.save()
+
+         # deleta os objetos NegociacaoPagaTrabalho, pois a negociação foi cancelada
+        neg_paga_trabalho = NegociacaoPagaTrabalho.objects.filter(id_negociacao=negociacao)
+        for obj in neg_paga_trabalho:
+            obj.delete()
+
+        # deixar livres as produções alocadas à negociações
+        producoes = Producao.objects.filter(id_negociacao=negociacao)
+        for producao in producoes:
+            producao.id_negociacao = None
+            producao.status = 'l'
+            producao.save()
+
+    return redirect(reverse('negociacoes', kwargs={'email_usuario': email_usuario}))
 
 
 def contestar_preco(request, email_usuario, id_negociacao):

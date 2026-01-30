@@ -1,71 +1,7 @@
 from django import forms
 from django.utils import timezone
-from ..models import Producao, Negociacao, NegociacaoPagaTrabalho, ContestacaoPreco, ContestacaoPagamento
-
+from ..models import Negociacao, ContestacaoPreco, ContestacaoPagamento
 from .base import StyledFormMixin
-from ..utils import atualiza_producoes, atualiza_preco_medio_residuo, enviar_email_template
-
-class ConfirmarNegociacaoForm(forms.Form):
-    '''
-    Classe responsável por fazer a negociação avançar para um dos seguintes estados:
-    - 'ACE' (Aguardando Confirmação da Empresa),
-        Quando iniciação negociou ou a cooperativa contestou pagamento
-    - 'ACC', (Aguardando Confirmação da Segunda Parte),
-        Quando a empresa contesta o preço
-    - 'AC' (Aguardando Coleta)
-        Quando ambas partes confirmam
-    - 'C' (Cancelada)
-        Quando alguma parte cancela a negociação
-    '''
-    action = forms.CharField(widget=forms.HiddenInput(), initial='confirmar_negociacao')
-    id_negociacao = forms.CharField(widget=forms.HiddenInput())
-    tipo_usuario = forms.CharField(widget=forms.HiddenInput()) 
-    opcoes = forms.ChoiceField(
-        choices=(
-            ('confirmar', 'Confirmar Preço'),
-            ('cancelar', 'Cancelar Negociação')
-        ),
-        widget=forms.HiddenInput()
-    )
-
-    def save(self):
-        id_negociacao = int(self.cleaned_data['id_negociacao'])
-        tipo_usuario = self.cleaned_data['tipo_usuario']
-        opcao = self.cleaned_data['opcoes']
-        negociacao = Negociacao.objects.get(pk=id_negociacao)
-
-        if opcao == 'cancelar':
-            negociacao.status = 'CA'
-            # deleta os objetos NegociacaoPagaTrabalho, pois a negociação foi cancelada
-            neg_paga_trabalho = NegociacaoPagaTrabalho.objects.filter(id_negociacao=negociacao)
-            for obj in neg_paga_trabalho:
-                obj.delete()
-
-            # deixar livres as produções alocadas à negociações
-            producoes = Producao.objects.filter(id_negociacao=id_negociacao)
-            for producao in producoes:
-                producao.id_negociacao = None
-                producao.status = 'l'
-                producao.save()
-        elif opcao == 'confirmar':
-            if tipo_usuario == 'E':
-                if negociacao.status == 'ACE':
-                    if negociacao.confirmacao_preco_cooperativa == True:
-                        negociacao.confirmacao_preco_empresa = True 
-                        negociacao.status = 'AC'
-                    else:
-                        negociacao.confirmacao_preco_empresa = True 
-                        negociacao.status = 'ACC'                    
-            else:
-                if negociacao.status == 'ACC':
-                    if negociacao.confirmacao_preco_empresa == True:
-                        negociacao.confirmacao_preco_cooperativa = True
-                        negociacao.status = 'AC'
-                    else:
-                        negociacao.confirmacao_preco_cooperativa = True
-                        negociacao.status = 'ACE'
-        
-        negociacao.save()
 
 
 class ContestarPrecoForm(StyledFormMixin, forms.ModelForm):
