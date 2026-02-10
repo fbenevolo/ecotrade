@@ -12,11 +12,17 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 AUTH_USER_MODEL = 'ecotrade.Usuario'
+
+env = environ.Env()
+env_file = os.path.join(BASE_DIR, ".env")
+if os.path.exists(env_file):
+    environ.Env.read_env(env_file)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -25,9 +31,9 @@ AUTH_USER_MODEL = 'ecotrade.Usuario'
 SECRET_KEY = 'django-insecure-#61(cnws6$q@q3-@1w2_sj71)og4k_&a5=5lbf9ntp3kl(l&(5'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DEBUG', default=False)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['.vercel.app', '127.0.0.1', '.now.sh']
 
 # Application definition
 
@@ -77,14 +83,7 @@ WSGI_APPLICATION = 'ecotrade.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ecotrade',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'localhost',
-        'PORT': 5432
-    }
+    'default': env.db('DATABASE_URL')
 }
 
 
@@ -126,6 +125,8 @@ LANGUAGE_CODE = 'pt-br'
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [ os.path.join(BASE_DIR, 'static') ]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
